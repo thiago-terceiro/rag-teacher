@@ -1,0 +1,46 @@
+{
+  "name": "devdocs-ai-guide",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"nodemon server/index.js\" \"vite\"",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "concurrently": "^10.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.21.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@radix-ui/react-collapsible": "^1.1.14",
+    "@radix-ui/react-dialog": "^1.1.17",
+    "@radix-ui/react-scroll-area": "^1.2.12",
+    "@radix-ui/react-separator": "^1.1.10",
+    "@radix-ui/react-tooltip": "^1.2.10",
+    "@vitejs/plugin-react": "^6.0.2",
+    "autoprefixer": "^10.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
+    "nodemon": "^3.1.14",
+    "postcss": "^8.5.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.18.0",
+    "react-syntax-highlighter": "^16.1.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.1",
+    "vite": "^8.0.16"
+  }
+}
