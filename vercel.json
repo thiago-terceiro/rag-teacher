@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "cd devdocs-ai-guide && npm install && npm run build",
+  "outputDirectory": "devdocs-ai-guide/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

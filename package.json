@@ -1,0 +1,14 @@
+{
+  "name": "rag-teacher",
+  "version": "1.0.0",
+  "description": "RAG Teacher (DevDocs AI Guide) - Interactive, production-grade masterclass for Retrieval-Augmented Generation",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix devdocs-ai-guide run dev",
+    "build": "npm --prefix devdocs-ai-guide run build",
+    "start": "npm --prefix devdocs-ai-guide run start"
+  },
+  "keywords": ["rag", "llm", "retrieval-augmented-generation", "qdrant", "dspy", "langgraph", "fastapi"],
+  "author": "Thiago Terceiro",
+  "license": "MIT"
+}
