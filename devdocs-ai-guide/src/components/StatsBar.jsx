@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { Menu, RotateCcw, BookOpen, Eye } from 'lucide-react';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';

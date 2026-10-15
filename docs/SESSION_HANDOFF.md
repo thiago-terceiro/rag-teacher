@@ -48,43 +48,43 @@ The following upgrades have been completed, verified via production build, and p
 
 ---
 
-## 3. Backlog & Recommended Next Tasks
+### F. React Compiler & Architecture Hardening
+* Installed and configured official `babel-plugin-react-compiler` with React 19 in `vite.config.js`. Automatic memoization now runs across the component tree without manual boilerplate.
+* Moved `markdownComponents` in `src/components/MarkdownRenderer.jsx` to module scope for zero-allocation static lifetime. Added `slugify` and `getHeadingText` with auto-generated heading IDs and hoverable anchor links (`#`) for smooth section jumping.
+* Fixed missing `React` reference in `StatsBar.jsx` (`import React, { memo } from 'react'`).
 
-The other session can immediately pick up from here:
+---
 
-### Priority 1: Install & Configure Official React Compiler
-* **Goal**: Automate fine-grained memoization across all components and hooks, eliminating manual `useMemo` / `useCallback` boilerplate.
-* **Steps**:
-  1. Install: `npm install -D babel-plugin-react-compiler` inside `devdocs-ai-guide`.
-  2. Configure in `vite.config.js`:
-     ```javascript
-     plugins: [
-       react({
-         babel: {
-           plugins: [['babel-plugin-react-compiler', {}]],
-         },
-       }),
-     ],
-     ```
-  3. Verify with `npm run build`.
+## 3. Immediate Next Tasks for Incoming Model
 
-### Priority 2: Move `components` in `MarkdownRenderer.jsx` to Module Scope
-* In `src/components/MarkdownRenderer.jsx`, the `components` mapping is currently wrapped in `useMemo`. Because it has zero dependencies on props or state, moving it completely outside the component function provides zero-allocation static lifetime.
+The incoming model can immediately pick up from here:
 
-### Priority 3: On-This-Page TOC (Table of Contents)
-* For the longer 10–15 minute masterclass chapters, add an interactive floating or right-side TOC that extracts H2/H3 headings from the current step's markdown and highlights active reading position.
+### Priority: Wire `TableOfContents` into `src/components/StepView.jsx`
+* **Status**: `src/components/TableOfContents.jsx` is already created and fully implemented with:
+  - `extractHeadings(markdown)`: extracts H2 and H3 headers while stripping code blocks.
+  - `useTableOfContents(markdown)`: tracks active headings on `#main-scroll-container` scroll, provides smooth scrolling to section and scroll-to-top.
+  - `<TableOfContentsMobile>`: collapsible on mobile/tablet (`xl:hidden`).
+  - `<TableOfContentsDesktop>`: sticky right sidebar on desktop (`hidden xl:block w-64 shrink-0`).
+* **Next Action**:
+  - In `src/components/StepView.jsx`, adjust layout container to `max-w-7xl mx-auto flex justify-center gap-10`.
+  - Place `<TableOfContents markdown={step.content} />` or use the subcomponents to display the mobile drawer above the content and the sticky sidebar to the right.
+  - Run `npm run build` to verify.
+  - Commit and deploy with `npx --yes vercel --yes --prod`.
 
 ---
 
 ## 4. Useful Commands for Next Session
 
 ```bash
-# Check git status (should be clean on main)
+# Check git status (clean on main)
 git status
 
 # Run local development server
-npm run dev
+npm run dev:ui
 
-# Run production build (from root or devdocs-ai-guide)
+# Run production build
 npm run build
+
+# Deploy to Vercel production
+npx --yes vercel --yes --prod
 ```
