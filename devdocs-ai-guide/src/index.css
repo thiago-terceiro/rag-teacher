@@ -119,3 +119,31 @@
   animation: collapsible-slide-up 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Reading Comfort Typography Modes */
+.reading-size-normal {
+  font-size: 15px;
+}
+.reading-size-comfortable {
+  font-size: 17px;
+}
+.reading-size-comfortable p,
+.reading-size-comfortable li {
+  font-size: 17px !important;
+}
+.reading-size-large {
+  font-size: 19px;
+}
+.reading-size-large p,
+.reading-size-large li {
+  font-size: 19px !important;
+}
+
+.reading-spacing-relaxed p,
+.reading-spacing-relaxed li {
+  line-height: 1.75 !important;
+}
+.reading-spacing-spacious p,
+.reading-spacing-spacious li {
+  line-height: 2.1 !important;
+}
+

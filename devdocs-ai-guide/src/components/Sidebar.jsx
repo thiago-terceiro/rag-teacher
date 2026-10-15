@@ -1,11 +1,11 @@
 import * as Collapsible from '@radix-ui/react-collapsible';
-import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu, HelpCircle, Compass } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import React, { useState, useMemo } from 'react';
 import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
 
-const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch }) => {
+const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSandbox }) => {
   const { phases, loading, stats } = useSteps();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,6 +109,49 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch }) => {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Quick Hub Links */}
+        <div className="p-2.5 border-b border-border/70 space-y-1">
+          <Link
+            to="/interview-questions"
+            onClick={() => setIsMobileOpen?.(false)}
+            className={cn(
+              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group',
+              location.pathname === '/interview-questions'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+            )}
+          >
+            <div className="flex items-center space-x-2.5">
+              <HelpCircle className={cn('w-4 h-4', location.pathname === '/interview-questions' ? 'text-primary-foreground' : 'text-primary')} />
+              <span>Interview Questions</span>
+            </div>
+            <span className={cn(
+              'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+              location.pathname === '/interview-questions'
+                ? 'bg-primary-foreground/20 text-primary-foreground'
+                : 'bg-primary/10 text-primary'
+            )}>
+              28
+            </span>
+          </Link>
+
+          <button
+            onClick={() => {
+              setIsMobileOpen?.(false);
+              onOpenVectorSandbox?.();
+            }}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center space-x-2.5">
+              <Compass className="w-4 h-4 text-indigo-400 group-hover:rotate-45 transition-transform" />
+              <span>Vector Sandbox</span>
+            </div>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-secondary border border-border text-muted-foreground font-mono">
+              2D Math
+            </span>
+          </button>
         </div>
 
         {/* Navigation Phase List */}

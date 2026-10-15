@@ -1,10 +1,16 @@
 import React, { memo } from 'react';
-import { Menu, RotateCcw, BookOpen, Eye, Search, Download } from 'lucide-react';
+import { Menu, RotateCcw, BookOpen, Eye, Search, Download, HelpCircle, Compass, Type } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import ProgressRing from './ProgressRing';
 
-const StatsBar = ({ onToggleMobileSidebar, onOpenSearch }) => {
+const StatsBar = ({
+  onToggleMobileSidebar,
+  onOpenSearch,
+  onOpenReadingSettings,
+  onOpenVectorSandbox,
+}) => {
   const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
   const scrollProgress = useScrollProgress('main-scroll-container');
 
@@ -59,6 +65,38 @@ const StatsBar = ({ onToggleMobileSidebar, onOpenSearch }) => {
           <kbd className="hidden sm:inline-block text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground ml-1.5 group-hover:border-primary/40">
             ⌘K
           </kbd>
+        </button>
+
+        {/* Interview Questions */}
+        <Link
+          to="/interview-questions"
+          title="Staff System Design Interview Scenarios (28 Questions)"
+          className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-primary/40 transition-colors shadow-2xs"
+        >
+          <HelpCircle className="w-3.5 h-3.5 text-primary" />
+          <span className="hidden md:inline font-medium">Interview Questions</span>
+          <span className="md:hidden font-medium">Interview</span>
+          <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded-full font-bold">28</span>
+        </Link>
+
+        {/* Vector Distance Visualizer Sandbox */}
+        <button
+          onClick={onOpenVectorSandbox}
+          title="Interactive 2D Vector Distance Visualizer Sandbox"
+          className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-indigo-400/40 transition-colors cursor-pointer shadow-2xs"
+        >
+          <Compass className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-medium">Vector Sandbox</span>
+        </button>
+
+        {/* Reading Settings / Display */}
+        <button
+          onClick={onOpenReadingSettings}
+          title="Reading comfort & typography settings"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
+        >
+          <Type className="w-3.5 h-3.5" />
+          <span className="hidden xl:inline font-medium">Display</span>
         </button>
 
         {/* Export Notes / Study Guide */}

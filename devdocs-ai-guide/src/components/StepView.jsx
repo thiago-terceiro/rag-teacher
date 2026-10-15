@@ -1,7 +1,9 @@
-import { CheckCircle2, Circle, Clock, ArrowLeft, ArrowRight, Bookmark } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, ArrowLeft, ArrowRight, Bookmark, Compass, HelpCircle, Sparkles } from 'lucide-react';
 import React, { useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
+import { useReadingSettings } from '../hooks/useReadingSettings';
+import { interviewQuestions } from '../data/interviewQuestionsData';
 import MarkdownRenderer from './MarkdownRenderer';
 import NotesJournal from './NotesJournal';
 import { TableOfContentsDesktop, TableOfContentsMobile } from './TableOfContents';
@@ -10,13 +12,15 @@ import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
 
-const StepView = () => {
+const StepView = ({ onOpenVectorSandbox }) => {
   const { stepKey } = useParams();
   const navigate = useNavigate();
   const { updateStepProgress, phases } = useSteps();
+  const { settings } = useReadingSettings();
 
   // Instant synchronous lookup (0ms latency, zero spinner flash)
   const step = getStepByKey(stepKey) || allSteps[0];
+  const stepInterview = interviewQuestions.find(q => q.step_key === stepKey);
 
   // Find step in current phases state to get latest status and notes
   const currentStepFromPhases = phases
@@ -73,8 +77,8 @@ const StepView = () => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className="mx-auto flex max-w-[80rem] justify-center gap-12">
-    <article className="relative w-full max-w-4xl min-w-0 pb-16">
+    <div key={stepKey} className={cn("mx-auto flex justify-center gap-12 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-[80rem]')}>
+    <article className={cn("relative w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
       {/* React 19 Native Document Metadata Hoisting */}
       <title>{`${step.title} — RAG Teacher`}</title>
       <meta
@@ -83,7 +87,7 @@ const StepView = () => {
       />
 
       {/* Ambient Aura Background Glow (Linear/Vercel style) */}
-      <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-full max-w-4xl h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
+      <div className={cn("absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
 
       {/* Breadcrumb / Phase Banner */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-muted-foreground mb-4">
@@ -159,11 +163,37 @@ const StepView = () => {
         </div>
       </div>
 
+      {/* Interactive Vector Distance Sandbox Banner (for Vector/Dense retrieval steps) */}
+      {(stepKey === 'dense-retrieval' || stepKey === 'vector-database-ann') && (
+        <div className="mb-8 p-4.5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10 border border-indigo-500/30 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+              <Compass className="w-5 h-5 animate-spin-slow" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">Interactive 2D Vector Distance Sandbox</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Drag vector handles in real-time to compute Cosine Similarity, Dot Product, and Euclidean ($L_2$) distance.</div>
+            </div>
+          </div>
+          <button
+            onClick={onOpenVectorSandbox}
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
+          >
+            <span>Launch Sandbox</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* On-this-page panel (below xl; desktop rail renders beside the article) */}
       <TableOfContentsMobile {...toc} />
 
       {/* Main Content (Memoized against unnecessary re-renders) */}
-      <div className="prose prose-invert max-w-none">
+      <div className={cn(
+        "prose prose-invert max-w-none transition-all duration-150",
+        `reading-size-${settings.fontSize || 'normal'}`,
+        `reading-spacing-${settings.lineSpacing || 'relaxed'}`
+      )}>
         <MarkdownRenderer markdown={step.content} />
       </div>
 
@@ -173,6 +203,39 @@ const StepView = () => {
         initialNotes={currentStepFromPhases?.notes}
         onSaveNotes={handleSaveNotes}
       />
+
+      {/* Staff Interview Question Challenge Card */}
+      {stepInterview && (
+        <section aria-label="Staff Interview Challenge" className="mt-10 p-5 rounded-2xl bg-card/90 border border-border/80 hover:border-primary/40 shadow-sm transition-all duration-200 relative overflow-hidden group">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="flex items-center space-x-2 text-xs font-semibold text-primary uppercase tracking-wider">
+              <HelpCircle className="w-4 h-4 text-primary" />
+              <span>Staff System Design Interview Challenge</span>
+            </div>
+            <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              {stepInterview.company}
+            </span>
+          </div>
+
+          <p className="text-sm text-foreground/90 font-medium mb-4 leading-relaxed">
+            {stepInterview.question}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
+            <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Benchmark Staff-level architecture solution with failure modes & latency budgets</span>
+            </div>
+            <Link
+              to="/interview-questions"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <span>Practice in Interview Questions</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Next / Previous Navigation Controls with React Router v7 Native View Transitions */}
       <nav aria-label="Step Navigation" className="mt-12 pt-6 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
