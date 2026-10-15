@@ -72,18 +72,22 @@ const StepView = () => {
 
   return (
     <div key={stepKey} className="max-w-4xl mx-auto pb-16 animate-step-enter relative">
+      {/* Ambient Aura Background Glow (Linear/Vercel style) */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-full max-w-4xl h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
+
       {/* Breadcrumb / Phase Banner */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-muted-foreground mb-4">
         <div className="flex items-center space-x-2">
-          <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold tracking-wide">
-            {currentPhase?.title?.split(':')[0] || 'Curriculum'}
+          <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary font-semibold tracking-wide shadow-[0_0_15px_rgba(59,130,246,0.15)] flex items-center space-x-1.5 transition-all">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span>{currentPhase?.title?.split(':')[0] || 'Curriculum'}</span>
           </span>
           <span>•</span>
           <span>Step {stepIndex} of {allSteps.length}</span>
         </div>
         {step.readTime && (
-          <div className="flex items-center space-x-1.5 text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" />
+          <div className="flex items-center space-x-1.5 text-muted-foreground bg-secondary/30 px-2.5 py-1 rounded-full border border-border/50">
+            <Clock className="w-3.5 h-3.5 text-primary" />
             <span>{step.readTime} read</span>
           </div>
         )}
@@ -94,8 +98,11 @@ const StepView = () => {
         {step.title}
       </h1>
       
-      {/* Status Bar Card */}
-      <div className="p-4 mb-8 rounded-xl bg-card border border-border shadow-sm flex flex-wrap items-center justify-between gap-4">
+      {/* Status Bar Card with Ambient Glassmorphism & Gradient Border */}
+      <div className="p-4 mb-8 rounded-xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm hover:shadow-[0_0_25px_rgba(59,130,246,0.1)] hover:border-primary/40 transition-all duration-300 relative overflow-hidden group flex flex-wrap items-center justify-between gap-4">
+        {/* Iridescent top highlight line */}
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
+
         <div className="flex items-center space-x-2">
           <Bookmark className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold">Your Learning Status:</span>
@@ -104,7 +111,7 @@ const StepView = () => {
           <button
             onClick={() => handleStatusChange('not_started')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 cursor-pointer',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
               status === 'not_started'
                 ? 'bg-secondary text-foreground ring-1 ring-border font-semibold shadow-xs'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -117,9 +124,9 @@ const StepView = () => {
           <button
             onClick={() => handleStatusChange('in_progress')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 cursor-pointer',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
               status === 'in_progress'
-                ? 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 font-semibold'
+                ? 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/40 font-semibold shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
             )}
           >
@@ -130,9 +137,9 @@ const StepView = () => {
           <button
             onClick={() => handleStatusChange('completed')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 cursor-pointer',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
               status === 'completed'
-                ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30 font-semibold shadow-xs'
+                ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/40 font-semibold shadow-[0_0_15px_rgba(16,185,129,0.25)]'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
             )}
           >
@@ -179,9 +186,9 @@ const StepView = () => {
           <Link
             to={`/steps/${prevStep.step_key}`}
             viewTransition
-            className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border bg-card/60 hover:bg-secondary/80 hover:border-primary/50 text-foreground transition-all group"
+            className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border/80 bg-card/70 hover:bg-secondary/90 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] text-foreground transition-all duration-200 active:scale-[0.99] group cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" />
             <div className="text-left">
               <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Previous Step</div>
               <div className="text-sm font-medium line-clamp-1">{prevStep.title}</div>
@@ -193,17 +200,17 @@ const StepView = () => {
           <Link
             to={`/steps/${nextStep.step_key}`}
             viewTransition
-            className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all shadow-md group ml-auto"
+            className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
           >
             <div className="text-right">
               <div className="text-xs text-primary-foreground/80 uppercase tracking-wider font-medium">Next Step</div>
               <div className="text-sm font-bold line-clamp-1">{nextStep.title}</div>
             </div>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" />
           </Link>
         ) : (
-          <div className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-semibold text-center border border-emerald-500/30">
-            🎉 Curriculum Completed! You are now a RAG Master!
+          <div className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-center border border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.2)] animate-in zoom-in-95 duration-300">
+            🎉 Curriculum Completed! You are now a Staff RAG Master!
           </div>
         )}
       </nav>
