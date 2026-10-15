@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "npm --prefix devdocs-ai-guide run dev",
+    "dev:ui": "npm --prefix devdocs-ai-guide run dev:ui",
     "build": "npm --prefix devdocs-ai-guide run build",
     "start": "npm --prefix devdocs-ai-guide run start"
   },
