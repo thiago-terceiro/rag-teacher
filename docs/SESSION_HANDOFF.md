@@ -49,27 +49,35 @@ The following upgrades have been completed, verified via production build, and p
 ---
 
 ### F. React Compiler & Architecture Hardening
-* Installed and configured official `babel-plugin-react-compiler` with React 19 in `vite.config.js`. Automatic memoization now runs across the component tree without manual boilerplate.
-* Moved `markdownComponents` in `src/components/MarkdownRenderer.jsx` to module scope for zero-allocation static lifetime. Added `slugify` and `getHeadingText` with auto-generated heading IDs and hoverable anchor links (`#`) for smooth section jumping.
+* Installed and configured official `@rolldown/plugin-babel` with `reactCompilerPreset` in `vite.config.js`. Automatic memoization now runs across the component tree without manual boilerplate.
+* Moved `markdownComponents` in `src/components/MarkdownRenderer.jsx` to module scope for zero-allocation static lifetime.
+* Extracted `src/lib/headings.js` as single source of truth for heading slugs, KaTeX handling, and smooth scrolling.
 * Fixed missing `React` reference in `StatsBar.jsx` (`import React, { memo } from 'react'`).
+
+### G. Interactive "On This Page" Table of Contents (TOC)
+* Built `src/components/TableOfContents.jsx` and `src/hooks/useTableOfContents.js`:
+  - `extractHeadings(markdown)`: Robustly parses H2 and H3 headings while stripping code blocks and formatting.
+  - Active Section Scrollspy: Tracks `#main-scroll-container` scroll position and highlights current reading section.
+  - Responsive Double Mode: Collapsible `<TableOfContentsMobile>` quick-jump drawer on mobile/tablet (`xl:hidden`), and sticky `<TableOfContentsDesktop>` right-rail sidebar on desktop (`hidden xl:block w-60 shrink-0`).
+  - Hash deep-linking: Directly anchors to `#section-id` on step arrival and supports hoverable `#` heading links.
+  - Fast Refresh compliance: Hook, library utilities, and components cleanly separated into dedicated modules.
 
 ---
 
-## 3. Immediate Next Tasks for Incoming Model
+## 3. Backlog & Recommended Next Tasks
 
-The incoming model can immediately pick up from here:
+The platform is running smoothly with 28 masterclass modules. Recommended next enhancements:
 
-### Priority: Wire `TableOfContents` into `src/components/StepView.jsx`
-* **Status**: `src/components/TableOfContents.jsx` is already created and fully implemented with:
-  - `extractHeadings(markdown)`: extracts H2 and H3 headers while stripping code blocks.
-  - `useTableOfContents(markdown)`: tracks active headings on `#main-scroll-container` scroll, provides smooth scrolling to section and scroll-to-top.
-  - `<TableOfContentsMobile>`: collapsible on mobile/tablet (`xl:hidden`).
-  - `<TableOfContentsDesktop>`: sticky right sidebar on desktop (`hidden xl:block w-64 shrink-0`).
-* **Next Action**:
-  - In `src/components/StepView.jsx`, adjust layout container to `max-w-7xl mx-auto flex justify-center gap-10`.
-  - Place `<TableOfContents markdown={step.content} />` or use the subcomponents to display the mobile drawer above the content and the sticky sidebar to the right.
-  - Run `npm run build` to verify.
-  - Commit and deploy with `npx --yes vercel --yes --prod`.
+### Priority 1: Command Palette / Quick Search Modal (`Cmd+K` / `Ctrl+K`)
+* Allow users to press `Cmd+K` / `Ctrl+K` from anywhere in the app to open a sleek spotlight search modal (using `@radix-ui/react-dialog`).
+* Search across all 28 step titles, concepts (e.g. "HNSW", "Cross-Encoder", "DSPy", "Ragas", "CRAG"), and key terms.
+* Jump directly to the matching step or section.
+
+### Priority 2: Export Notes & Study Guide
+* Add a button on the Notes Journal or StatsBar allowing learners to export all their notes across the 28 chapters as a formatted Markdown or text file for interview prep.
+
+### Priority 3: Interactive Code Playground / Sandbox
+* Embed an interactive client-side sandbox or quick-copy templates for Python vector similarity and cosine calculations.
 
 ---
 

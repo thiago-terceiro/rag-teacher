@@ -1,33 +1,33 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import CodeBlock from './CodeBlock';
 import MermaidBlock from './MermaidBlock';
+import { rehypeHeadingIds, scrollToHeading } from '../lib/headings';
 
 const remarkPlugins = [remarkGfm, remarkMath];
-const rehypePlugins = [rehypeKatex];
+// rehypeHeadingIds must run before rehypeKatex so math headings slug from their TeX source.
+const rehypePlugins = [rehypeHeadingIds, rehypeKatex];
 
-export function getHeadingText(node) {
-  if (!node) return '';
-  if (typeof node === 'string') return node;
-  if (typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(getHeadingText).join('');
-  if (node.props && node.props.children) return getHeadingText(node.props.children);
-  return '';
-}
+/** Hover-revealed `#` permalink that smooth-scrolls inside the main scroll container. */
+const HeadingAnchor = ({ id }) => (
+  <a
+    href={`#${id}`}
+    aria-label="Link to this section"
+    className="ml-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground/70 hover:text-primary font-normal no-underline select-none"
+    onClick={(e) => {
+      e.preventDefault();
+      scrollToHeading(id);
+    }}
+  >
+    #
+  </a>
+);
 
-export function slugify(text) {
-  return String(text)
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-export const markdownComponents = {
+// Module scope: static lifetime, zero per-render allocation.
+const markdownComponents = {
   code({ node, className, children, ...props }) {
     const match = /language-([\w-]+)/.exec(className || '');
     const lang = match ? match[1].toLowerCase() : '';
@@ -99,73 +99,19 @@ export const markdownComponents = {
   li({ children }) {
     return <li className="pl-1 leading-relaxed text-foreground/90">{children}</li>;
   },
-  h2({ children }) {
-    const text = getHeadingText(children);
-    const slug = slugify(text);
+  h2({ id, children }) {
     return (
-      <h2
-        id={slug || undefined}
-        className="text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] scroll-mt-24 group flex items-center justify-between"
-      >
-        <span>{children}</span>
-        {slug && (
-          <a
-            href={`#${slug}`}
-            aria-label={`Direct link to ${text}`}
-            className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-muted-foreground hover:text-primary text-sm font-normal select-none"
-            onClick={(e) => {
-              e.preventDefault();
-              const container = document.getElementById('main-scroll-container');
-              const el = document.getElementById(slug);
-              if (container && el) {
-                const containerTop = container.getBoundingClientRect().top;
-                const elTop = el.getBoundingClientRect().top;
-                container.scrollTo({
-                  top: elTop - containerTop + container.scrollTop - 20,
-                  behavior: 'smooth',
-                });
-                history.replaceState(null, '', `#${slug}`);
-              }
-            }}
-          >
-            #
-          </a>
-        )}
+      <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] scroll-mt-6">
+        {children}
+        {id && <HeadingAnchor id={id} />}
       </h2>
     );
   },
-  h3({ children }) {
-    const text = getHeadingText(children);
-    const slug = slugify(text);
+  h3({ id, children }) {
     return (
-      <h3
-        id={slug || undefined}
-        className="text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] scroll-mt-24 group flex items-center justify-between"
-      >
-        <span>{children}</span>
-        {slug && (
-          <a
-            href={`#${slug}`}
-            aria-label={`Direct link to ${text}`}
-            className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-muted-foreground hover:text-primary text-xs font-normal select-none"
-            onClick={(e) => {
-              e.preventDefault();
-              const container = document.getElementById('main-scroll-container');
-              const el = document.getElementById(slug);
-              if (container && el) {
-                const containerTop = container.getBoundingClientRect().top;
-                const elTop = el.getBoundingClientRect().top;
-                container.scrollTo({
-                  top: elTop - containerTop + container.scrollTop - 20,
-                  behavior: 'smooth',
-                });
-                history.replaceState(null, '', `#${slug}`);
-              }
-            }}
-          >
-            #
-          </a>
-        )}
+      <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] scroll-mt-6">
+        {children}
+        {id && <HeadingAnchor id={id} />}
       </h3>
     );
   },

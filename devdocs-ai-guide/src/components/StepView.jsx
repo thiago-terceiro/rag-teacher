@@ -4,6 +4,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import MarkdownRenderer from './MarkdownRenderer';
 import NotesJournal from './NotesJournal';
+import { TableOfContentsDesktop, TableOfContentsMobile } from './TableOfContents';
+import { useTableOfContents } from '../hooks/useTableOfContents';
+import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
 
@@ -26,9 +29,12 @@ const StepView = () => {
   const prevStep = getPrevStep(stepKey);
 
   const status = currentStepFromPhases?.status || 'not_started';
+  const toc = useTableOfContents(step.content);
 
-  // Instant zero-cost scroll reset to top when switching steps
+  // On step change: honor a #section deep link if present, else snap to top (instant, no animation).
   useEffect(() => {
+    const hashId = decodeURIComponent(window.location.hash.slice(1));
+    if (hashId && scrollToHeading(hashId, { smooth: false })) return;
     const container = document.getElementById('main-scroll-container');
     if (container) {
       container.scrollTop = 0;
@@ -67,7 +73,8 @@ const StepView = () => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className="max-w-4xl mx-auto pb-16 relative">
+    <div key={stepKey} className="mx-auto flex max-w-[80rem] justify-center gap-12">
+    <article className="relative w-full max-w-4xl min-w-0 pb-16">
       {/* React 19 Native Document Metadata Hoisting */}
       <title>{`${step.title} — RAG Teacher`}</title>
       <meta
@@ -152,6 +159,9 @@ const StepView = () => {
         </div>
       </div>
 
+      {/* On-this-page panel (below xl; desktop rail renders beside the article) */}
+      <TableOfContentsMobile {...toc} />
+
       {/* Main Content (Memoized against unnecessary re-renders) */}
       <div className="prose prose-invert max-w-none">
         <MarkdownRenderer markdown={step.content} />
@@ -202,8 +212,12 @@ const StepView = () => {
           </div>
         )}
       </nav>
-    </div>
-  );
+    </article>
+
+    {/* Desktop Sticky Rail (Table of Contents) */}
+    <TableOfContentsDesktop {...toc} />
+  </div>
+);
 };
 
 export default React.memo(StepView);

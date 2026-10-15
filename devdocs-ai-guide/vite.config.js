@@ -1,14 +1,14 @@
-import react from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', {}]],
-      },
-    }),
+    react(),
+    // React Compiler (auto-memoization). plugin-react v6 has no `babel` option;
+    // the compiler runs through @rolldown/plugin-babel with the official preset.
+    babel({ presets: [reactCompilerPreset()] }),
   ],
   server: {
     proxy: {
