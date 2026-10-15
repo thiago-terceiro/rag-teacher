@@ -65,7 +65,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-extrabold text-base tracking-tight text-foreground">RAG Teacher</span>
+              <span className="font-bold text-base tracking-[0.01em] text-foreground">RAG Teacher</span>
               <span className="block text-[10px] uppercase tracking-wider text-primary font-semibold">DevDocs AI Curriculum</span>
             </div>
           </Link>
@@ -89,7 +89,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search 28 RAG topics..."
-              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
             {searchQuery && (
               <button
@@ -112,7 +112,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               <Collapsible.Root key={phase.id} defaultOpen={isPhaseActive || !queryLower}>
                 <Collapsible.Trigger className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-secondary/40 text-left transition-colors group cursor-pointer">
                   <div className="flex-1 pr-2">
-                    <div className="text-xs font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
+                    <div className="text-xs font-semibold text-foreground tracking-[0.01em] group-hover:text-primary transition-colors">
                       {phase.title}
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">

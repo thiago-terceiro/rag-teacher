@@ -94,7 +94,7 @@ const StepView = () => {
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-6 tracking-tight leading-tight">
+      <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-[0.01em] leading-snug">
         {step.title}
       </h1>
       

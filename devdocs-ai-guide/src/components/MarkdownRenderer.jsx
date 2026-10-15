@@ -70,16 +70,19 @@ const MarkdownRenderer = ({ markdown }) => {
       return <li className="pl-1 leading-relaxed text-foreground/90">{children}</li>;
     },
     h2({ children }) {
-      return <h2 className="text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-tight">{children}</h2>;
+      return <h2 className="text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em]">{children}</h2>;
     },
     h3({ children }) {
-      return <h3 className="text-xl font-semibold mt-7 mb-3 text-primary tracking-tight">{children}</h3>;
+      return <h3 className="text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em]">{children}</h3>;
     },
     h4({ children }) {
-      return <h4 className="text-lg font-medium mt-5 mb-2 text-foreground/90">{children}</h4>;
+      return <h4 className="text-lg font-medium mt-5 mb-2 text-foreground/90 tracking-[0.01em]">{children}</h4>;
     },
     p({ children }) {
-      return <p className="my-3.5 leading-relaxed text-foreground/90 text-[15px]">{children}</p>;
+      return <p className="my-3.5 leading-relaxed text-foreground/90 text-[15px] tracking-[0.015em]">{children}</p>;
+    },
+    strong({ children }) {
+      return <strong className="font-semibold text-foreground tracking-[0.01em]">{children}</strong>;
     },
     a({ href, children }) {
       return (
