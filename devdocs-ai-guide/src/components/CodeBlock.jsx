@@ -19,22 +19,27 @@ const CodeBlock = ({ language = 'text', value = '' }) => {
   const displayLang = (language || 'code').toUpperCase();
 
   return (
-    <div className="relative my-5 rounded-lg overflow-hidden border border-border/80 bg-[#1e1e1e] shadow-md group">
+    <div className={`relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 ${
+      copied ? 'border-emerald-500/70 shadow-[0_0_22px_rgba(16,185,129,0.22)]' : 'border-border/80 shadow-md hover:border-primary/30'
+    }`}>
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#181818] border-b border-border/50 text-xs text-muted-foreground select-none">
-        <span className="font-mono font-medium tracking-wider text-xs text-primary/90">{displayLang}</span>
+        <div className="flex items-center space-x-2">
+          <span className="w-2 h-2 rounded-full bg-primary/60 group-hover:bg-primary group-hover:shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-200" />
+          <span className="font-mono font-medium tracking-wider text-xs text-primary/90">{displayLang}</span>
+        </div>
         <button
           onClick={handleCopy}
           aria-label="Copy code to clipboard"
-          className="flex items-center space-x-1.5 px-2 py-1 rounded hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs"
+          className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs active:scale-90"
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-emerald-400 font-medium">Copied!</span>
+              <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 spin-in-90 duration-200" />
+              <span className="text-emerald-400 font-semibold animate-in fade-in zoom-in-75 duration-150">Copied!</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-150" />
               <span>Copy</span>
             </>
           )}
