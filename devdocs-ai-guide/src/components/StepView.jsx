@@ -37,8 +37,12 @@ const StepView = () => {
     }
     setStep(stepData);
     setNotes(currentStepFromPhases?.notes || '');
-    // Scroll to top on step switch
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll container to top on step switch
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [stepKey, getStepContent, currentStepFromPhases?.notes, navigate]);
 
   // Handle auto-saving debounced notes

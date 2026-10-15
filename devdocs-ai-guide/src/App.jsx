@@ -15,7 +15,7 @@ function App() {
           <Sidebar isMobileOpen={isMobileSidebarOpen} setIsMobileOpen={setIsMobileSidebarOpen} />
           <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
             <StatsBar onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)} />
-            <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
+            <div id="main-scroll-container" className="flex-1 p-4 sm:p-8 overflow-y-auto scroll-smooth">
               <Routes>
                 <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
                 <Route path="/steps/:stepKey" element={<StepView />} />
