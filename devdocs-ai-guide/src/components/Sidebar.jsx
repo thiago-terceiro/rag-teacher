@@ -134,7 +134,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                         <Link
                           key={step.step_key}
                           to={`/steps/${step.step_key}`}
-                          viewTransition
                           onClick={() => setIsMobileOpen?.(false)}
                           className={cn(
                             'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
