@@ -121,35 +121,37 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground transform transition-transform duration-200 group-data-[state=open]:rotate-90 shrink-0" />
                 </Collapsible.Trigger>
 
-                <Collapsible.Content className="collapsible-animated-content mt-1 ml-2 pl-2 border-l border-border/80 space-y-1">
-                  {phase.steps.map((step) => {
-                    const isActive = step.step_key === currentStepKey;
-                    const isCompleted = step.status === 'completed';
-                    const isInProgress = step.status === 'in_progress';
+                <Collapsible.Content className="collapsible-animated-content">
+                  <div className="pt-1.5 pb-1 ml-2 pl-2 border-l border-border/80 space-y-1">
+                    {phase.steps.map((step) => {
+                      const isActive = step.step_key === currentStepKey;
+                      const isCompleted = step.status === 'completed';
+                      const isInProgress = step.status === 'in_progress';
 
-                    return (
-                      <Link
-                        key={step.step_key}
-                        to={`/steps/${step.step_key}`}
-                        onClick={() => setIsMobileOpen?.(false)}
-                        className={cn(
-                          'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
-                          isActive
-                            ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
-                        )}
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className={cn('w-3.5 h-3.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-emerald-400')} />
-                        ) : isInProgress ? (
-                          <span className={cn('w-2 h-2 rounded-full shrink-0 animate-pulse', isActive ? 'bg-primary-foreground' : 'bg-amber-400')} />
-                        ) : (
-                          <Circle className={cn('w-3 h-3 shrink-0 opacity-40', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
-                        )}
-                        <span className="truncate">{step.title}</span>
-                      </Link>
-                    );
-                  })}
+                      return (
+                        <Link
+                          key={step.step_key}
+                          to={`/steps/${step.step_key}`}
+                          onClick={() => setIsMobileOpen?.(false)}
+                          className={cn(
+                            'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
+                            isActive
+                              ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                          )}
+                        >
+                          {isCompleted ? (
+                            <CheckCircle2 className={cn('w-3.5 h-3.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-emerald-400')} />
+                          ) : isInProgress ? (
+                            <span className={cn('w-2 h-2 rounded-full shrink-0 animate-pulse', isActive ? 'bg-primary-foreground' : 'bg-amber-400')} />
+                          ) : (
+                            <Circle className={cn('w-3 h-3 shrink-0 opacity-40', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
+                          )}
+                          <span className="truncate">{step.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </Collapsible.Content>
               </Collapsible.Root>
             );
