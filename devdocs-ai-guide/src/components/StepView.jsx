@@ -71,7 +71,7 @@ const StepView = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-16">
+    <div key={stepKey} className="max-w-4xl mx-auto pb-16 animate-step-enter relative">
       {/* Breadcrumb / Phase Banner */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-muted-foreground mb-4">
         <div className="flex items-center space-x-2">
@@ -178,6 +178,7 @@ const StepView = () => {
         {prevStep ? (
           <Link
             to={`/steps/${prevStep.step_key}`}
+            viewTransition
             className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border bg-card/60 hover:bg-secondary/80 hover:border-primary/50 text-foreground transition-all group"
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-transform" />
@@ -191,6 +192,7 @@ const StepView = () => {
         {nextStep ? (
           <Link
             to={`/steps/${nextStep.step_key}`}
+            viewTransition
             className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all shadow-md group ml-auto"
           >
             <div className="text-right">
