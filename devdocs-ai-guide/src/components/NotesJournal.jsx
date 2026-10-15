@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Download } from 'lucide-react';
 import useDebounce from '../hooks/useDebounce';
+import { useSteps } from '../hooks/useSteps';
 
 const NotesJournal = React.memo(({ stepKey, initialNotes = '', onSaveNotes }) => {
+  const { exportStudyGuide } = useSteps();
   const [notes, setNotes] = useState(initialNotes);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving'
   const debouncedNotes = useDebounce(notes, 500);
@@ -30,15 +32,27 @@ const NotesJournal = React.memo(({ stepKey, initialNotes = '', onSaveNotes }) =>
           <h3 className="text-lg font-bold text-foreground">Your Notes & Code Log</h3>
           <span className="text-xs text-muted-foreground">(Persisted locally)</span>
         </div>
-        <div className="text-xs text-muted-foreground flex items-center space-x-1">
-          {saveStatus === 'saving' ? (
-            <span className="text-amber-400">Saving...</span>
-          ) : (
-            <span className="text-emerald-400 flex items-center space-x-1">
-              <Check className="w-3 h-3" />
-              <span>Saved</span>
-            </span>
-          )}
+        <div className="flex items-center space-x-3 text-xs">
+          <button
+            onClick={exportStudyGuide}
+            type="button"
+            title="Download personal Markdown study guide with notes & progress"
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/70 transition-colors cursor-pointer group"
+          >
+            <Download className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="hidden sm:inline font-medium">Export Notes</span>
+          </button>
+
+          <div className="text-muted-foreground flex items-center space-x-1">
+            {saveStatus === 'saving' ? (
+              <span className="text-amber-400">Saving...</span>
+            ) : (
+              <span className="text-emerald-400 flex items-center space-x-1">
+                <Check className="w-3 h-3" />
+                <span>Saved</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
       <textarea

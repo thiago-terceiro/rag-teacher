@@ -5,7 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
 
-const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
+const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch }) => {
   const { phases, loading, stats } = useSteps();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,12 +92,20 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               placeholder="Search 28 RAG topics..."
               className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
-            {searchQuery && (
+            {searchQuery ? (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs cursor-pointer"
               >
                 ✕
+              </button>
+            ) : (
+              <button
+                onClick={onOpenSearch}
+                title="Open Spotlight Search (⌘K)"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-secondary/80 hover:bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
+                ⌘K
               </button>
             )}
           </div>

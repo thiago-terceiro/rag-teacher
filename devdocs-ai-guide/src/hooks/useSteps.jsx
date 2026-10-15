@@ -157,6 +157,54 @@ export const StepsProvider = ({ children }) => {
     });
   }, []);
 
+  // Export all user notes and progress as a formatted Markdown study guide
+  const exportStudyGuide = useCallback(() => {
+    const lines = [
+      `# 🎓 RAG Teacher Masterclass — Personal Study Guide & Notes`,
+      `*Generated on: ${new Date().toLocaleDateString()}*`,
+      `*Curriculum Progress: ${completedSteps} / ${totalSteps} modules completed (${completionPercentage}%)*`,
+      '',
+      '---',
+      '',
+    ];
+
+    phases.forEach((phase) => {
+      lines.push(`## ${phase.title}`);
+      lines.push(`${phase.description}`);
+      lines.push('');
+
+      phase.steps.forEach((step, idx) => {
+        const statusEmoji = step.status === 'completed' ? '✅' : step.status === 'in_progress' ? '🔄' : '⚪';
+        lines.push(`### ${idx + 1}. ${step.title} (${statusEmoji} ${step.status})`);
+        lines.push(`- **Module Key**: \`${step.step_key}\``);
+        lines.push(`- **Estimated Read Time**: ${step.readTime || '10 min'}`);
+        if (step.completedAt) {
+          lines.push(`- **Completed Date**: ${new Date(step.completedAt).toLocaleDateString()}`);
+        }
+        if (step.notes && step.notes.trim()) {
+          lines.push('');
+          lines.push('#### 📝 Your Study Notes:');
+          lines.push(step.notes.trim());
+        }
+        lines.push('');
+      });
+
+      lines.push('---');
+      lines.push('');
+    });
+
+    const markdownContent = lines.join('\n');
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rag-masterclass-study-notes-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [phases, completedSteps, totalSteps, completionPercentage]);
+
   const value = {
     phases,
     stats,
@@ -165,6 +213,7 @@ export const StepsProvider = ({ children }) => {
     updateStepProgress,
     getStepContent,
     resetAllProgress,
+    exportStudyGuide,
     allSteps,
   };
 

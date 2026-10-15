@@ -1,11 +1,11 @@
 import React, { memo } from 'react';
-import { Menu, RotateCcw, BookOpen, Eye } from 'lucide-react';
+import { Menu, RotateCcw, BookOpen, Eye, Search, Download } from 'lucide-react';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import ProgressRing from './ProgressRing';
 
-const StatsBar = ({ onToggleMobileSidebar }) => {
-  const { stats, loading, resetAllProgress } = useSteps();
+const StatsBar = ({ onToggleMobileSidebar, onOpenSearch }) => {
+  const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
   const scrollProgress = useScrollProgress('main-scroll-container');
 
   const handleReset = () => {
@@ -46,7 +46,31 @@ const StatsBar = ({ onToggleMobileSidebar }) => {
         )}
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
+        {/* Quick Search / Command Palette Trigger */}
+        <button
+          onClick={onOpenSearch}
+          aria-label="Search curriculum"
+          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/70 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer group shadow-2xs"
+        >
+          <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+          <span className="hidden md:inline font-medium">Search topics...</span>
+          <span className="md:hidden font-medium">Search</span>
+          <kbd className="hidden sm:inline-block text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground ml-1.5 group-hover:border-primary/40">
+            ⌘K
+          </kbd>
+        </button>
+
+        {/* Export Notes / Study Guide */}
+        <button
+          onClick={exportStudyGuide}
+          title="Export your notes and study guide (.md)"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline font-medium">Export</span>
+        </button>
+
         {/* Reset progress */}
         {stats.completedSteps > 0 && (
           <button

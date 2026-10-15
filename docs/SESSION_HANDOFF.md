@@ -62,22 +62,31 @@ The following upgrades have been completed, verified via production build, and p
   - Hash deep-linking: Directly anchors to `#section-id` on step arrival and supports hoverable `#` heading links.
   - Fast Refresh compliance: Hook, library utilities, and components cleanly separated into dedicated modules.
 
+### H. Spotlight Command Palette (`Cmd+K` / `Ctrl+K`)
+* Built `src/components/CommandPalette.jsx` using `@radix-ui/react-dialog`:
+  - Global keyboard shortcut `Cmd+K` / `Ctrl+K` accessible anywhere in the application.
+  - Instant full-text fuzzy search across all 28 module titles, phase keys, and core architectural concepts (e.g., HNSW, Cross-Encoder, DSPy, Ragas, CRAG).
+  - Arrow key navigation (`↑`/`↓`), `Enter` to jump, `Escape` to dismiss.
+  - Quick-jump curated recommendations when query is blank.
+  - Integrated trigger button into `StatsBar.jsx` and `Sidebar.jsx`.
+
+### I. Personalized Markdown Study Guide & Notes Export
+* Built client-side Markdown exporter in `src/hooks/useSteps.jsx`:
+  - Gathers all 28 curriculum modules with their completion status, timestamps, and personal user notes.
+  - Downloads a structured `.md` study guide (`rag-masterclass-study-notes-YYYY-MM-DD.md`) formatted for interview revision.
+  - Added one-click Export buttons to `src/components/NotesJournal.jsx` and `src/components/StatsBar.jsx`.
+
 ---
 
 ## 3. Backlog & Recommended Next Tasks
 
 The platform is running smoothly with 28 masterclass modules. Recommended next enhancements:
 
-### Priority 1: Command Palette / Quick Search Modal (`Cmd+K` / `Ctrl+K`)
-* Allow users to press `Cmd+K` / `Ctrl+K` from anywhere in the app to open a sleek spotlight search modal (using `@radix-ui/react-dialog`).
-* Search across all 28 step titles, concepts (e.g. "HNSW", "Cross-Encoder", "DSPy", "Ragas", "CRAG"), and key terms.
-* Jump directly to the matching step or section.
+### Priority 1: Interactive Cosine & Vector Math Sandbox
+* Client-side interactive vector distance visualizer / sandbox for Phase 1 (demonstrating Dot Product vs. Cosine Similarity vs. Euclidean distance with sliders).
 
-### Priority 2: Export Notes & Study Guide
-* Add a button on the Notes Journal or StatsBar allowing learners to export all their notes across the 28 chapters as a formatted Markdown or text file for interview prep.
-
-### Priority 3: Interactive Code Playground / Sandbox
-* Embed an interactive client-side sandbox or quick-copy templates for Python vector similarity and cosine calculations.
+### Priority 2: Staff Interview Flashcard / Quiz Mode
+* Interactive practice mode that tests learners on the 28 interview system design questions with collapsible staff-level benchmark answers.
 
 ---
 
