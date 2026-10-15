@@ -1,12 +1,21 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import CodeBlock from './CodeBlock';
+import MermaidBlock from './MermaidBlock';
 
 const MarkdownRenderer = ({ markdown }) => {
   const components = {
     code({ node, className, children, ...props }) {
-      const match = /language-(\w+)/.exec(className || '');
+      const match = /language-([\w-]+)/.exec(className || '');
+      const lang = match ? match[1].toLowerCase() : '';
       const codeString = String(children).replace(/\n$/, '');
+
+      // Check for mermaid diagram blocks
+      if (lang === 'mermaid') {
+        return <MermaidBlock chart={codeString} />;
+      }
 
       // Check if it's a multi-line code block or has language class
       const isBlock = match || codeString.includes('\n');
@@ -14,7 +23,7 @@ const MarkdownRenderer = ({ markdown }) => {
       if (isBlock) {
         return (
           <CodeBlock
-            language={match ? match[1] : 'text'}
+            language={lang || 'text'}
             value={codeString}
           />
         );
@@ -100,7 +109,11 @@ const MarkdownRenderer = ({ markdown }) => {
 
   return (
     <div className="markdown-content">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={components}
+      >
         {markdown}
       </ReactMarkdown>
     </div>

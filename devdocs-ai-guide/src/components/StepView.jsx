@@ -55,6 +55,28 @@ const StepView = () => {
     }
   }, [debouncedNotes, stepKey, status, updateStepProgress, currentStepFromPhases?.notes]);
 
+  // Keyboard navigation: Left/Right arrows to flip through steps
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't intercept if user is typing in an input, textarea, or contentEditable
+      const target = e.target;
+      const isInput =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
+      if (isInput) return;
+
+      if (e.key === 'ArrowRight' && nextStep) {
+        navigate(`/steps/${nextStep.step_key}`);
+      } else if (e.key === 'ArrowLeft' && prevStep) {
+        navigate(`/steps/${prevStep.step_key}`);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nextStep, prevStep, navigate]);
+
   const handleStatusChange = (newStatus) => {
     updateStepProgress(stepKey, newStatus, notes);
   };
@@ -189,7 +211,10 @@ const StepView = () => {
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" />
             <div className="text-left">
-              <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Previous Step</div>
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                <span>Previous Step</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-secondary/80 rounded border border-border/60 text-[10px] text-muted-foreground font-mono">←</kbd>
+              </div>
               <div className="text-sm font-medium line-clamp-1">{prevStep.title}</div>
             </div>
           </Link>
@@ -201,7 +226,10 @@ const StepView = () => {
             className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
           >
             <div className="text-right">
-              <div className="text-xs text-primary-foreground/80 uppercase tracking-wider font-medium">Next Step</div>
+              <div className="flex items-center justify-end space-x-1.5 text-xs text-primary-foreground/80 uppercase tracking-wider font-medium">
+                <span>Next Step</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-primary-foreground/20 rounded border border-primary-foreground/30 text-[10px] text-primary-foreground font-mono">→</kbd>
+              </div>
               <div className="text-sm font-bold line-clamp-1">{nextStep.title}</div>
             </div>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" />

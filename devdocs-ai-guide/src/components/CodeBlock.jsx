@@ -1,7 +1,39 @@
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+import python from 'react-syntax-highlighter/dist/esm/languages/prism/python';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
+import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
+import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
+import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
+import sql from 'react-syntax-highlighter/dist/esm/languages/prism/sql';
+import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
+import yaml from 'react-syntax-highlighter/dist/esm/languages/prism/yaml';
+import markdown from 'react-syntax-highlighter/dist/esm/languages/prism/markdown';
+import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
+
+// Register specific languages to prevent bundling 180+ unused Prism grammars
+SyntaxHighlighter.registerLanguage('python', python);
+SyntaxHighlighter.registerLanguage('py', python);
+SyntaxHighlighter.registerLanguage('javascript', javascript);
+SyntaxHighlighter.registerLanguage('js', javascript);
+SyntaxHighlighter.registerLanguage('jsx', jsx);
+SyntaxHighlighter.registerLanguage('typescript', typescript);
+SyntaxHighlighter.registerLanguage('ts', typescript);
+SyntaxHighlighter.registerLanguage('tsx', tsx);
+SyntaxHighlighter.registerLanguage('bash', bash);
+SyntaxHighlighter.registerLanguage('sh', bash);
+SyntaxHighlighter.registerLanguage('shell', bash);
+SyntaxHighlighter.registerLanguage('sql', sql);
+SyntaxHighlighter.registerLanguage('json', json);
+SyntaxHighlighter.registerLanguage('yaml', yaml);
+SyntaxHighlighter.registerLanguage('yml', yaml);
+SyntaxHighlighter.registerLanguage('markdown', markdown);
+SyntaxHighlighter.registerLanguage('md', markdown);
+SyntaxHighlighter.registerLanguage('css', css);
 
 const CodeBlock = ({ language = 'text', value = '' }) => {
   const [copied, setCopied] = useState(false);
@@ -16,7 +48,8 @@ const CodeBlock = ({ language = 'text', value = '' }) => {
     }
   };
 
-  const displayLang = (language || 'code').toUpperCase();
+  const cleanLang = (language || 'code').toLowerCase().trim();
+  const displayLang = cleanLang.toUpperCase();
 
   return (
     <div className={`relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 ${
@@ -47,7 +80,7 @@ const CodeBlock = ({ language = 'text', value = '' }) => {
       </div>
       <div className="overflow-x-auto text-sm">
         <SyntaxHighlighter
-          language={language || 'text'}
+          language={cleanLang || 'text'}
           style={vscDarkPlus}
           customStyle={{
             margin: 0,
