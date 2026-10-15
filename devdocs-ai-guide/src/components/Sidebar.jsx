@@ -57,7 +57,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <Link
             to="/"
-            viewTransition
             onClick={() => setIsMobileOpen?.(false)}
             className="flex items-center space-x-2.5 text-foreground hover:opacity-90 transition-opacity"
           >
@@ -132,7 +131,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                       <Link
                         key={step.step_key}
                         to={`/steps/${step.step_key}`}
-                        viewTransition
                         onClick={() => setIsMobileOpen?.(false)}
                         className={cn(
                           'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
