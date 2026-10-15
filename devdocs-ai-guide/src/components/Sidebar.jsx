@@ -122,7 +122,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground transform transition-transform duration-200 group-data-[state=open]:rotate-90 shrink-0" />
                 </Collapsible.Trigger>
 
-                <Collapsible.Content className="mt-1 ml-2 pl-2 border-l border-border/80 space-y-1">
+                <Collapsible.Content className="collapsible-animated-content mt-1 ml-2 pl-2 border-l border-border/80 space-y-1">
                   {phase.steps.map((step) => {
                     const isActive = step.step_key === currentStepKey;
                     const isCompleted = step.status === 'completed';
