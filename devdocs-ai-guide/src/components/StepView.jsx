@@ -1,21 +1,19 @@
-import { CheckCircle2, Circle, Clock, ArrowLeft, ArrowRight, BookOpen, Sparkles, Check, Bookmark } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CheckCircle2, Circle, Clock, ArrowLeft, ArrowRight, Bookmark } from 'lucide-react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import useDebounce from '../hooks/useDebounce';
 import { useSteps } from '../hooks/useSteps';
 import MarkdownRenderer from './MarkdownRenderer';
+import NotesJournal from './NotesJournal';
 import { cn } from '../lib/utils';
-import { getNextStep, getPrevStep, allSteps } from '../data/guideData';
+import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
 
 const StepView = () => {
   const { stepKey } = useParams();
   const navigate = useNavigate();
-  const { getStepContent, updateStepProgress, phases } = useSteps();
-  
-  const [step, setStep] = useState(null);
-  const [notes, setNotes] = useState('');
-  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving'
-  const debouncedNotes = useDebounce(notes, 500);
+  const { updateStepProgress, phases } = useSteps();
+
+  // Instant synchronous lookup (0ms latency, zero spinner flash)
+  const step = getStepByKey(stepKey) || allSteps[0];
 
   // Find step in current phases state to get latest status and notes
   const currentStepFromPhases = phases
@@ -29,31 +27,14 @@ const StepView = () => {
 
   const status = currentStepFromPhases?.status || 'not_started';
 
+  // Instant zero-cost scroll reset to top when switching steps
   useEffect(() => {
-    const stepData = getStepContent(stepKey);
-    if (!stepData && allSteps.length > 0) {
-      navigate(`/steps/${allSteps[0].step_key}`, { replace: true });
-      return;
-    }
-    setStep(stepData);
-    setNotes(currentStepFromPhases?.notes || '');
-    // Scroll container to top on step switch
     const container = document.getElementById('main-scroll-container');
     if (container) {
-      container.scrollTo({ top: 0, behavior: 'instant' });
+      container.scrollTop = 0;
     }
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [stepKey, getStepContent, currentStepFromPhases?.notes, navigate]);
-
-  // Handle auto-saving debounced notes
-  useEffect(() => {
-    if (debouncedNotes !== (currentStepFromPhases?.notes || '')) {
-      setSaveStatus('saving');
-      updateStepProgress(stepKey, status, debouncedNotes);
-      const timer = setTimeout(() => setSaveStatus('saved'), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [debouncedNotes, stepKey, status, updateStepProgress, currentStepFromPhases?.notes]);
+  }, [stepKey]);
 
   // Keyboard navigation: Left/Right arrows to flip through steps
   useEffect(() => {
@@ -77,20 +58,13 @@ const StepView = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextStep, prevStep, navigate]);
 
-  const handleStatusChange = (newStatus) => {
-    updateStepProgress(stepKey, newStatus, notes);
-  };
+  const handleStatusChange = useCallback((newStatus) => {
+    updateStepProgress(stepKey, newStatus);
+  }, [stepKey, updateStepProgress]);
 
-  if (!step) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Loading module...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleSaveNotes = useCallback((key, newNotes) => {
+    updateStepProgress(key, undefined, newNotes);
+  }, [updateStepProgress]);
 
   return (
     <div key={stepKey} className="max-w-4xl mx-auto pb-16 relative">
@@ -171,36 +145,17 @@ const StepView = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content (Memoized against unnecessary re-renders) */}
       <div className="prose prose-invert max-w-none">
         <MarkdownRenderer markdown={step.content} />
       </div>
 
-      {/* Notes & Learning Journal Section */}
-      <div className="mt-14 pt-8 border-t border-border/80">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-bold text-foreground">Your Notes & Code Log</h3>
-            <span className="text-xs text-muted-foreground">(Persisted locally)</span>
-          </div>
-          <div className="text-xs text-muted-foreground flex items-center space-x-1">
-            {saveStatus === 'saving' ? (
-              <span className="text-amber-400">Saving...</span>
-            ) : (
-              <span className="text-emerald-400 flex items-center space-x-1">
-                <Check className="w-3 h-3" />
-                <span>Saved</span>
-              </span>
-            )}
-          </div>
-        </div>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Log key insights, terminal outputs, or design decisions for this step..."
-          className="w-full h-36 p-3.5 bg-secondary/40 text-foreground placeholder:text-muted-foreground/60 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:border-transparent focus:outline-none transition-all text-sm font-sans"
-        />
-      </div>
+      {/* Isolated Notes Journal Component */}
+      <NotesJournal
+        stepKey={stepKey}
+        initialNotes={currentStepFromPhases?.notes}
+        onSaveNotes={handleSaveNotes}
+      />
 
       {/* Next / Previous Navigation Controls */}
       <nav aria-label="Step Navigation" className="mt-12 pt-6 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -244,4 +199,4 @@ const StepView = () => {
   );
 };
 
-export default StepView;
+export default React.memo(StepView);

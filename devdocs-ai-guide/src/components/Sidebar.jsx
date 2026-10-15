@@ -1,7 +1,7 @@
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
 
@@ -23,19 +23,21 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     );
   }
 
-  // Filter steps if user typed a search query
+  // Filter steps if user typed a search query (memoized for instant keystroke rendering)
   const queryLower = searchQuery.toLowerCase().trim();
-  const filteredPhases = phases.map(phase => {
-    if (!queryLower) return phase;
-    const matchingSteps = phase.steps.filter(step =>
-      step.title.toLowerCase().includes(queryLower) ||
-      step.step_key.toLowerCase().includes(queryLower)
-    );
-    return {
-      ...phase,
-      steps: matchingSteps
-    };
-  }).filter(phase => !queryLower || phase.steps.length > 0);
+  const filteredPhases = useMemo(() => {
+    return phases.map(phase => {
+      if (!queryLower) return phase;
+      const matchingSteps = phase.steps.filter(step =>
+        step.title.toLowerCase().includes(queryLower) ||
+        step.step_key.toLowerCase().includes(queryLower)
+      );
+      return {
+        ...phase,
+        steps: matchingSteps
+      };
+    }).filter(phase => !queryLower || phase.steps.length > 0);
+  }, [phases, queryLower]);
 
   return (
     <>
@@ -182,4 +184,4 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   );
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);

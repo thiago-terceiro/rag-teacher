@@ -1,5 +1,5 @@
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -35,7 +35,7 @@ SyntaxHighlighter.registerLanguage('markdown', markdown);
 SyntaxHighlighter.registerLanguage('md', markdown);
 SyntaxHighlighter.registerLanguage('css', css);
 
-const CodeBlock = ({ language = 'text', value = '' }) => {
+const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -98,6 +98,6 @@ const CodeBlock = ({ language = 'text', value = '' }) => {
       </div>
     </div>
   );
-};
+}, (prev, next) => prev.value === next.value && prev.language === next.language);
 
 export default CodeBlock;

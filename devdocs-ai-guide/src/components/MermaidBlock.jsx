@@ -1,7 +1,10 @@
-import { useState, useEffect, useRef, useId } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import mermaid from 'mermaid';
 import { Code2, Eye, Copy, Check, AlertCircle } from 'lucide-react';
 import CodeBlock from './CodeBlock';
+
+// Global in-memory cache for rendered diagram SVGs
+const mermaidSvgCache = new Map();
 
 // Initialize mermaid once globally with dark theme
 mermaid.initialize({
@@ -26,8 +29,11 @@ mermaid.initialize({
   },
 });
 
-const MermaidBlock = ({ chart }) => {
-  const [svgContent, setSvgContent] = useState('');
+const MermaidBlock = React.memo(({ chart }) => {
+  const cleanChart = (chart || '').trim();
+  
+  // Instant synchronous initialization if already in cache
+  const [svgContent, setSvgContent] = useState(() => mermaidSvgCache.get(cleanChart) || '');
   const [hasError, setHasError] = useState(false);
   const [showSource, setShowSource] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -38,15 +44,20 @@ const MermaidBlock = ({ chart }) => {
   const diagramId = `mermaid_svg_${reactId}`;
 
   useEffect(() => {
+    if (!cleanChart) return;
+
+    // If already in cache, skip rendering entirely
+    if (mermaidSvgCache.has(cleanChart)) {
+      setSvgContent(mermaidSvgCache.get(cleanChart));
+      return;
+    }
+
     let isMounted = true;
     const renderDiagram = async () => {
-      if (!chart || !chart.trim()) return;
-
       try {
         setHasError(false);
-        // Clean chart input
-        const cleanChart = chart.trim();
         const { svg } = await mermaid.render(diagramId, cleanChart);
+        mermaidSvgCache.set(cleanChart, svg);
         if (isMounted) {
           setSvgContent(svg);
         }
@@ -62,17 +73,16 @@ const MermaidBlock = ({ chart }) => {
 
     return () => {
       isMounted = false;
-      // Clean up temporary DOM elements created by mermaid if any
       const tempElement = document.getElementById(diagramId);
       if (tempElement) {
         tempElement.remove();
       }
     };
-  }, [chart, diagramId]);
+  }, [cleanChart, diagramId]);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(chart);
+      await navigator.clipboard.writeText(cleanChart);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
@@ -87,7 +97,7 @@ const MermaidBlock = ({ chart }) => {
           <AlertCircle className="w-4 h-4" />
           <span>Diagram syntax error — showing raw source</span>
         </div>
-        <CodeBlock language="mermaid" value={chart} />
+        <CodeBlock language="mermaid" value={cleanChart} />
       </div>
     );
   }
@@ -145,7 +155,7 @@ const MermaidBlock = ({ chart }) => {
       {/* Body: Rendered SVG or Code */}
       {showSource ? (
         <div className="p-0">
-          <CodeBlock language="mermaid" value={chart} />
+          <CodeBlock language="mermaid" value={cleanChart} />
         </div>
       ) : (
         <div
@@ -156,6 +166,6 @@ const MermaidBlock = ({ chart }) => {
       )}
     </div>
   );
-};
+}, (prev, next) => (prev.chart || '').trim() === (next.chart || '').trim());
 
 export default MermaidBlock;

@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -5,8 +6,11 @@ import rehypeKatex from 'rehype-katex';
 import CodeBlock from './CodeBlock';
 import MermaidBlock from './MermaidBlock';
 
-const MarkdownRenderer = ({ markdown }) => {
-  const components = {
+const remarkPlugins = [remarkGfm, remarkMath];
+const rehypePlugins = [rehypeKatex];
+
+const MarkdownRenderer = React.memo(({ markdown }) => {
+  const components = useMemo(() => ({
     code({ node, className, children, ...props }) {
       const match = /language-([\w-]+)/.exec(className || '');
       const lang = match ? match[1].toLowerCase() : '';
@@ -105,19 +109,19 @@ const MarkdownRenderer = ({ markdown }) => {
         </a>
       );
     }
-  };
+  }), []);
 
   return (
     <div className="markdown-content">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
         components={components}
       >
         {markdown}
       </ReactMarkdown>
     </div>
   );
-};
+}, (prev, next) => prev.markdown === next.markdown);
 
 export default MarkdownRenderer;
