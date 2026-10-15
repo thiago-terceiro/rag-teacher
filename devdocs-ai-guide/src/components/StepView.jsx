@@ -68,6 +68,13 @@ const StepView = () => {
 
   return (
     <div key={stepKey} className="max-w-4xl mx-auto pb-16 relative">
+      {/* React 19 Native Document Metadata Hoisting */}
+      <title>{`${step.title} — RAG Teacher`}</title>
+      <meta
+        name="description"
+        content={`Step ${stepIndex} of ${allSteps.length}: ${step.title}. Masterclass for production-grade RAG and Agentic systems.`}
+      />
+
       {/* Ambient Aura Background Glow (Linear/Vercel style) */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-full max-w-4xl h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
 
@@ -157,11 +164,12 @@ const StepView = () => {
         onSaveNotes={handleSaveNotes}
       />
 
-      {/* Next / Previous Navigation Controls */}
+      {/* Next / Previous Navigation Controls with React Router v7 Native View Transitions */}
       <nav aria-label="Step Navigation" className="mt-12 pt-6 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
         {prevStep ? (
           <Link
             to={`/steps/${prevStep.step_key}`}
+            viewTransition
             className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border/80 bg-card/70 hover:bg-secondary/90 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] text-foreground transition-all duration-200 active:scale-[0.99] group cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" />
@@ -178,6 +186,7 @@ const StepView = () => {
         {nextStep ? (
           <Link
             to={`/steps/${nextStep.step_key}`}
+            viewTransition
             className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
           >
             <div className="text-right">

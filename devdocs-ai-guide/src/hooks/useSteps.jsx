@@ -1,10 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import confetti from 'canvas-confetti';
+import { createContext, useCallback, use, useEffect, useState, startTransition } from 'react';
 import { initialPhases, allSteps, getStepByKey } from '../data/guideData';
 
-const StepsContext = createContext();
+const StepsContext = createContext(null);
 
-export const useSteps = () => useContext(StepsContext);
+// React 19 `use()` hook for reading context
+export const useSteps = () => use(StepsContext);
 
 const LOCAL_STORAGE_KEY = 'devdocs_ai_guide_progress_v1';
 
@@ -42,8 +42,8 @@ export const StepsProvider = ({ children }) => {
     }));
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading] = useState(false);
+  const [error] = useState(null);
 
   // Compute overall stats
   const stepsFlat = phases.flatMap(p => p.steps);
@@ -78,83 +78,83 @@ export const StepsProvider = ({ children }) => {
     }
   };
 
-  // Update progress for a step
+  // Update progress for a step using React 19 startTransition
   const updateStepProgress = useCallback((stepKey, status, notes) => {
-    setPhases(prevPhases => {
-      let isNewlyCompleted = false;
-      const nextPhases = prevPhases.map(phase => ({
-        ...phase,
-        steps: phase.steps.map(step => {
-          if (step.step_key === stepKey) {
-            const prevStatus = step.status;
-            const nextStatus = status !== undefined ? status : prevStatus;
-            const nextNotes = notes !== undefined ? notes : step.notes;
-            
-            if (prevStatus !== 'completed' && nextStatus === 'completed') {
-              isNewlyCompleted = true;
+    startTransition(() => {
+      setPhases(prevPhases => {
+        let isNewlyCompleted = false;
+        const nextPhases = prevPhases.map(phase => ({
+          ...phase,
+          steps: phase.steps.map(step => {
+            if (step.step_key === stepKey) {
+              const prevStatus = step.status;
+              const nextStatus = status !== undefined ? status : prevStatus;
+              const nextNotes = notes !== undefined ? notes : step.notes;
+              
+              if (prevStatus !== 'completed' && nextStatus === 'completed') {
+                isNewlyCompleted = true;
+              }
+
+              return {
+                ...step,
+                status: nextStatus,
+                notes: nextNotes,
+                completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
+              };
             }
+            return step;
+          })
+        }));
 
-            return {
-              ...step,
-              status: nextStatus,
-              notes: nextNotes,
-              completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
-            };
-          }
-          return step;
-        })
-      }));
+        persistToLocalStorage(nextPhases);
 
-      persistToLocalStorage(nextPhases);
-
-      // Trigger celebratory confetti if newly completed
-      if (isNewlyCompleted) {
-        try {
-          confetti({
-            particleCount: 80,
-            spread: 60,
-            origin: { y: 0.8 },
-            colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
-          });
-        } catch (e) {
-          // ignore if canvas not supported
+        // React 19 lazy code-splitting: load confetti on-demand only when completed
+        if (isNewlyCompleted) {
+          import('canvas-confetti').then(({ default: confetti }) => {
+            confetti({
+              particleCount: 80,
+              spread: 60,
+              origin: { y: 0.8 },
+              colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+            });
+          }).catch(() => {});
         }
-      }
 
-      // Opportunistic API sync if backend is active
-      fetch(`/api/steps/${stepKey}/progress`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes }),
-      }).catch(() => {
-        // Silently ignore if running in static/Vercel mode without backend
+        // Opportunistic API sync if backend is active
+        fetch(`/api/steps/${stepKey}/progress`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, notes }),
+        }).catch(() => {
+          // Silently ignore if running in static/Vercel mode without backend
+        });
+
+        return nextPhases;
       });
-
-      return nextPhases;
     });
   }, []);
 
   const getStepContent = useCallback((stepKey) => {
-    // 1. First lookup in our rich data store
-    const step = getStepByKey(stepKey);
-    return step;
+    return getStepByKey(stepKey);
   }, []);
 
   const resetAllProgress = useCallback(() => {
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-      setPhases(initialPhases.map(phase => ({
-        ...phase,
-        steps: phase.steps.map(step => ({
-          ...step,
-          status: 'not_started',
-          notes: '',
-          completedAt: null,
-        }))
-      })));
-    } catch (e) {
-      console.error(e);
-    }
+    startTransition(() => {
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        setPhases(initialPhases.map(phase => ({
+          ...phase,
+          steps: phase.steps.map(step => ({
+            ...step,
+            status: 'not_started',
+            notes: '',
+            completedAt: null,
+          }))
+        })));
+      } catch (e) {
+        console.error(e);
+      }
+    });
   }, []);
 
   const value = {
@@ -168,5 +168,6 @@ export const StepsProvider = ({ children }) => {
     allSteps,
   };
 
-  return <StepsContext.Provider value={value}>{children}</StepsContext.Provider>;
+  // React 19 `<Context value={value}>` standard (no `.Provider` needed)
+  return <StepsContext value={value}>{children}</StepsContext>;
 };
