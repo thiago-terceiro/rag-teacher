@@ -1,19 +1,24 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AlignLeft, ArrowUp, ChevronDown, ListTree } from 'lucide-react';
 import { scrollToHeading } from '../lib/headings';
+import { useActiveHeading } from '../hooks/useTableOfContents';
 import { cn } from '../lib/utils';
 
 const MIN_HEADINGS = 3;
 
 function jump(e, id, setActiveId) {
   e.preventDefault();
-  if (scrollToHeading(id)) setActiveId(id);
+  if (scrollToHeading(id)) {
+    setActiveId?.(id);
+  }
 }
 
 /** Collapsible "On this page" panel shown above the content below the xl breakpoint. */
-export function TableOfContentsMobile({ headings, activeId, setActiveId }) {
+export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({ headings }) {
   const [open, setOpen] = useState(false);
-  if (headings.length < MIN_HEADINGS) return null;
+  const [activeId, setActiveId] = useActiveHeading(headings);
+
+  if (!headings || headings.length < MIN_HEADINGS) return null;
 
   return (
     <div className="xl:hidden mb-8 rounded-xl border border-border/80 bg-card/70 overflow-hidden">
@@ -58,11 +63,13 @@ export function TableOfContentsMobile({ headings, activeId, setActiveId }) {
       )}
     </div>
   );
-}
+});
 
 /** Sticky right-rail TOC with an active-section indicator (xl and up). */
-export function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
-  if (headings.length < MIN_HEADINGS) return null;
+export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop({ headings }) {
+  const [activeId, setActiveId] = useActiveHeading(headings);
+
+  if (!headings || headings.length < MIN_HEADINGS) return null;
 
   const scrollTop = () => {
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -110,4 +117,5 @@ export function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
       </button>
     </aside>
   );
-}
+});
+

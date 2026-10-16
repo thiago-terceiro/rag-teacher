@@ -72,7 +72,6 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
   body {
     @apply bg-background text-foreground;
@@ -80,8 +79,14 @@
     letter-spacing: 0.015em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
+}
+
+/* Ensure main scroll container has hardware-accelerated compositor scrolling */
+#main-scroll-container {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto !important; /* Preserves 1:1 instantaneous hardware wheel response */
 }
 
 .glassmorphism {

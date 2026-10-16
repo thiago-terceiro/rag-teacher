@@ -33,7 +33,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
   const prevStep = getPrevStep(stepKey);
 
   const status = currentStepFromPhases?.status || 'not_started';
-  const toc = useTableOfContents(step.content);
+  const { headings } = useTableOfContents(step.content);
 
   // On step change: honor a #section deep link if present, else snap to top (instant, no animation).
   useEffect(() => {
@@ -87,7 +87,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
       />
 
       {/* Ambient Aura Background Glow (Linear/Vercel style) */}
-      <div className={cn("absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
+      <div className={cn("absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full transform-gpu will-change-transform", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
 
       {/* Breadcrumb / Phase Banner */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-muted-foreground mb-4">
@@ -186,7 +186,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
       )}
 
       {/* On-this-page panel (below xl; desktop rail renders beside the article) */}
-      <TableOfContentsMobile {...toc} />
+      <TableOfContentsMobile headings={headings} />
 
       {/* Main Content (Memoized against unnecessary re-renders) */}
       <div className={cn(
@@ -278,7 +278,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
     </article>
 
     {/* Desktop Sticky Rail (Table of Contents) */}
-    <TableOfContentsDesktop {...toc} />
+    <TableOfContentsDesktop headings={headings} />
   </div>
 );
 };

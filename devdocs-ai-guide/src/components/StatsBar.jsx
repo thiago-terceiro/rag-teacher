@@ -152,7 +152,7 @@ const StatsBar = ({
       <div className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
         <div
           id="header-scroll-progress-bar"
-          className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.8)] transition-transform duration-75 ease-out will-change-transform"
+          className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.8)] will-change-transform"
           style={{
             transform: `scaleX(${scrollProgress})`,
             transformOrigin: 'left',
