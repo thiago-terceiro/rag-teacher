@@ -33,7 +33,7 @@ export function TableOfContentsMobile({ headings, activeId, setActiveId }) {
       </button>
 
       {open && (
-        <nav id="toc-mobile-list" aria-label="On this page" className="px-2 pb-2 pt-1 border-t border-border/50 max-h-80 overflow-y-auto">
+        <nav id="toc-mobile-list" aria-label="On this page" className="px-2 pb-2 pt-1 border-t border-border/50 max-h-80 overflow-y-auto custom-scrollbar">
           {headings.map((h) => (
             <a
               key={h.id}
@@ -71,13 +71,13 @@ export function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
   };
 
   return (
-    <aside aria-label="On this page" className="hidden xl:flex flex-col w-60 shrink-0 sticky top-2 max-h-[calc(100vh-7rem)] self-start">
+    <aside aria-label="On this page" className="hidden xl:flex flex-col w-64 shrink-0 sticky top-4 max-h-[calc(100vh-8rem)] self-start">
       <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
         <AlignLeft className="w-3.5 h-3.5 text-primary" />
         On this page
       </div>
 
-      <nav className="min-h-0 overflow-y-auto overscroll-contain border-l border-border/60 pr-2">
+      <nav className="min-h-0 overflow-y-auto overscroll-contain border-l border-border/60 pr-2 toc-scrollbar">
         {headings.map((h) => {
           const active = activeId === h.id;
           return (

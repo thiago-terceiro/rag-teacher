@@ -38,7 +38,7 @@ function App() {
                 onOpenReadingSettings={() => setIsReadingSettingsOpen(true)}
                 onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
               />
-              <div id="main-scroll-container" className="flex-1 p-4 sm:p-8 overflow-y-auto">
+              <div id="main-scroll-container" className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar">
                 <Routes>
                   <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
                   <Route path="/steps/:stepKey" element={<StepView onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)} />} />

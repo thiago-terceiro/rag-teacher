@@ -147,3 +147,107 @@
   line-height: 2.1 !important;
 }
 
+/* =========================================================================
+   Neon Glowing Blue Dark Scrollbar Styling (Global & Component-Level)
+   ========================================================================= */
+
+/* Standard CSS for Firefox & modern engines */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.45) #090d16;
+}
+
+/* WebKit (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16; /* Deep dark background matching app canvas */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #6366f1);
+  border-radius: 9999px;
+  border: 2px solid #090d16; /* Padding around thumb */
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #60a5fa, #818cf8);
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.95), 0 0 6px rgba(99, 102, 241, 0.9);
+}
+
+::-webkit-scrollbar-corner {
+  background: #090d16;
+}
+
+/* Custom Scrollbar Utility for Sidebar & Panels */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.4) #0d1322;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #0d1322;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.7), rgba(99, 102, 241, 0.8));
+  border-radius: 9999px;
+  border: 1px solid #0d1322;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #60a5fa, #818cf8);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
+}
+
+/* Sleek Table of Contents Scrollbar (Transparent track, minimal glow) */
+.toc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.35) transparent;
+}
+
+.toc-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+}
+
+.toc-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+/* Slow spin animation for sandbox icons */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+

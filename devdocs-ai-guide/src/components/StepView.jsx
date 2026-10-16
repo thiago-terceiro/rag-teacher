@@ -77,7 +77,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className={cn("mx-auto flex justify-center gap-12 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-[80rem]')}>
+    <div key={stepKey} className={cn("mx-auto flex justify-center gap-8 xl:gap-10 2xl:gap-12 transition-all duration-200 w-full", settings.contentWidth === 'wide' ? 'max-w-[88rem]' : 'max-w-6xl')}>
     <article className={cn("relative w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
       {/* React 19 Native Document Metadata Hoisting */}
       <title>{`${step.title} — RAG Teacher`}</title>
@@ -165,14 +165,14 @@ const StepView = ({ onOpenVectorSandbox }) => {
 
       {/* Interactive Vector Distance Sandbox Banner (for Vector/Dense retrieval steps) */}
       {(stepKey === 'dense-retrieval' || stepKey === 'vector-database-ann') && (
-        <div className="mb-8 p-4.5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10 border border-indigo-500/30 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+        <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10 border border-indigo-500/30 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
           <div className="flex items-center space-x-3.5">
             <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
               <Compass className="w-5 h-5 animate-spin-slow" />
             </div>
             <div>
               <div className="text-sm font-bold text-foreground">Interactive 2D Vector Distance Sandbox</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Drag vector handles in real-time to compute Cosine Similarity, Dot Product, and Euclidean ($L_2$) distance.</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Drag vector handles in real-time to compute Cosine Similarity, Dot Product, and Euclidean (L2) distance.</div>
             </div>
           </div>
           <button
