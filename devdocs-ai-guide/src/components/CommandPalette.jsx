@@ -1,31 +1,61 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Search, ArrowRight, BookOpen, Clock, Sparkles, CornerDownLeft, X, Layers } from 'lucide-react';
+import { Search, ArrowRight, BookOpen, Clock, Sparkles, X, Layers, Hash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { allSteps, initialPhases } from '../data/guideData';
+import { extractHeadings } from '../lib/headings';
 import { cn } from '../lib/utils';
 
-// Pre-index searchable topics with phase metadata
-const searchableItems = allSteps.map(step => {
-  const phase = initialPhases.find(p => p.steps.some(s => s.step_key === step.step_key));
-  // Extract major sub-concepts from content
-  const contentPreview = (step.content || '').replace(/```[\s\S]*?```/g, '').slice(0, 300);
-  return {
-    step_key: step.step_key,
-    title: step.title,
-    readTime: step.readTime || '10 min',
-    phaseTitle: phase ? phase.title.split(':')[0] : 'Curriculum',
-    phaseName: phase ? phase.title : '',
-    contentPreview,
-  };
-});
+// Pre-index searchable topics AND granular section headings for deep-link navigation
+const searchableItems = (() => {
+  const items = [];
+
+  allSteps.forEach((step) => {
+    const phase = initialPhases.find((p) => p.steps.some((s) => s.step_key === step.step_key));
+    const phaseTitle = phase ? phase.title.split(':')[0] : 'Curriculum';
+    const phaseName = phase ? phase.title : '';
+    const contentPreview = (step.content || '').replace(/```[\s\S]*?```/g, '').slice(0, 300);
+
+    // 1. Primary Module Entry
+    items.push({
+      type: 'module',
+      step_key: step.step_key,
+      headingId: null,
+      title: step.title,
+      parentTitle: null,
+      readTime: step.readTime || '10 min',
+      phaseTitle,
+      phaseName,
+      contentPreview,
+    });
+
+    // 2. Granular Deep Section Headings
+    const headings = extractHeadings(step.content);
+    headings.forEach((h) => {
+      items.push({
+        type: 'section',
+        step_key: step.step_key,
+        headingId: h.id,
+        title: h.text,
+        parentTitle: step.title,
+        readTime: step.readTime || '10 min',
+        phaseTitle,
+        phaseName,
+        contentPreview: '',
+      });
+    });
+  });
+
+  return items;
+})();
 
 const POPULAR_SUGGESTIONS = [
-  { step_key: 'hnsw-indexing', label: 'HNSW Graph Indexing & Vector Search', phase: 'Phase 1' },
-  { step_key: 'cross-encoder-reranking', label: 'Two-Stage Retrieval & Cross-Encoder Reranking', phase: 'Phase 2' },
-  { step_key: 'ragas-evaluation', label: 'Golden Datasets & Ragas Benchmarking', phase: 'Phase 2' },
-  { step_key: 'langgraph-crag-agent', label: 'Corrective RAG (CRAG) & LangGraph Agent', phase: 'Phase 3' },
-  { step_key: 'dspy-prompt-optimization', label: 'DSPy Teleprompters & MIPROv2 Optimization', phase: 'Phase 3' },
+  { step_key: 'qdrant-setup', headingId: '3-mathematical--algorithmic-foundations', label: 'HNSW Graph Indexing & Skip-Lists', phase: 'Phase 1', isDeep: true },
+  { step_key: 'cross-encoder-reranking', headingId: '1-executive-mental-model--first-principles', label: 'Two-Stage Retrieval & Cross-Encoder Reranking', phase: 'Phase 2', isDeep: true },
+  { step_key: 'ragas-evaluation', headingId: '3-mathematical--algorithmic-foundations', label: 'Golden Datasets & Ragas Faithfulness Harmonics', phase: 'Phase 2', isDeep: true },
+  { step_key: 'langgraph-agent-architecture', headingId: '3-mathematical--algorithmic-foundations', label: 'LangGraph & Lyapunov Convergence Proof', phase: 'Phase 3', isDeep: true },
+  { step_key: 'agent-tool-doc-search', headingId: '3-mathematical--algorithmic-foundations', label: 'Reciprocal Rank Fusion (RRF) Theorem', phase: 'Phase 3', isDeep: true },
+  { step_key: 'dspy-setup', headingId: '1-executive-mental-model--first-principles', label: 'DSPy Teleprompters & MIPROv2 Optimization', phase: 'Phase 3', isDeep: true },
 ];
 
 export function CommandPalette({ isOpen, setIsOpen }) {
@@ -57,25 +87,48 @@ export function CommandPalette({ isOpen, setIsOpen }) {
     }
   }, [isOpen]);
 
-  // Filter items matching query
+  // Filter items matching query with relevance ranking
   const filteredResults = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return [];
 
-    return searchableItems.filter(item => {
-      return (
-        item.title.toLowerCase().includes(q) ||
-        item.step_key.toLowerCase().includes(q) ||
-        item.phaseName.toLowerCase().includes(q) ||
-        item.contentPreview.toLowerCase().includes(q)
-      );
-    }).slice(0, 8); // Top 8 most relevant matches
+    const matches = [];
+    for (const item of searchableItems) {
+      const titleLower = item.title.toLowerCase();
+      const parentLower = (item.parentTitle || '').toLowerCase();
+      const previewLower = item.contentPreview.toLowerCase();
+
+      let score = 0;
+      if (titleLower.startsWith(q)) {
+        score = 100;
+      } else if (titleLower.includes(q)) {
+        score = 75;
+      } else if (parentLower.includes(q)) {
+        score = 40;
+      } else if (previewLower.includes(q)) {
+        score = 20;
+      }
+
+      if (score > 0) {
+        matches.push({ item, score });
+      }
+    }
+
+    // Sort by relevance score descending
+    matches.sort((a, b) => b.score - a.score);
+    return matches.slice(0, 9).map((m) => m.item);
   }, [query]);
 
-  // Handle item selection navigation
-  const handleSelect = useCallback((stepKey) => {
+  // Handle item selection navigation with deep-link support
+  const handleSelect = useCallback((item) => {
     setIsOpen(false);
-    navigate(`/steps/${stepKey}`);
+    if (!item) return;
+
+    if (item.headingId) {
+      navigate(`/steps/${item.step_key}#${item.headingId}`);
+    } else {
+      navigate(`/steps/${item.step_key}`);
+    }
   }, [navigate, setIsOpen]);
 
   // Keyboard navigation inside list
@@ -91,9 +144,9 @@ export function CommandPalette({ isOpen, setIsOpen }) {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (query && filteredResults.length > 0) {
-        handleSelect(filteredResults[selectedIndex]?.step_key);
+        handleSelect(filteredResults[selectedIndex]);
       } else if (!query && POPULAR_SUGGESTIONS.length > 0) {
-        handleSelect(POPULAR_SUGGESTIONS[selectedIndex]?.step_key);
+        handleSelect(POPULAR_SUGGESTIONS[selectedIndex]);
       }
     }
   };
@@ -112,7 +165,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
         <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-card/95 border border-border/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col focus:outline-none animate-in zoom-in-95 duration-200"
+          className="fixed top-[12%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-card/95 border border-border/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col focus:outline-none animate-in zoom-in-95 duration-200"
         >
           <Dialog.Title className="sr-only">Command Palette: Search RAG Curriculum</Dialog.Title>
 
@@ -128,7 +181,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                 setSelectedIndex(0);
               }}
               onKeyDown={handleInputKeyDown}
-              placeholder="Search 28 modules, concepts (e.g. HNSW, Ragas, DSPy, CRAG)..."
+              placeholder="Search 28 modules, concepts, algorithms (e.g. HNSW, Ragas, DSPy, RRF)..."
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none tracking-[0.01em]"
             />
             {query && (
@@ -145,16 +198,19 @@ export function CommandPalette({ isOpen, setIsOpen }) {
           </div>
 
           {/* Search Results List */}
-          <div ref={listRef} className="max-h-96 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+          <div ref={listRef} className="max-h-[26rem] overflow-y-auto p-2 space-y-1 custom-scrollbar">
             {query ? (
               filteredResults.length > 0 ? (
                 filteredResults.map((item, idx) => {
                   const isSelected = selectedIndex === idx;
+                  const isSection = item.type === 'section';
+                  const itemKey = isSection ? `${item.step_key}-${item.headingId}` : item.step_key;
+
                   return (
                     <button
-                      key={item.step_key}
+                      key={itemKey}
                       data-selected={isSelected}
-                      onClick={() => handleSelect(item.step_key)}
+                      onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={cn(
                         'w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-150 cursor-pointer group',
@@ -164,20 +220,35 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                       )}
                     >
                       <div className="flex items-start gap-3 min-w-0">
-                        <BookOpen className={cn('w-4 h-4 mt-0.5 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                        {isSection ? (
+                          <Hash className={cn('w-4 h-4 mt-0.5 shrink-0', isSelected ? 'text-cyan-400' : 'text-muted-foreground')} />
+                        ) : (
+                          <BookOpen className={cn('w-4 h-4 mt-0.5 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                        )}
                         <div className="min-w-0">
                           <div className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
                             {item.title}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                            <span className="px-2 py-0.2 rounded-full bg-secondary/80 text-[10px] font-medium border border-border/50">
-                              {item.phaseTitle}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {item.readTime}
-                            </span>
+                            {isSection ? (
+                              <>
+                                <span className="px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[10px] font-medium">
+                                  Section
+                                </span>
+                                <span className="truncate max-w-[200px] sm:max-w-xs">{item.parentTitle}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="px-2 py-0.2 rounded-full bg-secondary/80 text-[10px] font-medium border border-border/50">
+                                  {item.phaseTitle}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {item.readTime}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -197,15 +268,15 @@ export function CommandPalette({ isOpen, setIsOpen }) {
               <div>
                 <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3 text-primary" />
-                  Popular Modules & Architectures
+                  Popular Modules & Deep-Link Concepts
                 </div>
                 {POPULAR_SUGGESTIONS.map((item, idx) => {
                   const isSelected = selectedIndex === idx;
                   return (
                     <button
-                      key={item.step_key}
+                      key={item.label}
                       data-selected={isSelected}
-                      onClick={() => handleSelect(item.step_key)}
+                      onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={cn(
                         'w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer group',
@@ -215,12 +286,23 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <Layers className={cn('w-4 h-4 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                        {item.isDeep ? (
+                          <Hash className={cn('w-4 h-4 shrink-0', isSelected ? 'text-cyan-400' : 'text-muted-foreground')} />
+                        ) : (
+                          <Layers className={cn('w-4 h-4 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                        )}
                         <span className="text-xs font-medium truncate">{item.label}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded border border-border/40">
-                        {item.phase}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {item.isDeep && (
+                          <span className="text-[10px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.2 rounded border border-cyan-500/20 font-mono">
+                            #jump
+                          </span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded border border-border/40">
+                          {item.phase}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -245,7 +327,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                 close
               </span>
             </div>
-            <span className="font-medium text-foreground/80">28 Modules</span>
+            <span className="font-medium text-foreground/80">Deep-Link Enabled</span>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

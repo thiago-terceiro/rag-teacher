@@ -11,6 +11,8 @@ import { useTableOfContents } from '../hooks/useTableOfContents';
 import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
+import ChunkingCalculator from './ChunkingCalculator';
+import RRFSimulator from './RRFSimulator';
 
 const StepView = ({ onOpenVectorSandbox }) => {
   const { stepKey } = useParams();
@@ -35,15 +37,42 @@ const StepView = ({ onOpenVectorSandbox }) => {
   const status = currentStepFromPhases?.status || 'not_started';
   const { headings } = useTableOfContents(step.content);
 
-  // On step change: honor a #section deep link if present, else snap to top (instant, no animation).
+  // On step change or hash change: honor #section deep link with smooth scroll and neon pulse highlight
   useEffect(() => {
-    const hashId = decodeURIComponent(window.location.hash.slice(1));
-    if (hashId && scrollToHeading(hashId, { smooth: false })) return;
-    const container = document.getElementById('main-scroll-container');
-    if (container) {
-      container.scrollTop = 0;
+    const handleHashNavigation = (smooth = false) => {
+      const hashId = decodeURIComponent(window.location.hash.slice(1));
+      if (hashId) {
+        requestAnimationFrame(() => {
+          const el = document.getElementById(hashId);
+          if (el) {
+            scrollToHeading(hashId, { smooth });
+            // Clean up any existing pulse highlight
+            document.querySelectorAll('.deep-link-target').forEach((node) => {
+              node.classList.remove('deep-link-target');
+            });
+            // Apply neon pulse highlight to target element
+            el.classList.add('deep-link-target');
+            setTimeout(() => {
+              el.classList.remove('deep-link-target');
+            }, 3000);
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+
+    if (!handleHashNavigation(false)) {
+      const container = document.getElementById('main-scroll-container');
+      if (container) {
+        container.scrollTop = 0;
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    const onHashChange = () => handleHashNavigation(true);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
   }, [stepKey]);
 
   // Keyboard navigation: Left/Right arrows to flip through steps
@@ -162,6 +191,16 @@ const StepView = ({ onOpenVectorSandbox }) => {
           </button>
         </div>
       </div>
+
+      {/* Interactive Chunking Simulator for Steps 4, 5, 6 */}
+      {(stepKey === 'chunking-fixed-size' || stepKey === 'chunking-semantic' || stepKey === 'chunking-hierarchical') && (
+        <ChunkingCalculator />
+      )}
+
+      {/* Interactive Reciprocal Rank Fusion (RRF) Simulator for Step 19 */}
+      {stepKey === 'agent-tool-doc-search' && (
+        <RRFSimulator />
+      )}
 
       {/* Interactive Vector Distance Sandbox Banner (for Vector/Dense retrieval steps) */}
       {(stepKey === 'dense-retrieval' || stepKey === 'vector-database-ann') && (

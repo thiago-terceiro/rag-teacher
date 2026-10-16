@@ -1,0 +1,42 @@
+{
+  "name": "RAG Teacher — DevDocs AI Guide",
+  "short_name": "RAG Teacher",
+  "description": "Master production-grade Retrieval-Augmented Generation (RAG) across 28 interactive modules and staff system design drills.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "any",
+  "categories": ["education", "developer", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Curriculum",
+      "short_name": "Curriculum",
+      "description": "Jump directly into Module 1: Project Setup",
+      "url": "/steps/project-setup",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    },
+    {
+      "name": "Interview Questions Hub",
+      "short_name": "Interviews",
+      "description": "Practice 28 Staff-Level System Design Interview scenarios",
+      "url": "/interview-questions",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
-import { Menu, RotateCcw, BookOpen, Eye, Search, Download, HelpCircle, Compass, Type } from 'lucide-react';
+import { Menu, RotateCcw, BookOpen, Eye, Search, Download, HelpCircle, Compass, Type, WifiOff, DownloadCloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import ProgressRing from './ProgressRing';
 
 const StatsBar = ({
@@ -13,6 +14,7 @@ const StatsBar = ({
 }) => {
   const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
   const scrollProgress = useScrollProgress('main-scroll-container');
+  const { isOnline, canInstall, promptInstall } = useNetworkStatus();
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset your learning progress and notes?")) {
@@ -53,6 +55,29 @@ const StatsBar = ({
       </div>
 
       <div className="flex items-center space-x-3">
+        {/* Offline Connectivity Warning */}
+        {!isOnline && (
+          <div
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium"
+            title="You are offline. All 28 modules, formulas, diagrams, and notes are available offline."
+          >
+            <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span className="text-[11px] font-semibold">Offline Mode</span>
+          </div>
+        )}
+
+        {/* PWA Install Button */}
+        {canInstall && (
+          <button
+            onClick={promptInstall}
+            title="Install RAG Teacher as an offline Progressive Web App"
+            className="hidden md:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors cursor-pointer"
+          >
+            <DownloadCloud className="w-3.5 h-3.5" />
+            <span>Install</span>
+          </button>
+        )}
+
         {/* Quick Search / Command Palette Trigger */}
         <button
           onClick={onOpenSearch}
