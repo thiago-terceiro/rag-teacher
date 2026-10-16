@@ -77,7 +77,7 @@ const StepView = ({ onOpenVectorSandbox }) => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className={cn("mx-auto flex justify-center gap-8 xl:gap-10 2xl:gap-12 transition-all duration-200 w-full", settings.contentWidth === 'wide' ? 'max-w-[88rem]' : 'max-w-6xl')}>
+    <div key={stepKey} className={cn("mx-auto flex justify-center items-start gap-6 xl:gap-8 transition-all duration-200 w-full", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
     <article className={cn("relative w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
       {/* React 19 Native Document Metadata Hoisting */}
       <title>{`${step.title} — RAG Teacher`}</title>

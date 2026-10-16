@@ -71,13 +71,13 @@ export function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
   };
 
   return (
-    <aside aria-label="On this page" className="hidden xl:flex flex-col w-64 shrink-0 sticky top-4 max-h-[calc(100vh-8rem)] self-start">
+    <aside aria-label="On this page" className="hidden xl:flex flex-col w-72 shrink-0 sticky top-4 max-h-[calc(100vh-8rem)] self-start">
       <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
         <AlignLeft className="w-3.5 h-3.5 text-primary" />
         On this page
       </div>
 
-      <nav className="min-h-0 overflow-y-auto overscroll-contain border-l border-border/60 pr-2 toc-scrollbar">
+      <nav className="min-h-0 overflow-y-auto overscroll-contain border-l border-border/60 pr-1 toc-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {headings.map((h) => {
           const active = activeId === h.id;
           return (

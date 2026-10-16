@@ -212,29 +212,16 @@
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
 }
 
-/* Sleek Table of Contents Scrollbar (Transparent track, minimal glow) */
+/* Table of Contents: Hide visible scrollbar entirely while preserving wheel scrolling */
 .toc-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.35) transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .toc-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.toc-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.toc-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.4);
-  border-radius: 9999px;
-  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
-}
-
-.toc-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.8);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Slow spin animation for sandbox icons */
