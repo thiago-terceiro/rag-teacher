@@ -102,15 +102,32 @@ The following upgrades have been completed, verified via production build, and p
   - Persisted across sessions via `localStorage` (`rag_reading_settings_v1`).
   - Modal accessible from `StatsBar` with full keyboard and screen-reader accessibility.
 
+### M. Progressive Web App (PWA) Offline Engine
+* Custom, zero-dependency Service Worker (`public/sw.js`):
+  - Stale-While-Revalidate for JS/CSS/content chunks.
+  - Cache-First for web fonts and KaTeX math fonts.
+  - Network-First with instant offline SPA navigation fallback to `/index.html`.
+* Web App Manifest (`public/manifest.json`) and high-resolution SVG app icons.
+* Dedicated `useNetworkStatus.js` hook, offline warning indicator in `StatsBar.jsx`, and PWA install button.
+
+### N. Deep-Link Search Highlighting in Command Palette (`⌘K`)
+* Indexed section headings and algorithmic theorems in `src/components/CommandPalette.jsx`.
+* Smooth anchor jumping to `/steps/:stepKey#:headingId`.
+* GPU-accelerated neon pulse animation (`@keyframes deep-link-pulse`) on arrival with zero layout thrashing.
+
+### O. Micro-Concept Interactive Calculators
+* **Chunking Overlap & Token Storage Simulator** (`ChunkingCalculator.jsx`): Embedded in Steps 4, 5, 6 with live sliding window timeline, $O(1)$ arithmetic, and zero parent re-renders.
+* **Reciprocal Rank Fusion (RRF) Simulator** (`RRFSimulator.jsx`): Embedded in Step 19 with Cormack smoothing constant $k$ slider and live candidate rank merging.
+* Detailed performance and architectural report documented in [docs/PWA_AND_INTERACTIVE_CALCULATORS_AUDIT.md](PWA_AND_INTERACTIVE_CALCULATORS_AUDIT.md).
+
 ---
 
 ## 3. Backlog & Recommended Next Tasks
 
-The platform now features the complete 28-step curriculum, interactive vector sandbox, reading comfort controls, and dedicated Interview Questions hub. Recommended future enhancements:
+The platform now features the complete 28-step curriculum, interactive vector sandbox, reading comfort controls, dedicated Interview Questions hub, PWA offline support, deep-link search highlighting, and micro-concept calculators.
 
-### Backlog Enhancements
+### Optional Backlog
 1. **Completion Certificate Generator**: Client-side canvas-generated PDF/PNG certificate of completion once all 28 modules and interview questions reach 100% mastery.
-2. **Offline PWA Support**: Service worker caching of the curriculum assets for reading on flights or offline environments.
 
 ---
 
