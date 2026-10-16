@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, use, useState } from 'react';
 
 const ReadingSettingsContext = createContext(null);
 
@@ -39,15 +39,17 @@ export const ReadingSettingsProvider = ({ children }) => {
     } catch {}
   };
 
+  // React 19 standard `<Context value={...}>` (no .Provider required)
   return (
-    <ReadingSettingsContext.Provider value={{ settings, updateSetting, resetSettings }}>
+    <ReadingSettingsContext value={{ settings, updateSetting, resetSettings }}>
       {children}
-    </ReadingSettingsContext.Provider>
+    </ReadingSettingsContext>
   );
 };
 
 export const useReadingSettings = () => {
-  const context = useContext(ReadingSettingsContext);
+  // React 19 native `use()` hook
+  const context = use(ReadingSettingsContext);
   if (!context) {
     return {
       settings: DEFAULT_SETTINGS,
@@ -57,3 +59,4 @@ export const useReadingSettings = () => {
   }
   return context;
 };
+
