@@ -130,7 +130,7 @@ const MermaidBlock = React.memo(({ chart }) => {
   }
 
   return (
-    <div className="print-diagram-block my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-all duration-300 group">
+    <div className="print-diagram-block my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-all duration-300 group w-full max-w-full min-w-0">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-secondary/50 border-b border-border/60 text-xs text-muted-foreground select-none">
         <div className="flex items-center space-x-2">

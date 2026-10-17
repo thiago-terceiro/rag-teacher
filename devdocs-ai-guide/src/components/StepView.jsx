@@ -120,8 +120,8 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className={cn("mx-auto flex justify-center items-start gap-6 xl:gap-8 transition-all duration-200 w-full", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
-      <article className={cn("relative w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
+    <div key={stepKey} className={cn("mx-auto flex justify-center items-start gap-6 xl:gap-8 transition-all duration-200 w-full max-w-full min-w-0 overflow-x-hidden", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
+      <article className={cn("relative w-full max-w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
         {/* React 19 Native Document Metadata Hoisting */}
         <title>{`${step.title} — RAG Teacher`}</title>
         <meta
@@ -172,7 +172,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-[0.01em] leading-snug">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-[0.01em] leading-snug break-words">
           {step.title}
         </h1>
         

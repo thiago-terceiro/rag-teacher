@@ -91,14 +91,37 @@ export function extractHeadings(markdown) {
 }
 
 /**
- * Smooth-scrolls the main scroll container to a heading. Relies on the heading's
- * CSS `scroll-margin-top` for offset, and preserves React Router's history state.
+ * Smooth-scrolls the main scroll container to a heading with precise offset.
+ * Crucially, scrolls ONLY #main-scroll-container directly instead of using
+ * element.scrollIntoView(), preventing ancestor window/header scroll displacement
+ * (which caused the sticky top navigation bar to disappear on mobile).
  */
 export function scrollToHeading(id, { smooth = true } = {}) {
   const el = document.getElementById(id);
   if (!el) return false;
+
+  const container = document.getElementById('main-scroll-container');
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  el.scrollIntoView({ behavior: smooth && !reduceMotion ? 'smooth' : 'instant', block: 'start' });
+
+  if (container) {
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    // Position the target heading precisely 16px below the top of the visible container
+    const targetScrollTop = container.scrollTop + (elRect.top - containerRect.top) - 16;
+
+    container.scrollTo({
+      top: Math.max(0, targetScrollTop),
+      behavior: smooth && !reduceMotion ? 'smooth' : 'instant',
+    });
+  } else {
+    el.scrollIntoView({ behavior: smooth && !reduceMotion ? 'smooth' : 'instant', block: 'start' });
+  }
+
+  // Guard: ensure window viewport itself is never scrolled out of position
+  if (window.scrollY !== 0) {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
   window.history.replaceState(window.history.state, '', `#${id}`);
   return true;
 }

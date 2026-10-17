@@ -44,8 +44,13 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
               key={h.id}
               href={`#${h.id}`}
               onClick={(e) => {
-                jump(e, h.id, setActiveId);
+                e.preventDefault();
                 setOpen(false);
+                // Wait for mobile dropdown collapse layout shift to settle before measuring
+                requestAnimationFrame(() => {
+                  scrollToHeading(h.id);
+                  setActiveId?.(h.id);
+                });
               }}
               aria-current={activeId === h.id ? 'location' : undefined}
               className={cn(

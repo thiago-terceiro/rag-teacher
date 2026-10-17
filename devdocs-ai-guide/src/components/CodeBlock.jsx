@@ -61,7 +61,7 @@ const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
   };
 
   return (
-    <div className={`print-code-block relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 ${
+    <div className={`print-code-block relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 w-full max-w-full min-w-0 ${
       copied ? 'border-emerald-500/70 shadow-[0_0_22px_rgba(16,185,129,0.22)]' : 'border-border/80 shadow-md hover:border-primary/30'
     }`}>
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#181818] border-b border-border/50 text-xs text-muted-foreground select-none">

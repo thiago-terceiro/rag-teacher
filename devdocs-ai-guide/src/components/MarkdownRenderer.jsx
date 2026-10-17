@@ -52,7 +52,7 @@ const markdownComponents = {
 
     return (
       <code
-        className="px-1.5 py-0.5 mx-0.5 rounded text-[0.875em] font-mono bg-secondary/80 text-foreground border border-border/60"
+        className="px-1.5 py-0.5 mx-0.5 rounded text-[0.875em] font-mono bg-secondary/80 text-foreground border border-border/60 break-all [overflow-wrap:anywhere]"
         {...props}
       >
         {children}
@@ -61,7 +61,7 @@ const markdownComponents = {
   },
   table({ children }) {
     return (
-      <div className="my-6 w-full overflow-x-auto rounded-lg border border-border">
+      <div className="my-6 w-full max-w-full overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm text-left border-collapse">
           {children}
         </table>
@@ -85,7 +85,7 @@ const markdownComponents = {
   },
   blockquote({ children }) {
     return (
-      <blockquote className="my-5 pl-4 py-1.5 border-l-4 border-primary bg-primary/5 rounded-r-lg italic text-muted-foreground">
+      <blockquote className="my-5 pl-4 py-1.5 border-l-4 border-primary bg-primary/5 rounded-r-lg italic text-muted-foreground break-words [overflow-wrap:break-word]">
         {children}
       </blockquote>
     );
@@ -97,11 +97,11 @@ const markdownComponents = {
     return <ol className="my-4 ml-6 list-decimal space-y-1.5 leading-relaxed">{children}</ol>;
   },
   li({ children }) {
-    return <li className="pl-1 leading-relaxed text-foreground/90">{children}</li>;
+    return <li className="pl-1 leading-relaxed text-foreground/90 break-words [overflow-wrap:break-word]">{children}</li>;
   },
   h2({ id, children }) {
     return (
-      <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] scroll-mt-6">
+      <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6">
         {children}
         {id && <HeadingAnchor id={id} />}
       </h2>
@@ -109,17 +109,17 @@ const markdownComponents = {
   },
   h3({ id, children }) {
     return (
-      <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] scroll-mt-6">
+      <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6">
         {children}
         {id && <HeadingAnchor id={id} />}
       </h3>
     );
   },
   h4({ children }) {
-    return <h4 className="text-lg font-medium mt-5 mb-2 text-foreground/90 tracking-[0.01em]">{children}</h4>;
+    return <h4 className="text-lg font-medium mt-5 mb-2 text-foreground/90 tracking-[0.01em] break-words [overflow-wrap:break-word]">{children}</h4>;
   },
   p({ children }) {
-    return <p className="my-3.5 leading-relaxed text-foreground/90 text-[15px] tracking-[0.015em]">{children}</p>;
+    return <p className="my-3.5 leading-relaxed text-foreground/90 text-[15px] tracking-[0.015em] break-words [overflow-wrap:break-word]">{children}</p>;
   },
   strong({ children }) {
     return <strong className="font-semibold text-foreground tracking-[0.01em]">{children}</strong>;
@@ -130,7 +130,7 @@ const markdownComponents = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors"
+        className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors break-all [overflow-wrap:anywhere]"
       >
         {children}
       </a>
@@ -140,7 +140,7 @@ const markdownComponents = {
 
 const MarkdownRenderer = React.memo(({ markdown }) => {
   return (
-    <div className="markdown-content">
+    <div className="markdown-content w-full max-w-full min-w-0">
       <ReactMarkdown
         remarkPlugins={remarkPlugins}
         rehypePlugins={rehypePlugins}

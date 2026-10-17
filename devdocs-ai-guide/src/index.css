@@ -121,6 +121,39 @@
   }
 }
 
+/* Ensure markdown content, long identifiers, and formulas wrap cleanly on mobile screens */
+.markdown-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.markdown-content p,
+.markdown-content li,
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.markdown-content code:not(pre code) {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* KaTeX block math must scroll horizontally inside its container instead of breaking page layout */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* OLED Midnight overrides for ultra-clean pure black surfaces */
 .theme-oled-midnight aside,
 .theme-oled-midnight header {

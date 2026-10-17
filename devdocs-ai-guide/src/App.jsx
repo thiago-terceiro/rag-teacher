@@ -71,7 +71,7 @@ function App() {
                 onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
                 onOpenPythonSandbox={() => handleOpenPythonSandbox(null)}
               />
-              <div id="main-scroll-container" className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar">
+              <div id="main-scroll-container" className="flex-1 p-3.5 sm:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar max-w-full">
                 <Routes>
                   <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
                   <Route
