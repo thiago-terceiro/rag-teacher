@@ -120,14 +120,54 @@ The following upgrades have been completed, verified via production build, and p
 * **Reciprocal Rank Fusion (RRF) Simulator** (`RRFSimulator.jsx`): Embedded in Step 19 with Cormack smoothing constant $k$ slider and live candidate rank merging.
 * Detailed performance and architectural report documented in [docs/PWA_AND_INTERACTIVE_CALCULATORS_AUDIT.md](PWA_AND_INTERACTIVE_CALCULATORS_AUDIT.md).
 
+### P. Interactive Module Quizzes (Knowledge Checks)
+* Built `src/data/moduleQuizzesData.js` and `src/components/ModuleQuiz.jsx`:
+  - 57 curated, scenario-based multiple choice questions spanning all 28 modules (2–3 questions per step).
+  - Instant technical explanations upon selection with tamper-proof option locking.
+  - Per-module score tracking persisted in `localStorage` (`rag_quizzes_v1`).
+  - Overall Comprehension Score integrated into `StatsBar.jsx` alongside completion percentage.
+  - Dedicated "Complete Module" action button unlocked upon answering all module questions.
+
+### Q. "Save as PDF / Handbook" Print Stylesheet
+* Engineered robust `@media print` layout in `src/index.css`:
+  - Strips all UI chrome (sidebar, stats bar, action buttons, audio players, calculators).
+  - Unlocks scroll containers (`#main-scroll-container`) to paginate naturally across pages.
+  - Page breaks cleanly inserted before H2 module headings (`break-before: page`).
+  - Prevents breaks mid-formula, diagram, or code block (`break-inside: avoid`).
+  - High-contrast ink on paper with lightened borders and readable dark text.
+  - Integrated "Save as PDF" buttons in `StepView.jsx` and `ReadingSettingsModal.jsx`.
+
+### R. Display Theme Presets (Deep Blue, OLED Midnight, Daylight Paper)
+* Added multi-theme engine in `useReadingSettings.jsx` and `ReadingSettingsModal.jsx`:
+  - **Deep Blue** (Default `#090d16`): The signature glowing aesthetic.
+  - **OLED Midnight** (Pure black `#000000`): Maximum contrast and battery savings on mobile OLED screens.
+  - **Daylight Paper** (Light mode `#faf8f5`): Crisp, glare-free reading in bright sunlight with custom ink borders.
+  - Theme-aware SVG rendering for Mermaid diagrams (`MermaidBlock.jsx`) and vector math canvas (`VectorVisualizer.jsx`).
+
+### S. Hardened In-Browser Python Sandbox (Pyodide Web Worker)
+* Built `src/workers/pyodideWorker.js` and `src/components/PythonSandbox.jsx`:
+  - Dedicated Web Worker running Python 3.12 + NumPy in WebAssembly without blocking main thread.
+  - 5 pre-loaded RAG templates: Token Chunking, Cosine vs Dot Product, Cross-Encoder Scoring, RRF, and Lexical BM25.
+  - Quick-launch `▶ Sandbox` action buttons attached to Python snippets in `CodeBlock.jsx`.
+  - **Defense-in-depth security hardening verified against 38 escape vectors**:
+    1. AST audit intercepting all dunder/underscore attribute lookups (`attr.startswith('_')`).
+    2. Stack frame and exception traceback traversal blocked (`tb_next`, `tb_frame`, `f_builtins`).
+    3. C-level format string inspection (`{0.__class__}`) regex and AST validation.
+    4. Strict module allowlist (`math`, `re`, `json`, `collections`, `itertools`, `heapq`, `random`, `numpy`).
+    5. Transitive module escapes intercepted via `_SafeModuleProxy` (`typing.sys`, `collections._sys`).
+    6. Dangerous NumPy C/disk utilities blocked (`load`, `fromfile`, `memmap`, `ctypeslib`, `f2py`).
+    7. Memory/output flood quotas (`_BoundedStream`) and WASM C-stack recursion cap (`sys.setrecursionlimit(200)`).
+    8. Hard 5,000ms Worker termination watchdog with automatic clean restart.
+
 ---
 
 ## 3. Backlog & Recommended Next Tasks
 
-The platform now features the complete 28-step curriculum, interactive vector sandbox, reading comfort controls, dedicated Interview Questions hub, PWA offline support, deep-link search highlighting, and micro-concept calculators.
+The platform now delivers a comprehensive, zero-jank masterclass with full offline PWA support, interactive sandboxes, quizzes, print-ready PDF export, and hardened client-side Python execution.
 
-### Optional Backlog
-1. **Completion Certificate Generator**: Client-side canvas-generated PDF/PNG certificate of completion once all 28 modules and interview questions reach 100% mastery.
+### Potential Future Enhancements
+1. **Masterclass Completion Certificate**: Client-side canvas-generated PDF/PNG certificate of completion with unique SHA-256 verification hash upon reaching 100% curriculum + quiz mastery.
+2. **Additional Python Sandbox Templates**: Expanding pre-loaded templates to cover Advanced Graph RAG and Agentic Routing algorithms.
 
 ---
 
@@ -140,9 +180,10 @@ git status
 # Run local development server
 npm run dev:ui
 
-# Run production build
+# Run production build (native ESM)
 npm run build
 
-# Deploy to Vercel production
+# Deploy to Vercel production (always run from repo root)
 npx --yes vercel --yes --prod
 ```
+
