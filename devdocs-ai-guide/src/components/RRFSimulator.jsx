@@ -218,11 +218,11 @@ function RRFSimulator() {
         </table>
       </div>
 
-      {/* Staff AI Architect Takeaway */}
+      {/* Architecture Takeaway */}
       <div className="mt-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-start gap-2.5 text-xs text-muted-foreground">
         <Sparkles className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
         <div className="leading-relaxed">
-          <span className="font-semibold text-purple-300">Staff Architecture Invariant:</span> Notice how Doc #5
+          <span className="font-semibold text-purple-300">Architecture Invariant:</span> Notice how Doc #5
           (which placed 3rd in Vector and 3rd in BM25) often beats a document that was #1 in Vector but completely missed in BM25.
           This proves why RRF eliminates blind spots in pure dense retrieval and eliminates the need to normalize raw Cosine vs BM25 logits!
         </div>

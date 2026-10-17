@@ -142,7 +142,7 @@ export const moduleQuizzes = {
     {
       id: 'cs-1',
       question:
-        'Running a 1024-dim GPU model on every single sentence of 1M documents just to find semantic split points costs $8,000. How do Staff engineers optimize Semantic Chunking?',
+        'Running a 1024-dim GPU model on every single sentence of 1M documents just to find semantic split points costs $8,000. How do production engineers optimize Semantic Chunking?',
       options: [
         'Split randomly every 5 sentences instead.',
         'Use Asymmetric Model Tiering: a fast 22M-param INT8 ONNX model on CPU for sentence boundary detection, then embed only the final merged chunks with the heavy GPU model.',
@@ -342,7 +342,7 @@ export const moduleQuizzes = {
     {
       id: 'pl-2',
       question:
-        'Where should PII and secret scrubbing (e.g. redacting `sk-...` OpenAI keys, `ghp_...` GitHub PATs, and emails) occur in the telemetry pipeline?',
+        'Where should PII and secret scrubbing (e.g. redacting `sk-...` API keys, `ghp_...` personal access tokens, and emails) occur in the telemetry pipeline?',
       options: [
         'Once a month via a batch SQL `UPDATE` script.',
         'In the frontend CSS via `user-select: none`.',
@@ -435,7 +435,7 @@ export const moduleQuizzes = {
     {
       id: 're-2',
       question:
-        'Running a frontier LLM judge on 500 queries for every PR costs $60,000/month. What is the Staff-level tiered CI/CD evaluation strategy?',
+        'Running a frontier LLM judge on 500 queries for every PR costs $60,000/month. What is the production tiered CI/CD evaluation strategy?',
       options: [
         'Run zero evaluations until customers complain.',
         'Tier 1 (Every PR): fast deterministic IR metrics (NDCG, MRR) at $0 cost in <3s; Tier 2 (Nightly): local NLI cross-encoder; Tier 3 (Weekly Release): full frontier LLM-as-a-Judge.',
@@ -703,7 +703,7 @@ export const moduleQuizzes = {
         'Why is using GPT-4o as the sole LLM judge to evaluate a GPT-4o generator problematic, and how do you mitigate it?',
       options: [
         'It exhibits self-preference bias and verbosity bias; mitigate by combining deterministic syntax/citation checks with a cross-family NLI judge and length normalization.',
-        'OpenAI blocks calling the same model twice.',
+        'The model provider blocks calling the same model twice.',
         'GPT-4o cannot output JSON.',
         'It always returns a score of 0.0.',
       ],
@@ -869,7 +869,7 @@ export const moduleQuizzes = {
     {
       id: 'ra-2',
       question:
-        'If the Qdrant vector cluster suffers a network partition or timeout (>100ms) during peak traffic, how should a resilient Staff-grade RAG pipeline degrade gracefully?',
+        'If the Qdrant vector cluster suffers a network partition or timeout (>100ms) during peak traffic, how should a resilient production-grade RAG pipeline degrade gracefully?',
       options: [
         'Trip the circuit breaker and fall back to PostgreSQL BM25 Full-Text Search, maintaining 100% service availability while logging a degraded-mode alert.',
         'Return an unhandled Python traceback to all users.',

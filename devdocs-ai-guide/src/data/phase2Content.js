@@ -125,7 +125,7 @@ Let $N$ be the corpus size ($10^6$ chunks), $K$ be the first-stage candidate cou
 
 ## 4. Production-Grade Implementation
 
-Below is the production-grade implementation of \`DocumentReranker\` for \`src/devdocs_ai/retrieval/reranker.py\`. It includes hardware auto-detection (CUDA, Apple MPS, CPU), FP16 mixed precision, dynamic batching, threshold filtering, and non-blocking asynchronous execution via thread-pool offloading.
+Below is the production-grade implementation of \`DocumentReranker\` for \`src/devdocs_ai/retrieval/reranker.py\`. It includes hardware auto-detection (CUDA, Metal MPS, CPU), FP16 mixed precision, dynamic batching, threshold filtering, and non-blocking asynchronous execution via thread-pool offloading.
 
 \`\`\`python
 """
@@ -374,10 +374,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Google / Meta / Anthropic)
+### Real System Design Interview Question
 > *"You are the Lead ML Systems Architect for a real-time developer search engine indexing 15 million code and API documentation chunks. Your service receives 2,500 queries per second (QPS) at peak, with a strict end-to-end P99 latency SLA of 120ms (including network round-trip, retrieval, reranking, and initial streaming LLM token). If running a Cross-Encoder over all 15 million chunks is impossible, walk us through the end-to-end architecture, mathematical sizing of the candidate pool $K$, latency budget breakdown, hardware provisioning, and how you prevent truncation catastrophe on long documentation pages."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Latency Budget Allocation (Strict 120ms SLA)
 To hit a 120ms P99 SLA, you must allocate a deterministic latency envelope across every subsystem:
@@ -885,10 +885,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Anthropic / OpenAI)
+### Real System Design Interview Question
 > *"Design the telemetry and observability architecture for an enterprise RAG platform processing 10,000 queries per second with a zero-latency SLA penalty on user requests. How do you prevent telemetry database connection pool exhaustion from crashing the main API, how do you handle PII sanitization before persistence, and how do you structure your analytical queries to detect retrieval drift across thousands of enterprise tenants?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Ingestion Decoupling & Disaster Isolation
 At 10,000 QPS, writing directly from FastAPI request handlers to a relational database creates a **tightly coupled single point of failure**. If PostgreSQL experiences a lock contention spike or storage degradation, connection pools fill up, worker threads block, and the customer-facing API collapses.
@@ -896,7 +896,7 @@ At 10,000 QPS, writing directly from FastAPI request handlers to a relational da
 - **Graceful Degradation (Load Shedding)**: If the telemetry buffer exceeds 80% capacity during a database failover, shed lower-priority retrieval stage traces (e.g., discard BM25 scores for ranks 20–50) while strictly preserving master query records and user feedback.
 
 #### 2. PII Scrubbing at the Ingestion Boundary
-Developer queries frequently contain accidental secrets: GitHub Personal Access Tokens (\`ghp_*\`), OpenAI API keys (\`sk-*\`), AWS access keys (\`AKIA*\`), and private email addresses.
+Developer queries frequently contain accidental secrets: GitHub Personal Access Tokens (\`ghp_*\`), API secret keys (\`sk-*\`), AWS access keys (\`AKIA*\`), and private email addresses.
 - Implement a zero-allocation streaming regex sanitizer in Python or Rust at the ingestion middleware layer:
   \`\`\`python
   import re
@@ -1384,10 +1384,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Google / Meta)
+### Real System Design Interview Question
 > *"You are architecting an enterprise documentation assistant for 500,000 developers who query both high-level design concepts ('How does React Suspense coordinate async boundary rendering?') and rigid tabular compatibility questions ('What version of Node.js stabilized fetch, and what experimental flags are required for older versions?'). Walk us through your hybrid routing architecture, your schema design for automated ingestion from open-source compatibility repos (MDN BCD), and how you harden Text-to-SQL against prompt injection attacks."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Dual-Path Routing Strategy & Latency Budget
 - Never run Text-to-SQL and Vector Search simultaneously on 100% of queries (wastes compute and creates latency race conditions).
@@ -1525,7 +1525,7 @@ flowchart TD
 
     Taxonomies --> SchemaVal["Pydantic Schema Validator (GoldenTriplet Model)"]
     SchemaVal --> ChunkVerifier["Vector Store Ground-Truth Chunk ID Verifier"]
-    ChunkVerifier --> HumanReview["Staff Engineer Spot-Check & Fleiss' Kappa Gate"]
+    ChunkVerifier --> HumanReview["Lead Engineer Spot-Check & Fleiss' Kappa Gate"]
     HumanReview --> VersionArtifact[("Versioned Benchmark: data/goldens/v1.0.0.jsonl")]
     VersionArtifact --> RegressionRunner["Automated CI/CD RAG Regression Suite"]
 
@@ -1841,10 +1841,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Anthropic / OpenAI)
+### Real System Design Interview Question
 > *"You are responsible for the quality benchmark of a multi-tenant documentation and coding RAG assistant indexing 50 million pages. Over time, technical documentation undergoes continuous churn (new API releases, method deprecations, breaking changes). How do you construct, maintain, and version a Golden Evaluation Benchmark so it does not degrade over time, prevent prompt engineers from gaming or overfitting to the test set, and detect when upstream documentation edits invalidate your ground-truth annotations?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Preventing Evaluation Set Contamination & Overfitting
 - **The Goodhart's Law Danger**: *"When a measure becomes a target, it ceases to be a good measure."* If prompt engineers and ML engineers have constant access to the full evaluation test set, they will inevitably tweak prompts and chunk boundaries to fit the exact phrasing of the 300 test queries.
@@ -1864,7 +1864,7 @@ if __name__ == "__main__":
 - Do not rely solely on synthetic generation. Mine the PostgreSQL telemetry logs:
   - Extract queries with high dwell time where the user ultimately submitted **negative feedback** (\`is_helpful = FALSE\`).
   - Extract queries where the Cross-Encoder score was low across all 50 candidates ($< 0.25$).
-  - Pass these failed production queries to senior staff engineers to write authoritative reference answers and label ground-truth documentation chunks, transforming production failures into regression tests.
+  - Pass these failed production queries to senior engineers to write authoritative reference answers and label ground-truth documentation chunks, transforming production failures into regression tests.
 
 ### Common Failure Modes & Production Edge Cases
 1. **Lexical Leakage (Verbatim Question Copying)**:
@@ -2088,7 +2088,7 @@ class RagasEvaluator:
             logger.warning("No evaluation samples provided to RagasEvaluator.")
             return pd.DataFrame()
 
-        # Check if RAGAS and OpenAI credentials are available
+        # Check if RAGAS and LLM API credentials are available
         has_openai = bool(os.getenv("OPENAI_API_KEY"))
 
         if not has_openai or use_local_fallback:
@@ -2256,10 +2256,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Google / Meta / Anthropic)
+### Real System Design Interview Question
 > *"You are the Lead ML Architect for an enterprise AI code assistant. Your VP of Engineering wants to implement automated evaluation on every single pull request across 40 engineers. However, running full RAGAS evaluation with a frontier LLM judge costs \\$0.15 per query, which amounts to \\$60,000 per month and introduces an 8-minute bottleneck on CI/CD pipelines. How do you design a tiered evaluation architecture that guarantees high evaluation fidelity, reduces costs by 95%, and prevents judge bias?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Tiered Evaluation Funnel (Cost & Latency Optimization)
 Never run expensive frontier LLMs on 100% of pull requests. Structure a 3-tier progressive evaluation gate:
@@ -2726,10 +2726,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Google / Meta / OpenAI)
+### Real System Design Interview Question
 > *"Your production RAG assistant reports a stellar Hit Rate@10 of 94%, yet customer satisfaction surveys show a disappointing 61% rating, and automated hallucination monitors trigger constantly. Walk us through your forensic diagnosis using classical Information Retrieval metrics. How do you isolate 'Lost in the Middle' position decay, what mathematical formulas prove your diagnosis, and how do you configure your Cross-Encoder cascade to fix it?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. The Forensic Diagnostic Playbook: The Hit Rate vs MRR Paradox
 When Hit Rate@10 is high ($94\\%$) but user satisfaction is low ($61\\%$), the system is suffering from the **Rank Dispersion Pathology**:
@@ -3102,10 +3102,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question (Anthropic / OpenAI / Google)
-> *"You are the Staff AI Infrastructure Engineer presenting the architecture of a new enterprise documentation assistant to the VP of Engineering and Head of Infrastructure. The infrastructure lead argues that Hierarchical Parent-Child chunking + Cross-Encoder re-ranking is over-engineered: it stores 2.8x more chunks in vector memory and adds 35ms of GPU latency compared to standard 400-token fixed-size chunking. Walk us through how you defend this architecture using empirical ablation data, Total Cost of Ownership (TCO) financial modeling, and customer trust preservation."*
+### Real System Design Interview Question
+> *"You are the Lead AI Infrastructure Engineer presenting the architecture of a new enterprise documentation assistant to the VP of Engineering and Head of Infrastructure. The infrastructure lead argues that Hierarchical Parent-Child chunking + Cross-Encoder re-ranking is over-engineered: it stores 2.8x more chunks in vector memory and adds 35ms of GPU latency compared to standard 400-token fixed-size chunking. Walk us through how you defend this architecture using empirical ablation data, Total Cost of Ownership (TCO) financial modeling, and customer trust preservation."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. The Core Argument: The Total Cost of Ownership (TCO) Paradox
 The infrastructure lead's intuition (*"storing more chunks and using a GPU reranker costs more money"*) is fundamentally incorrect when looking at the complete end-to-end bill of materials:

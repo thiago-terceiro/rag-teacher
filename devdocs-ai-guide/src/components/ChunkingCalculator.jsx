@@ -217,11 +217,11 @@ function ChunkingCalculator() {
         </div>
       </div>
 
-      {/* Staff AI Architect Trade-Off Tip */}
+      {/* Architecture Trade-Off Tip */}
       <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-start gap-2.5 text-xs text-muted-foreground">
         <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
         <div className="leading-relaxed">
-          <span className="font-semibold text-blue-300">Staff Architecture Invariant:</span> An overlap $O$ of{' '}
+          <span className="font-semibold text-blue-300">Architecture Invariant:</span> An overlap $O$ of{' '}
           <strong className="text-foreground">15%–20%</strong> is the production sweet spot. Less than 10% risks splitting atomic
           entities (e.g. JSON fields or equations) across boundaries; greater than 30% inflates vector database index memory and embedding
           API costs by <strong className="text-foreground">&gt;40%</strong> without retrieval recall gains.

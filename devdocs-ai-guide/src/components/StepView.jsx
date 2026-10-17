@@ -304,16 +304,16 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
           />
         </div>
 
-        {/* Staff Interview Question Challenge Card */}
+        {/* System Design Interview Challenge Card */}
         {stepInterview && (
-          <section aria-label="Staff Interview Challenge" className="no-print mt-10 p-5 rounded-2xl bg-card/90 border border-border/80 hover:border-primary/40 shadow-sm transition-all duration-200 relative overflow-hidden group">
+          <section aria-label="System Design Interview Challenge" className="no-print mt-10 p-5 rounded-2xl bg-card/90 border border-border/80 hover:border-primary/40 shadow-sm transition-all duration-200 relative overflow-hidden group">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div className="flex items-center space-x-2 text-xs font-semibold text-primary uppercase tracking-wider">
                 <HelpCircle className="w-4 h-4 text-primary" />
-                <span>Staff System Design Interview Challenge</span>
+                <span>System Design Interview Challenge</span>
               </div>
               <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                {stepInterview.company}
+                {stepInterview.track || stepInterview.company || 'System Architecture'}
               </span>
             </div>
 
@@ -324,7 +324,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
             <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Benchmark Staff-level architecture solution with failure modes & latency budgets</span>
+                <span>Benchmark architecture solution with failure modes & latency budgets</span>
               </div>
               <Link
                 to="/interview-questions"
@@ -371,7 +371,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
             </Link>
           ) : (
             <div className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-center border border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.2)] animate-in zoom-in-95 duration-300">
-              🎉 Curriculum Completed! You are now a Staff RAG Master!
+              🎉 Curriculum Completed! You are now a Production RAG Master!
             </div>
           )}
         </nav>

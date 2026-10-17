@@ -114,8 +114,8 @@ const StatsBar = ({
         {/* Interview Questions */}
         <Link
           to="/interview-questions"
-          title="Staff System Design Interview Scenarios (28 Questions)"
-          aria-label={t('nav.interview', 'Staff Interview Questions')}
+          title="System Design Interview Scenarios (28 Questions)"
+          aria-label={t('nav.interview', 'Interview Questions')}
           className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-primary/40 transition-colors shadow-2xs"
         >
           <HelpCircle className="w-3.5 h-3.5 text-primary" />

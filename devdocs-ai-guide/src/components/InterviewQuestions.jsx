@@ -103,7 +103,7 @@ export function InterviewQuestions() {
       <title>Interview Questions — RAG Teacher</title>
       <meta
         name="description"
-        content="28 Staff-Level AI & Machine Learning System Design Interview Scenarios from Google, Meta, Anthropic, and OpenAI."
+        content="28 Production AI & Machine Learning System Design Interview Scenarios with failure modes, latency budgets, and architecture solutions."
       />
 
       {/* Ambient Aura Background Glow */}
@@ -113,13 +113,13 @@ export function InterviewQuestions() {
       <div className="mt-4 mb-8 text-center sm:text-left">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold mb-3">
           <HelpCircle className="w-3.5 h-3.5" />
-          <span>Staff & Principal AI System Design</span>
+          <span>System Design & Architecture</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-[0.01em]">
           Interview Questions
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-3xl leading-relaxed">
-          The definitive collection of 28 real-world system design interview questions asked at top AI labs (OpenAI, Anthropic, Google DeepMind, Meta). Test your architecture intuition, draft your response, and benchmark against staff-level solutions.
+          The definitive collection of 28 real-world system design interview questions. Test your architecture intuition, draft your response, and benchmark against production architecture solutions.
         </p>
       </div>
 
@@ -134,7 +134,7 @@ export function InterviewQuestions() {
               Interview Mastery: {masteredCount} of {totalQuestions} Scenarios Mastered
             </div>
             <div className="text-xs text-muted-foreground mt-0.5">
-              Practice drafting your technical constraints before revealing the staff architecture.
+              Practice drafting your technical constraints before revealing the architecture solution.
             </div>
           </div>
         </div>
@@ -181,7 +181,7 @@ export function InterviewQuestions() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search questions, companies..."
+            placeholder="Search questions, topics..."
             className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"
           />
         </div>
@@ -212,7 +212,7 @@ export function InterviewQuestions() {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-semibold">
-                        {q.company}
+                        {q.track || q.company || 'System Architecture'}
                       </span>
                       <span className="text-xs text-muted-foreground font-medium">
                         Phase {q.phase} • Step {q.id}
@@ -279,7 +279,7 @@ export function InterviewQuestions() {
                     <textarea
                       value={draft}
                       onChange={(e) => updateDraft(q.step_key, e.target.value)}
-                      placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the staff answer..."
+                      placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
                       className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
                     />
                   </div>
@@ -298,12 +298,12 @@ export function InterviewQuestions() {
                       {isRevealed ? (
                         <>
                           <EyeOff className="w-4 h-4" />
-                          <span>Hide Staff Answer</span>
+                          <span>Hide Architecture Answer</span>
                         </>
                       ) : (
                         <>
                           <Eye className="w-4 h-4" />
-                          <span>Reveal Staff Architecture Answer</span>
+                          <span>Reveal Architecture Answer</span>
                         </>
                       )}
                     </button>
@@ -318,12 +318,12 @@ export function InterviewQuestions() {
                   </div>
                 </div>
 
-                {/* Collapsible Staff Answer Reveal */}
+                {/* Collapsible Architecture Answer Reveal */}
                 {isRevealed && (
                   <div className="px-5 sm:px-6 py-6 border-t border-border/80 bg-secondary/20 animate-in fade-in duration-200">
                     <div className="flex items-center space-x-2 text-xs font-bold text-primary uppercase tracking-wider mb-4 pb-2 border-b border-border/60">
                       <Sparkles className="w-4 h-4 text-primary" />
-                      <span>Staff-Level Architecture Answer & Tradeoffs</span>
+                      <span>Production Architecture Answer & Tradeoffs</span>
                     </div>
 
                     <div className="prose prose-invert max-w-none text-sm">

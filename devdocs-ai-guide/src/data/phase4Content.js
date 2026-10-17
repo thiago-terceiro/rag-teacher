@@ -112,7 +112,7 @@ $$\\Delta \\text{Renders} = \\min\\left(N_{\\text{chunks}}, \\left\\lfloor \\fra
 For a 500-token answer delivered in 5 seconds with 150 network chunks, naive rendering triggers 150 renders. Double-buffering caps rendering at exactly $\\approx 30\\text{ renders}$ (flushing every $166\\text{ ms}$ or at RAF intervals), reducing DOM recalculation overhead by over **80%**.
 
 ### Core Web Vitals Targets
-Production deployment targets the following Google Core Web Vitals thresholds:
+Production deployment targets the following Core Web Vitals thresholds:
 - **Largest Contentful Paint (LCP)**: $\\le 1.2\\text{ s}$ (Measured from navigation to initial chat container render).
 - **Interaction to Next Paint (INP)**: $\\le 100\\text{ ms}$ (Keyboard input and stop button response responsiveness).
 - **Cumulative Layout Shift (CLS)**: $\\le 0.05$ (Reserved container heights for citation drawers and message lists prevent layout jumps).
@@ -302,7 +302,7 @@ export const useChat = () => {
 ## 5. System Design Interview Mastery
 
 ### Mobile Backgrounding & Connection Recovery
-In Staff/Principal system design interviews, interviewers frequently probe: *"What happens if the user locks their mobile phone or switches browser tabs while the LLM is halfway through generating a 600-token answer?"*
+In system design interviews, interviewers frequently probe: *"What happens if the user locks their mobile phone or switches browser tabs while the LLM is halfway through generating a 600-token answer?"*
 
 1. **Browser Behavior**: When a mobile browser is minimized or tab is backgrounded, mobile OS power managers throttle or freeze background JavaScript timers. The underlying TCP socket may either stay alive or silently drop without an immediate TCP FIN packet.
 2. **Server-Sent Events (SSE) Reconnection**: Production SSE uses the standard \`Last-Event-ID\` header. When the client reconnects, it sends \`Last-Event-ID: token_seq_142\`. The backend event cache replays missed tokens from sequence 143 forward, eliminating lost output.
@@ -942,7 +942,7 @@ export const CitationDrawer = ({ citation, onClose }) => {
 ## 5. System Design Interview Mastery
 
 ### Security & Prompt Injection Mitigation
-In a Staff AI Systems Design interview, interviewers will ask: *"What prevents a malicious user or corrupted documentation chunk from performing Cross-Site Scripting (XSS) via your Markdown renderer?"*
+In an AI Systems Design interview, interviewers will ask: *"What prevents a malicious user or corrupted documentation chunk from performing Cross-Site Scripting (XSS) via your Markdown renderer?"*
 - **Threat Vector**: A scraped document contains \`<img src=x onerror=alert(document.cookie)>\` or an LLM hallucination injects executable JavaScript inside markdown links: \`[Click Here](javascript:stealData())\`.
 - **Mitigation Architecture**:
   1. **Strict Sanitization**: Run all rendered HTML through **DOMPurify** with custom allowlists (only \`<code>\`, \`<pre>\`, \`<span>\`, \`<a>\` with \`target="_blank"\` and \`rel="noopener noreferrer"\`).
@@ -1577,7 +1577,7 @@ export const QueryInspectionTable = () => {
 ## 5. System Design Interview Mastery
 
 ### Telemetry Ingestion at High Throughput (10,000+ QPS)
-In a Staff AI Systems Design interview, interviewers will ask: *"If your RAG system scales to 10,000 queries per second, how do you collect trace spans and metrics without crushing your database or slowing down inference?"*
+In an AI Systems Design interview, interviewers will ask: *"If your RAG system scales to 10,000 queries per second, how do you collect trace spans and metrics without crushing your database or slowing down inference?"*
 
 1. **Decoupled Asynchronous Telemetry Architecture**:
    Never write telemetry synchronously in the user request path. The inference worker dispatches fire-and-forget telemetry events into an in-memory queue (Redis Streams or Apache Kafka). A dedicated background consumer batch-inserts 500 rows per \`INSERT\` transaction into a time-series optimized store (PostgreSQL with TimescaleDB or ClickHouse).
@@ -1646,7 +1646,7 @@ Building DevDocs AI without a human user study is like releasing a pharmaceutica
 | Dimension | Naive Approach | Production Reality (DevDocs AI) |
 | :--- | :--- | :--- |
 | **Participant Selection** | Asking 2 engineering friends on Slack | Stratified cohort ($N=12$) with balanced distribution: 4 Junior, 4 Mid-Level, 4 Senior engineers |
-| **Experimental Control** | Ad-hoc queries with no baseline comparison | Within-subjects randomized controlled trial: DevDocs AI vs. Traditional Google/MDN browsing |
+| **Experimental Control** | Ad-hoc queries with no baseline comparison | Within-subjects randomized controlled trial: DevDocs AI vs. Traditional documentation search |
 | **Learning Effect Bias** | All users test Control first, then AI | Counterbalanced Latin Square assignment (Group A: Control $\\to$ AI; Group B: AI $\\to$ Control) |
 | **Task Design** | "Try asking the bot a few questions" | 3 standardized, timed real-world coding challenges with objective pass/fail criteria |
 | **Statistical Rigor** | Reporting average survey rating (e.g. "4.5/5") | Non-parametric hypothesis testing (Mann-Whitney U Test, Wilcoxon Signed-Rank, Cliff's delta) |
@@ -1757,7 +1757,7 @@ The official experimental protocol administered to all participants:
 # DevDocs AI: Controlled Usability Study Protocol
 
 ## 1. Study Objective
-Evaluate developer efficiency, search latency, and answer accuracy using DevDocs AI vs. standard Google/MDN browsing.
+Evaluate developer efficiency, search latency, and answer accuracy using DevDocs AI vs. standard documentation search.
 
 ## 2. Participant Briefing Script
 "Thank you for participating. Today you will complete 3 real-world web development coding tasks. 
@@ -1908,7 +1908,7 @@ if __name__ == "__main__":
 ## 5. System Design Interview Mastery
 
 ### Quantifying Business ROI from Developer Usability
-In Staff/Principal engineering interviews, candidates often fail to connect technical metrics (e.g. latency, embeddings) to **business value**. 
+In system design and engineering interviews, candidates often fail to connect technical metrics (e.g. latency, embeddings) to **business value**. 
 
 Here is the exact formula to articulate RAG business impact:
 $$\\text{Annual Engineering Hours Saved} = N_{\\text{engineers}} \\times Q_{\\text{per\\_day}} \\times \\Delta t_{\\text{saved}} \\times D_{\\text{work\\_days}}$$
@@ -1922,10 +1922,10 @@ $$\\text{Annual Engineering Hours Saved} = N_{\\text{engineers}} \\times Q_{\\te
 $$\\text{Total Time Saved} = 500 \\times 5 \\times 138\\text{ s} \\times 240 = 82,800,000\\text{ s} \\approx 23,000\\text{ engineering hours/year}$$
 Assuming a fully loaded senior developer compensation rate of $\\$100/\\text{hour}$:
 $$\\text{Annual Value Realized} = 23,000\\text{ hrs} \\times \\$100/\\text{hr} = \\mathbf{\\$2,300,000\\text{ / year}}$$
-Presenting this quantitative bridge in an executive or Staff interview immediately sets you apart from junior engineers.
+Presenting this quantitative bridge in an executive or architecture interview immediately sets you apart from junior engineers.
 
 ### Continuous Online Evaluation: Team Draft Interleaving
-Offline studies cannot be run every week. In large-scale search infrastructure (Google, Netflix, Amazon), teams evaluate retrieval algorithms in production using **Team Draft Interleaving**:
+Offline studies cannot be run every week. In large-scale enterprise search infrastructure, teams evaluate retrieval algorithms in production using **Team Draft Interleaving**:
 1. When a user submits a query, two retrieval models (e.g. Baseline Retriever A and Fine-Tuned Retriever B) generate top candidates.
 2. A coin toss alternates choosing from Model A and Model B to construct a single interleaved ranking: $[A_1, B_1, A_2, B_2, \\dots]$.
 3. Each candidate chunk invisibly retains a team tag.
@@ -1973,9 +1973,9 @@ uv run python src/devdocs_ai/evaluation/analyze_user_study.py
 ### Architecture Documentation as an Engineering Contract
 A production software system is far more than its compiled bytecode; it is an **engineering contract** encompassing functional guarantees, resource constraints, failure boundaries, and operational recovery runbooks.
 
-In Staff/Principal engineering interviews and executive architectural reviews, the repository README and system diagrams represent your system's public interface:
+In system design and engineering interviews and executive architectural reviews, the repository README and system diagrams represent your system's public interface:
 - A junior engineer presents a code repo with a generic 3-box diagram ("Frontend $\\to$ Backend $\\to$ DB") and hand-wavy hardware estimates.
-- A **Staff AI Systems Engineer** presents a rigorously formalized architecture adhering to the **C4 Model** (Context, Containers, Components, Code), backed by quantitative capacity sizing for 10M to 100M documents, sub-800ms latency budget breakdowns, multi-tier caching architectures, and zero-downtime degradation runbooks.
+- A **Lead Systems Engineer** presents a rigorously formalized architecture adhering to the **C4 Model** (Context, Containers, Components, Code), backed by quantitative capacity sizing for 10M to 100M documents, sub-800ms latency budget breakdowns, multi-tier caching architectures, and zero-downtime degradation runbooks.
 
 ### The Real-World Analogy: Skyscraper Architectural Blueprints
 An architect presenting the design for a 70-story skyscraper does not hand the municipal zoning commission an electrical wiring diagram of a 42nd-floor bathroom:
@@ -2038,7 +2038,7 @@ flowchart TD
         Postgres[("PostgreSQL 16 DB\\n(Telemetry Spans, Feedback & BM25 Inverted Index)")]
     end
 
-    LLM["Inference Cluster\\n(vLLM / TensorRT-LLM / Claude / OpenAI)"]
+    LLM["Inference Cluster\\n(vLLM / TensorRT-LLM / Hosted APIs)"]
 
     Client <-->|HTTP/2 Server-Sent Events (SSE)| Gateway
     Gateway <-->|Check Tier-1 Hash| ExactCache
@@ -2083,7 +2083,7 @@ flowchart TD
 ## 3. Mathematical & Algorithmic Foundations
 
 ### Quantitative Sizing Math for Enterprise Scale (10M to 100M Documents)
-In a Staff/Principal Systems Design interview, hand-waving memory requirements is an immediate failure. You must be able to perform rigorous, on-the-whiteboard sizing calculations.
+In a Systems Design interview, hand-waving memory requirements is an immediate failure. You must be able to perform rigorous, on-the-whiteboard sizing calculations.
 
 #### 1. Raw Dense Vector Memory
 Let:
@@ -2336,9 +2336,9 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 5. System Design Interview Mastery: The Staff/Principal RAG Playbook
+## 5. System Design Interview Mastery: The Production RAG Playbook
 
-This playbook provides the exhaustive, definitive blueprint required to ace Staff and Principal Machine Learning Systems Design interviews.
+This playbook provides the exhaustive, definitive blueprint required to ace Machine Learning Systems Design interviews.
 
 ### 1. Master Capacity Planning & Sizing Reference Sheet
 Always memorize or quickly derive these reference numbers:
@@ -2383,7 +2383,7 @@ flowchart TD
 - **Cache Invalidation Strategy**: When an MDN documentation page is updated, the ingestion pipeline emits an invalidation event containing the updated document IDs. A Redis reverse-index (\`doc_id -> [query_hashes]\`) purges all affected cache entries immediately.
 
 ### 3. Failure Modes, Circuit Breakers & Degraded Mode Operations
-In Staff interviews, resilience separates amateurs from architects. The system must degrade gracefully:
+In system design interviews, resilience separates amateurs from architects. The system must degrade gracefully:
 
 \`\`\`mermaid
 flowchart TD
@@ -2435,13 +2435,13 @@ flowchart TD
    - *Behavior*: Retrieved chunks exceed maximum LLM attention budget.
    - *Degraded Mode*: Dynamic context budgeting prioritizes chunk #1 (highest relevance) and chunk #5, pruning middle chunks to avoid the "Lost in the Middle" attention degradation phenomenon.
 
-### 4. Master System Design Interview Cheat Sheet: The 7-Step Staff Framework
+### 4. Master System Design Interview Cheat Sheet: The 7-Step System Design Framework
 
 When faced with any RAG / Generative AI System Design interview question, execute this exact 7-step sequence:
 
 \`\`\`text
 ┌────────────────────────────────────────────────────────────────────────┐
-│             STAFF/PRINCIPAL RAG SYSTEM DESIGN INTERVIEW FRAMEWORK      │
+│             PRODUCTION RAG SYSTEM DESIGN INTERVIEW FRAMEWORK      │
 ├────────────────────────────────────────────────────────────────────────┤
 │ 1. Requirements & SLO Clarification (5 mins)                          │
 │    • Functional: Technical search vs. agentic coding vs. chat history. │

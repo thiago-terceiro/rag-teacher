@@ -24,7 +24,7 @@ Imagine deploying a high-precision Formula 1 racing engine (PyTorch + CUDA) into
 
 ### Trade-Offs Matrix
 
-| Architectural Dimension | Naive Approach (\`pip\` + \`requirements.txt\`) | Production Grade (\`uv\` + \`pyproject.toml\` + \`uv.lock\`) | Staff Engineering Rationale |
+| Architectural Dimension | Naive Approach (\`pip\` + \`requirements.txt\`) | Production Grade (\`uv\` + \`pyproject.toml\` + \`uv.lock\`) | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- |
 | **Resolution Speed** | 45s – 180s (backtracking solver) | 1.2s – 3.5s (Rust PubGrub solver) | Reduces CI/CD pipeline latency by 90%+, unblocking rapid iteration. |
 | **Lockfile Determinism** | None (unless manually pinned with hashes) | Universal multi-platform deterministic lockfile (\`uv.lock\`) | Eliminates "works on my machine" transitive version drift in production. |
@@ -51,7 +51,7 @@ flowchart TD
     H --> I[env_check Diagnostic: Hardware Accelerator Probe]
     I --> J{Accelerator Status}
     J -- CUDA Available --> K[Initialize GPU Tensor Pipeline: FP16/BF16]
-    J -- MPS Available --> L[Initialize Apple Silicon Metal Backend]
+    J -- MPS Available --> L[Initialize Metal GPU Backend]
     J -- CPU Only --> M[Initialize OpenMP / AVX-512 Fallback]
 \`\`\`
 
@@ -283,7 +283,7 @@ def run_diagnostics() -> bool:
         accel_desc = f"CUDA Enabled: {device_name} (CC {capability[0]}.{capability[1]}, {vram_gb:.1f} GB VRAM)"
         accel_status = "[bold green]ACCELERATED (CUDA)[/bold green]"
     elif mps_available:
-        accel_desc = "Apple Silicon Metal Performance Shaders (MPS)"
+        accel_desc = "Metal Performance Shaders (MPS)"
         accel_status = "[bold green]ACCELERATED (MPS)[/bold green]"
     else:
         accel_desc = f"CPU Execution (Thread count: {torch.get_num_threads()})"
@@ -331,10 +331,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
-> *"You are deploying an embedding inference service across a fleet of 500 heterogeneous nodes—ranging from local Apple Silicon developer workstations (M2/M3) to AWS \`g5.2xlarge\` instances (NVIDIA A10G) and CPU-only edge nodes. How do you architect the package resolution, container image build, and runtime initialization layers to guarantee zero dependency drift, prevent silent CPU fallback, and achieve sub-second cold starts?"*
+### Real System Design Interview Question
+> *"You are deploying an embedding inference service across a fleet of 500 heterogeneous nodes—ranging from local ARM64 developer workstations to AWS \`g5.2xlarge\` instances (NVIDIA A10G) and CPU-only edge nodes. How do you architect the package resolution, container image build, and runtime initialization layers to guarantee zero dependency drift, prevent silent CPU fallback, and achieve sub-second cold starts?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Decouple Build Artifacts via Multi-Stage OCI Builds
 Never run package resolution (\`pip install\` or \`uv pip compile\`) inside the production container at startup. Package resolution must occur at CI build time:
@@ -380,14 +380,14 @@ if settings.ENVIRONMENT == "production":
      \`\`\`
 
 3. **Silent Floating-Point Drift Across Architectures**:
-   - *Failure*: A dot-product calculation between two FP32 vectors on Apple Silicon MPS differs from NVIDIA Ampere Tensor Cores at the 6th decimal place due to Fused Multiply-Add (FMA) instruction variance.
+   - *Failure*: A dot-product calculation between two FP32 vectors on ARM64 MPS differs from NVIDIA Ampere Tensor Cores at the 6th decimal place due to Fused Multiply-Add (FMA) instruction variance.
    - *Remediation*: Unit tests must assert similarity tolerance within strict bounds ($\\epsilon \\le 1 \\times 10^{-5}$) rather than exact equality.
 
 ---
 
 ## 6. Hands-On Verification Checkpoint
 
-Execute the following commands in your shell to verify that your workspace satisfies all Staff-level criteria:
+Execute the following commands in your shell to verify that your workspace satisfies all production criteria:
 
 \`\`\`bash
 # 1. Install uv (if not already installed)
@@ -410,7 +410,7 @@ uv run python -m devdocs_ai.env_check
 ┃ Subsystem         ┃ Resolved Value                                        ┃ Status             ┃
 ┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
 │ Python Version    │ 3.11.8 (64bit)                                        │ PASS               │
-│ PyTorch Engine    │ v2.2.2 | Apple Silicon Metal Performance Shaders (MPS) │ ACCELERATED (MPS)  │
+│ PyTorch Engine    │ v2.2.2 | Metal Performance Shaders (MPS) │ ACCELERATED (MPS)  │
 │ Rust Tokenizer    │ Tiktoken cl100k_base (7 tokens encoded)               │ PASS               │
 │ Qdrant Client     │ v1.9.1                                                │ PASS               │
 │ Storage Topology  │ Base: /workspace/devdocs-ai                           │ PASS               │
@@ -442,7 +442,7 @@ Imagine tearing the index, table of contents, and chapter headers off an automob
 
 ### Trade-Offs Matrix
 
-| Dimension | Naive Approach (Raw Scraping) | Production Grade (Structured AST Decomposition) | Staff Engineering Rationale |
+| Dimension | Naive Approach (Raw Scraping) | Production Grade (Structured AST Decomposition) | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- |
 | **Noise Filtering** | Retains headers, sidebars, footers (50%+ noise) | Decomposes non-content DOM nodes before conversion | Prevents vector drift caused by repeated site-wide navigation tokens. |
 | **Context Retention** | Severed headings lose parent-child relationship | Inherits hierarchical breadcrumb stack down to each leaf node | Solves the "lost in the middle" and detached parameter problem. |
@@ -499,7 +499,7 @@ $$H(X) \\approx 3.2 - 4.2 \\text{ bits per character}$$
 Because source code carries nearly **$3\\times$ higher information entropy per character**, any truncation or loss of punctuation destroys disproportionately more semantic content than in natural language.
 
 ### 2. Token Expansion Ratio ($\\rho$)
-When text is tokenized using Byte-Pair Encoding (BPE) (e.g., OpenAI \`cl100k_base\` or Hugging Face BGE tokenizers), we measure the Token Expansion Ratio $\\rho$:
+When text is tokenized using Byte-Pair Encoding (BPE) (e.g., standard \`cl100k_base\` or Hugging Face BGE tokenizers), we measure the Token Expansion Ratio $\\rho$:
 $$\\rho = \\frac{\\text{Token Count}}{\\text{Word Count}}$$
 
 - **English Prose**: $\\rho \\approx 1.25 - 1.35$ (words are frequently whole tokens or split into common roots/suffixes).
@@ -725,10 +725,10 @@ class MDNDocumentParser:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"You are architecting the documentation ingestion pipeline for an enterprise code assistant indexing 500,000 internal SDK reference pages and external technical docs. These documents undergo weekly updates. How do you design the document representation and ingestion schema to: (1) guarantee complete retrieval provenance, (2) detect breaking semantic changes, and (3) prevent stale or orphaned chunks from contaminating the vector store?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Content-Addressable Cryptographic Fingerprinting
 Every document is represented as a two-level hash hierarchy:
@@ -832,7 +832,7 @@ print(f"Parameters Extracted: {len(doc.parameters)}")
 print(f"Code Ratio: {doc.metadata.code_ratio}")
 assert "Should be stripped" not in doc.raw_markdown, "Boilerplate leak detected!"
 assert len(doc.parameters) == 2, "Parameter extraction failed!"
-print("Verification Succeeded: Canonical Document satisfies all Staff criteria!")
+print("Verification Succeeded: Canonical Document satisfies all production criteria!")
 \`\`\`
 
 ### Expected Output
@@ -843,7 +843,7 @@ Hierarchy: Web > JavaScript > Reference > Global_Objects > Array
 Syntax Signature: slice(start, end)
 Parameters Extracted: 2
 Code Ratio: 0.324
-Verification Succeeded: Canonical Document satisfies all Staff criteria!
+Verification Succeeded: Canonical Document satisfies all production criteria!
 \`\`\``
   },
   {
@@ -870,7 +870,7 @@ Imagine drawing water from a neighborhood well with a strict rule: only 5 bucket
 
 ### Trade-Offs Matrix
 
-| Architectural Dimension | Naive Approach (\`requests\` / unconstrained \`asyncio\`) | Production Grade (\`httpx\` + Token Bucket + Jitter) | Staff Engineering Rationale |
+| Architectural Dimension | Naive Approach (\`requests\` / unconstrained \`asyncio\`) | Production Grade (\`httpx\` + Token Bucket + Jitter) | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- |
 | **I/O Model** | Blocking I/O or unbounded async tasks | Bounded asynchronous worker pool (\`asyncio.Semaphore\`) | Caps file descriptor usage strictly below OS limits ($L \\le 20$). |
 | **Rate Limiting** | Ad-hoc \`time.sleep(1)\` (sleeps even when allowed) | Continuous Token Bucket with monotonic clock | Maximizes throughput up to safe limit without triggering 429s. |
@@ -942,7 +942,7 @@ $$N_{\\max}(T) = C + r \\cdot T$$
 
 ### 2. Truncated Exponential Backoff with Full Decorrelated Jitter
 Standard exponential backoff ($T_{\\text{wait}} = 2^i$) causes synchronized retries across concurrent workers, creating periodic traffic spikes called **thundering herds**.
-Following Amazon Architecture research (Volker et al.), we implement **Full Jitter**:
+Following distributed systems architecture research (Volker et al.), we implement **Full Jitter**:
 
 Let base delay be $T_0$, multiplier be 2, maximum delay be $T_{\\max}$, and retry attempt be $i \\in \\{0, 1, \\dots, N_{\\text{retries}}\\}$.
 The randomized delay is drawn uniformly:
@@ -1174,10 +1174,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"Design a distributed web scraping cluster that ingests 10 million technical documentation pages daily from diverse developer sites (MDN, GitHub, ReadTheDocs) while adhering strictly to per-domain rate limits (max 5 QPS per domain), avoiding tarpits, and keeping infrastructure cost under $50/day."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Distributed Domain-Partitioned Architecture
 To guarantee that a fleet of 50 crawler workers never violates the per-domain 5 QPS limit without direct worker-to-worker synchronization:
@@ -1308,7 +1308,7 @@ flowchart TD
 \`\`\`
 
 ### Component Breakdown
-1. **BPE Tokenizer**: Converts raw text into integer token identifiers using OpenAI \`cl100k_base\` BPE vocabulary (100,277 tokens), ensuring 1:1 parity with modern LLM context limits.
+1. **BPE Tokenizer**: Converts raw text into integer token identifiers using standard \`cl100k_base\` BPE vocabulary (100,277 tokens), ensuring 1:1 parity with modern LLM context limits.
 2. **Sliding Window Slicer**: Calculates index bounds $\\text{start}_i$ and $\\text{end}_i$ using stride $S = K - O$.
 3. **Boundary Snapper**: Inspects token boundary edges. If a slice ends in the middle of a code statement or word, adjusts boundary backwards to the nearest newline or whitespace delimiter.
 4. **Chunk Envelope Serialization**: Produces an immutable, schema-validated \`FixedChunk\` containing chunk lineage, token counts, and parent document foreign keys.
@@ -1512,10 +1512,10 @@ class FixedTokenChunker:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"A production RAG assistant for web developers uses 512-token fixed chunking with 50-token overlap. Customer satisfaction telemetry indicates that 35% of user queries asking about method parameters (e.g. 'What does the third argument of addEventListener do?') yield completely wrong answers or hallucinated defaults. Diagnose the root cause in the chunking layer and propose an architectural remediation."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Root Cause Analysis: The Severed Header Trap
 In MDN documentation, API parameter lists are structured sequentially:
@@ -1618,7 +1618,7 @@ for c in chunks:
 assert len(chunks) > 1, "Failed to slice multi-chunk document!"
 assert all(c.token_count <= 200 for c in chunks), "Chunk exceeded max capacity!"
 assert chunks[1].overlap_tokens == 50, "Overlap mismatch on chunk 2!"
-print("Verification Succeeded: Fixed Token Chunker adheres to all Staff specifications!")
+print("Verification Succeeded: Fixed Token Chunker adheres to all production specifications!")
 \`\`\`
 
 ### Expected Output
@@ -1628,7 +1628,7 @@ Generated 4 chunks.
  Chunk 2/4: 200 tokens | Overlap: 50 tokens
  Chunk 3/4: 200 tokens | Overlap: 50 tokens
  Chunk 4/4: 124 tokens | Overlap: 50 tokens
-Verification Succeeded: Fixed Token Chunker adheres to all Staff specifications!
+Verification Succeeded: Fixed Token Chunker adheres to all production specifications!
 \`\`\``
   },
   {
@@ -1654,7 +1654,7 @@ Imagine listening to a lecture. A naive transcriber cuts the transcript every 25
 
 ### Trade-Offs Matrix
 
-| Architectural Dimension | Fixed-Size Chunking (Step 4) | Semantic Chunking (Step 5) | Staff Engineering Rationale |
+| Architectural Dimension | Fixed-Size Chunking (Step 4) | Semantic Chunking (Step 5) | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- |
 | **Topic Coherence** | Low (cuts arbitrarily across ideas) | **Maximum** (splits align with semantic shifts) | Maximizes vector similarity score contrast between relevant and irrelevant chunks. |
 | **Chunk Size Variance** | Zero (strictly uniform $K \\pm \\epsilon$) | Moderate to High (varies by paragraph length) | Requires min/max token guardrails to prevent undersized or oversized fragments. |
@@ -1970,14 +1970,14 @@ class SemanticChunker:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"You are designing the ingestion architecture for 1,000,000 technical documentation pages. The ML leadership mandates semantic chunking to maximize retrieval precision. A naive implementation takes 36 hours and requires $8,000 in cloud GPU spend. How do you re-architect the pipeline to achieve a 10x throughput improvement, reduce cost by 80%, while preserving semantic boundary quality?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Asymmetric Model Tiering (Decoupled Detection vs Indexing)
-The primary bottleneck is running an expensive 1024-dimensional model (e.g. \`bge-large\` or \`openai-text-embedding-3-large\`) across every single sentence of every document just to find where paragraphs end!
-- **Staff Solution**: Use an asymmetric two-model tier:
+The primary bottleneck is running an expensive 1024-dimensional model (e.g. \`bge-large\` or \`dense-embedding-3-large\`) across every single sentence of every document just to find where paragraphs end!
+- **Architecture Solution**: Use an asymmetric two-model tier:
   1. **Tier 1 (Boundary Detection)**: Use a hyper-lightweight 22M-parameter model (\`all-MiniLM-L6-v2\` or \`paraphrase-MiniLM-L3-v2\`) exported to **ONNX Runtime INT8** running on high-throughput CPU instances ($c7g.2xlarge$ Graviton).
      - Single sentence embedding latency: $\\approx 0.4\\text{ms}$ on CPU.
      - Detects semantic distance inflection points with $96\\%$ agreement compared to full-sized models.
@@ -2457,10 +2457,10 @@ class ContextHydrator:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"In a high-scale developer assistant serving 10,000 QPS, Top-10 vector retrieval over child chunks returns 7 children from Parent Section A, 2 children from Parent Section B, and 1 child from Parent Section C. How do you architect the Context Hydration, Parent Re-ranking, and Prompt Assembly layers to optimize token budgets and prevent the 'Lost in the Middle' attention degradation effect?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Hierarchical Score Fusion
 Never treat parent relevance as a simple first-come-first-served lookup. Combine child similarity scores to rank the parent sections:
@@ -2471,7 +2471,7 @@ where $\\alpha = 0.7$.
 
 #### 2. Combating the "Lost in the Middle" Attention Phenomenon
 Extensive research (Liu et al., Stanford) proves that Transformer decoders exhibit a **U-shaped attention curve**: models attend strongly to tokens at the very beginning and very end of the prompt context, while information placed in the middle experiences severe retrieval degradation.
-- **Staff Assembly Strategy**:
+- **Architecture Assembly Strategy**:
   1. Position 1 (Highest Attention): Place the Top-1 Parent ($P_A$) at the beginning of the context block.
   2. Position End (High Attention): Place the Top-2 Parent ($P_B$) at the end of the context block, immediately preceding the user's query.
   3. Position Middle (Lowest Attention): Place lower-ranked or supplementary parents ($P_C$) in the middle.
@@ -2572,7 +2572,7 @@ print(hydrated_prompt[:300] + "...")
 
 assert len(bundle.parents) >= 3, "Failed to extract all H2 parent sections!"
 assert all(c.parent_id in parent_lookup for c in bundle.children), "Foreign key lineage broken!"
-print("\\nVerification Succeeded: Hierarchical Chunker and Hydrator satisfy all Staff specifications!")
+print("\\nVerification Succeeded: Hierarchical Chunker and Hydrator satisfy all production specifications!")
 \`\`\`
 
 ### Expected Output
@@ -2600,7 +2600,7 @@ The map() method creates a new array populated with the results of calling a pro
 ## Syntax
 ...
 
-Verification Succeeded: Hierarchical Chunker and Hydrator satisfy all Staff specifications!
+Verification Succeeded: Hierarchical Chunker and Hydrator satisfy all production specifications!
 \`\`\``
   },
   {
@@ -2631,7 +2631,7 @@ A Transformer outputs a sequence of token representations $\\mathbf{H} \\in \\ma
 
 ### Trade-Offs Matrix
 
-| Model Architecture | Hidden Dims ($D$) | Memory per 1M Vectors (FP32) | Retrieval Latency (MIPS) | MTEB Retrieval NDCG@10 | Staff Engineering Rationale |
+| Model Architecture | Hidden Dims ($D$) | Memory per 1M Vectors (FP32) | Retrieval Latency (MIPS) | MTEB Retrieval NDCG@10 | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **\`all-MiniLM-L6-v2\`** | 384 | 1.54 GB | 1.8 ms | 41.95 | Ultra-fast, ideal for low-latency CPU microservices and boundary detection. |
 | **\`bge-small-en-v1.5\`** | 384 | 1.54 GB | 1.9 ms | 51.68 | **Optimal Production Default**: punches far above its weight class with compact 384 dims. |
@@ -2859,10 +2859,10 @@ class EmbeddingPipeline:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"You need to embed 100 million technical documentation chunks (average 300 tokens each) using a 1024-dimensional model (\`bge-large-en-v1.5\`). Detail the mathematical sizing: calculate total token volume, storage capacity in FP32 vs FP16, required GPU VRAM, inference throughput, and cluster provisioning to complete the indexing run in under 8 hours."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Volume & Storage Mathematics
 - Total Documents: $100,000,000\\text{ chunks}$.
@@ -2953,7 +2953,7 @@ for i, name in enumerate(["Reduce ", "Map    ", "WebGL  ", "Flexbox"]):
 # Assert semantic expectations: Reduce and Map should be highly similar; Reduce and WebGL should be low
 assert sim_matrix[0, 1] > 0.65, "Reduce and Map should exhibit high semantic similarity!"
 assert sim_matrix[0, 2] < 0.40, "Reduce and WebGL should exhibit low semantic similarity!"
-print("\\nVerification Succeeded: Embedding pipeline satisfies all Staff numerical invariants!")
+print("\\nVerification Succeeded: Embedding pipeline satisfies all production numerical invariants!")
 \`\`\`
 
 ### Expected Output
@@ -2969,7 +2969,7 @@ Map    : 0.784  1.000  0.264   0.345
 WebGL  : 0.281  0.264  1.000   0.219
 Flexbox: 0.312  0.345  0.219   1.000
 
-Verification Succeeded: Embedding pipeline satisfies all Staff numerical invariants!
+Verification Succeeded: Embedding pipeline satisfies all production numerical invariants!
 \`\`\``
   },
   {
@@ -3000,7 +3000,7 @@ To achieve sub-10ms latency at multi-million scale, we abandon exact search in f
 
 ### Trade-Offs Matrix
 
-| HNSW Parameter | Low Setting | Production Default (\`m=16, ef=100\`) | High Setting (\`m=64, ef=256\`) | Staff Engineering Rationale |
+| HNSW Parameter | Low Setting | Production Default (\`m=16, ef=100\`) | High Setting (\`m=64, ef=256\`) | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **\`m\` (Edges per Node)** | 8 (low RAM, fast build) | **16 (balanced)** | 64 (high RAM, slow build) | Controls graph connectivity. $m=16$ provides optimal recall/RAM trade-off. |
 | **\`ef_construct\`** | 64 (fast build) | **100 (high fidelity)** | 512 (very slow build) | Explores wider beam during index creation; higher values improve graph routing quality. |
@@ -3315,10 +3315,10 @@ class QdrantService:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"Your vector database holds 20 million vectors (1024 dims). The CFO alerts you that the memory bill exceeds $15,000/month (requiring 120GB+ RAM across large AWS instances). How do you scale down RAM costs by 70%+ while keeping p99 retrieval latency under 15ms and Recall@10 above 95%?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Implement Two-Stage Rescoring with Scalar Quantization (SQ8)
 Never keep 20M raw FP32 1024-dim vectors in RAM!
@@ -3413,7 +3413,7 @@ print(f"Quantization Config: {info.config.quantization_config}")
 
 assert info.points_count == 2, "Point count verification failed!"
 assert info.status == models.CollectionStatus.GREEN, "Collection is not in healthy GREEN status!"
-print("\\nVerification Succeeded: Qdrant Vector Store is provisioned and operational at Staff standards!")
+print("\\nVerification Succeeded: Qdrant Vector Store is provisioned and operational at production standards!")
 \`\`\`
 
 ### Expected Output
@@ -3426,7 +3426,7 @@ Points Indexed: 2
 Vectors Config: size=384, distance=Distance.COSINE
 Quantization Config: scalar=ScalarQuantizationConfig(type=<ScalarType.INT8: 'int8'>, quantile=0.99, always_ram=True)
 
-Verification Succeeded: Qdrant Vector Store is provisioned and operational at Staff standards!
+Verification Succeeded: Qdrant Vector Store is provisioned and operational at production standards!
 \`\`\``
   },
   {
@@ -3456,7 +3456,7 @@ This instruction conditions the attention layers to project the question into th
 
 ### Trade-Offs Matrix
 
-| Architectural Parameter | Low / Naive Setting | Production Calibrated Setting | Staff Engineering Rationale |
+| Architectural Parameter | Low / Naive Setting | Production Calibrated Setting | Production Architecture Rationale |
 | :--- | :--- | :--- | :--- |
 | **Top-$K$ Retrieval Window** | $K=3$ (risks missing facts) | **$K=10$ (for re-ranking pipeline)** | Casts a wider net to guarantee high Recall@10 before downstream re-ranking. |
 | **Similarity Threshold ($\\tau$)** | None (returns noise on nonsense queries) | **$\\tau = 0.65$ (Cosine Score)** | Rejects irrelevant chunks, triggering graceful fallback when no docs match. |
@@ -3707,10 +3707,10 @@ class DenseRetriever:
 
 ## 5. System Design Interview Mastery
 
-### Real Senior/Staff Interview Question
+### Real System Design Interview Question
 > *"In an AI coding assistant, a user asks: 'How do I combine two arrays in JavaScript without mutating the original arrays?'. The dense retriever returns \`Array.prototype.splice()\` with a very high cosine similarity of 0.82 because splice() deals with array modification. The correct answer (\`concat()\` or the spread operator \`[...a, ...b]\`) is ranked 9th. Explain the mathematical root cause of this semantic negation failure mode in bi-encoders, and architect a production mitigation."*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Mathematical Root Cause: Semantic Negation Blindspot in Bi-Encoders
 Dense bi-encoders operate as **Continuous Bag-of-Concepts** matchers in latent metric space:
@@ -3719,7 +3719,7 @@ Dense bi-encoders operate as **Continuous Bag-of-Concepts** matchers in latent m
 - The word \`without\` is a single function word; in dot-product space, its negative semantic direction is overwhelmed by the positive vectors of the nouns and verbs!
 - Because Bi-Encoders encode query and document independently, the model cannot perform **cross-attention** between the condition *"without mutating"* and the document's specification *"mutates the array in place"*. Both documents discuss array mutation, so both receive high cosine scores!
 
-#### 2. Staff Architectural Mitigation: Two-Stage Hybrid + Cross-Encoder Architecture
+#### 2. Architectural Mitigation: Two-Stage Hybrid + Cross-Encoder Architecture
 Never rely on single-stage dense retrieval alone for queries with syntactic negations:
 1. **Hybrid Retrieval (Dense + Sparse BM25)**:
    - BM25 indexes exact terms. Queries containing negative keywords trigger BM25 scoring penalties against documents containing the word \`"mutates in place"\`.
@@ -3818,7 +3818,7 @@ print(f"\\nFormatted LLM Context:\\n{response.formatted_context}")
 
 assert response.returned_count >= 1, "Failed to retrieve relevant documentation!"
 assert "concat" in response.results[0].source_url, "concat() should be the top match for immutable merging!"
-print("\\nVerification Succeeded: Dense Retrieval Engine meets all Staff engineering standards!")
+print("\\nVerification Succeeded: Dense Retrieval Engine meets all production engineering standards!")
 \`\`\`
 
 ### Expected Output
@@ -3840,7 +3840,7 @@ Array.prototype.concat() is used to merge two or more arrays. This method does n
 Array.prototype.reduce() executes a user-supplied reducer callback function on each element.
 \`\`\`
 
-Verification Succeeded: Dense Retrieval Engine meets all Staff engineering standards!
+Verification Succeeded: Dense Retrieval Engine meets all production engineering standards!
 \`\`\``
   }
 ];

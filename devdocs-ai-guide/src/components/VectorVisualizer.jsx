@@ -66,8 +66,13 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const handlePointerMove = useCallback((e) => {
     if (!draggingVector || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    if (!rect.width || !rect.height) return;
+
+    // Scale client coordinates accurately to 360x360 SVG viewBox space
+    const scaleX = 360 / rect.width;
+    const scaleY = 360 / rect.height;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
 
     const cartX = (mouseX - CENTER) / SCALE;
     const cartY = -(mouseY - CENTER) / SCALE;
@@ -142,12 +147,13 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 my-6">
             {/* Interactive 2D Canvas */}
             <div className="lg:col-span-7 flex flex-col items-center">
-              <div className="relative p-2 rounded-2xl bg-secondary/30 border border-border/80 shadow-inner">
+              <div className="relative p-2 rounded-2xl bg-secondary/30 border border-border/80 shadow-inner flex justify-center">
                 <svg
                   ref={svgRef}
+                  viewBox="0 0 360 360"
                   width="360"
                   height="360"
-                  className="select-none touch-none cursor-crosshair"
+                  className="w-full max-w-[360px] aspect-square select-none touch-none cursor-crosshair"
                 >
                   <defs>
                     <marker
@@ -229,34 +235,66 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                   />
 
                   {/* Vector A Draggable Tip Handle */}
-                  <circle
-                    cx={svgAx}
-                    cy={svgAy}
-                    r="8"
-                    fill="#38bdf8"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    className="cursor-grab active:cursor-grabbing hover:scale-125 transition-transform"
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      setDraggingVector('A');
-                    }}
-                  />
+                  <g className="cursor-grab active:cursor-grabbing">
+                    {/* Wide transparent touch hit area */}
+                    <circle
+                      cx={svgAx}
+                      cy={svgAy}
+                      r="18"
+                      fill="transparent"
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+                        setDraggingVector('A');
+                      }}
+                      onPointerUp={(e) => {
+                        try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+                        setDraggingVector(null);
+                      }}
+                    />
+                    {/* Visible Handle Pin - strictly glued to (svgAx, svgAy) on the circle */}
+                    <circle
+                      cx={svgAx}
+                      cy={svgAy}
+                      r={draggingVector === 'A' ? 10 : 8}
+                      fill="#38bdf8"
+                      stroke="#ffffff"
+                      strokeWidth="2.5"
+                      pointerEvents="none"
+                      className="transition-all duration-150 shadow-md"
+                    />
+                  </g>
 
                   {/* Vector B Draggable Tip Handle */}
-                  <circle
-                    cx={svgBx}
-                    cy={svgBy}
-                    r="8"
-                    fill="#34d399"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    className="cursor-grab active:cursor-grabbing hover:scale-125 transition-transform"
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      setDraggingVector('B');
-                    }}
-                  />
+                  <g className="cursor-grab active:cursor-grabbing">
+                    {/* Wide transparent touch hit area */}
+                    <circle
+                      cx={svgBx}
+                      cy={svgBy}
+                      r="18"
+                      fill="transparent"
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+                        setDraggingVector('B');
+                      }}
+                      onPointerUp={(e) => {
+                        try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+                        setDraggingVector(null);
+                      }}
+                    />
+                    {/* Visible Handle Pin - strictly glued to (svgBx, svgBy) on the circle */}
+                    <circle
+                      cx={svgBx}
+                      cy={svgBy}
+                      r={draggingVector === 'B' ? 10 : 8}
+                      fill="#34d399"
+                      stroke="#ffffff"
+                      strokeWidth="2.5"
+                      pointerEvents="none"
+                      className="transition-all duration-150 shadow-md"
+                    />
+                  </g>
 
                   {/* Origin */}
                   <circle cx={CENTER} cy={CENTER} r="3" fill={originFill} />
@@ -362,16 +400,16 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                 </div>
               </div>
 
-              {/* Staff-Level Systems Design Takeaway */}
+              {/* Systems Design Takeaway */}
               <div className="p-4 rounded-xl bg-primary/10 border border-primary/25 text-xs text-foreground/90 space-y-2">
                 <div className="font-bold text-primary flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4" />
-                  <span>Staff AI Architect Insight:</span>
+                  <span>Systems Architect Insight:</span>
                 </div>
                 <p className="leading-relaxed text-[11.5px]">
                   {isNormalized ? (
                     <>
-                      When embeddings are <strong>unit-normalized</strong> (standard in OpenAI, Cohere, and BGE models), <strong>Dot Product equals Cosine Similarity</strong>. Furthermore, maximizing cosine similarity is mathematically identical to minimizing Euclidean distance:
+                      When embeddings are <strong>unit-normalized</strong> (standard in leading models such as Cohere and BGE), <strong>Dot Product equals Cosine Similarity</strong>. Furthermore, maximizing cosine similarity is mathematically identical to minimizing Euclidean distance:
                       <code className="block mt-1 font-mono text-[10px] bg-secondary/80 p-1.5 rounded border border-border/50 text-foreground">
                         L2² = ||A||² + ||B||² - 2(A · B) = 1 + 1 - 2(cos θ) = 2 - 2(cos θ)
                       </code>

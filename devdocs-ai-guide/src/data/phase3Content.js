@@ -413,10 +413,10 @@ async def health_check():
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (OpenAI / Anthropic)
+### Real System Design Interview Question
 > *"We are designing the real-time chat streaming backend for our developer assistant serving 50,000 active concurrent connections. Users frequently close browser tabs, jump between questions, or have unstable mobile connections. How would you design the streaming service to handle connection persistence, reverse proxy buffer flushing, cancellation propagation back to GPU inference workers, and horizontal load balancing?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Connection Scaling & Asynchronous Event Loop Isolation
 At 50,000 concurrent streaming connections, traditional synchronous WSGI servers (e.g., standard Gunicorn with sync workers) collapse due to thread exhaustion ($50,000 \\times 8\\text{MB stack} = 400\\text{GB RAM}$).
@@ -554,9 +554,9 @@ This linear paradigm fundamentally assumes a perfect world where:
 
 In reality, **production documentation queries violate every single one of these assumptions**. Developers type fragmented queries (*"js sort not working numbers"*), vector search frequently returns related but non-answering methods (\`Array.prototype.reverse\` instead of \`Array.prototype.sort\`), and the LLM, forced to generate an answer from irrelevant context, hallucinates syntactically plausible but nonexistent library APIs.
 
-### The Real-World Analogy: Factory Assembly Line vs. Senior Staff Engineer
+### The Real-World Analogy: Factory Assembly Line vs. Autonomous Systems Engineer
 - **Linear RAG (The Factory Assembly Line)**: A chassis moves down a conveyor belt. Station 1 retrieves parts, Station 2 bolts them on, Station 3 paints the car. If Station 1 grabbed motorcycle wheels instead of truck tires, Station 2 still bolts them on, and Station 3 paints them. A defective product rolls off the line with 100% certainty.
-- **Agentic Cyclical RAG (The Senior Staff Engineer)**: You ask a Staff Engineer a complex question. They pull documentation from the shelf. They read the retrieved page and evaluate: *"Wait, this page covers Python's \`sort()\` in-place method, but the developer is asking about returning a sorted copy without mutating the original array."* They reject the retrieved page, reformulate their search to \`toSorted()\`, execute a second search, verify the new documentation answers the question, and synthesize the correct response.
+- **Agentic Cyclical RAG (The Autonomous Systems Engineer)**: You ask an experienced systems engineer a complex question. They pull documentation from the shelf. They read the retrieved page and evaluate: *"Wait, this page covers Python's \`sort()\` in-place method, but the developer is asking about returning a sorted copy without mutating the original array."* They reject the retrieved page, reformulate their search to \`toSorted()\`, execute a second search, verify the new documentation answers the question, and synthesize the correct response.
 
 ### Naive Approach vs. Production Reality
 
@@ -1001,10 +1001,10 @@ agent_app = build_devdocs_agent_graph()
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (Anthropic / Google DeepMind)
+### Real System Design Interview Question
 > *"How do you design a cyclical multi-tool agent system deployed across a cluster of stateless API pods? How do you guarantee state persistence across user turns, eliminate runaway looping costs, prevent state corruption when two user requests arrive simultaneously on the same thread, and observe non-deterministic graph trajectories in production?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Distributed Checkpointing & External State Stores
 In-memory checkpointers (\`MemorySaver\`) fail in production because subsequent HTTP requests hit different Kubernetes pods.
@@ -1481,10 +1481,10 @@ doc_search_tool = DocSearchTool()
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (OpenAI / Cohere)
+### Real System Design Interview Question
 > *"Multi-query expansion and HyDE can easily quadruple LLM token consumption and add 500ms to retrieval latency. How would you design an adaptive, latency-bounded retrieval tier that provides the recall benefits of HyDE without violating a strict p95 latency budget of 400ms?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Speculative Cascaded Retrieval (Early-Exit Architecture)
 Rather than blindly executing HyDE on every query:
@@ -1944,10 +1944,10 @@ sql_query_tool = SQLQueryTool()
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (Meta / Snowflake)
+### Real System Design Interview Question
 > *"You are designing an enterprise Text-to-SQL agent over a petabyte-scale data warehouse containing 1,500 tables. Prompts cannot fit all table DDLs, queries may execute expensive unindexed table scans, and prompt injection can attempt to bypass basic regex filters. How do you architect schema retrieval, runtime AST validation, execution timeouts, and dialect self-correction?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Two-Stage Schema Retrieval & Dynamic Context Pruning
 Dumping 1,500 table schemas into the LLM context window causes context overflow and induces severe hallucinations.
@@ -2075,9 +2075,9 @@ The query exhibits massive semantic entropy:
 - Do they mean **Python list sorting** (\`list.sort()\` vs \`sorted()\`)?
 - Do they mean **Sorting an array of objects by a nested property key**?
 
-### The Real-World Analogy: Junior Engineer vs. Staff Engineer
+### The Real-World Analogy: Junior Engineer vs. Systems Architect
 - **The Junior Engineer (Naive Greedy RAG)**: Receives a vague 3-word requirement from a product manager. Instead of clarifying, they make arbitrary assumptions, spend 3 days building a feature for the wrong operating system, and deliver a completely useless pull request.
-- **The Staff Engineer (Active Disambiguation)**: Stops the product manager immediately and asks: *"Before I design this, are we targeting mobile React Native or desktop web? Because the architectural trade-offs are completely different."* A 5-second clarification saves days of wasted engineering effort.
+- **The Systems Architect (Active Disambiguation)**: Stops the product manager immediately and asks: *"Before I design this, are we targeting mobile React Native or desktop web? Because the architectural trade-offs are completely different."* A 5-second clarification saves days of wasted engineering effort.
 
 ### Naive Approach vs. Production Reality
 
@@ -2369,10 +2369,10 @@ clarification_tool = ClarificationTool()
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (Google / Anthropic)
+### Real System Design Interview Question
 > *"How do you design a conversational system that knows WHEN and HOW to ask clarifying questions without annoying the user with excessive interruptions? How do you handle asynchronous human-in-the-loop state resumption when the user may take minutes or hours to respond?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Calibrated Thresholds with Hysteresis & Rejection Tracking
 The fastest way to ruin an AI assistant is **over-interrogation** (e.g. asking "What is an array?" and the assistant responds "Did you mean Java array, C++ array, or solar array?").
@@ -2480,7 +2480,7 @@ When the underlying foundation model changes—such as upgrading from GPT-4o to 
 **DSPy (Declarative Self-improving Python)** revolutionizes this by introducing the **Compiler Paradigm** to Large Language Models.
 
 ### The Real-World Analogy: C Compiler vs. Writing Raw Hex Assembly
-- **Manual Prompt Engineering (Raw Hex Assembly)**: You write raw assembly instructions tied directly to a specific Intel Pentium CPU architecture. If the company moves to ARM Apple Silicon, your entire codebase must be thrown away and rewritten by hand.
+- **Manual Prompt Engineering (Raw Hex Assembly)**: You write raw assembly instructions tied directly to a specific Intel Pentium CPU architecture. If the company moves to ARM64 architecture, your entire codebase must be thrown away and rewritten by hand.
 - **DSPy Compilation (The Optimizing C/Rust Compiler)**: You write high-level, declarative code declaring **Signatures** (input types $\\to$ output types) and **Modules** (\`ChainOfThought\`, \`ReAct\`). The DSPy **Teleprompter (Optimizer)** automatically compiles your high-level program into the mathematically optimal prompt instructions and few-shot exemplars for whatever target LM you plug in!
 
 ### Naive Approach vs. Production Reality
@@ -2736,7 +2736,7 @@ def compile_and_save_pipeline(output_path: str = "data/compiled_rag_pipeline.jso
     """
     logger.info("Initializing DSPy language model backend...")
     # In production, ensure OPENAI_API_KEY is configured
-    lm = dspy.LM("openai/gpt-4o-mini", temperature=0.0)
+    lm = dspy.LM("hosted-llm/gpt-4o-mini", temperature=0.0)
     dspy.configure(lm=lm)
 
     train_data = create_training_dataset()
@@ -2787,10 +2787,10 @@ def load_production_rag_pipeline(artifact_path: str = "data/compiled_rag_pipelin
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (OpenAI / Perplexity)
+### Real System Design Interview Question
 > *"How do you implement Continuous Prompt Optimization in an enterprise CI/CD pipeline? When should you trigger automated DSPy recompilation, how do you prevent prompt overfitting, and how do you monitor for distribution shift between offline evaluation and live production traffic?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Continuous Prompt Optimization in CI/CD
 Instead of treating prompts as static text checked into Git, prompts are treated as **compiled binaries generated from data**:
@@ -3300,10 +3300,10 @@ if __name__ == "__main__":
 
 ## 5. System Design Interview Mastery
 
-### Top AI Lab Interview Question (Anthropic / Databricks)
+### Real System Design Interview Question
 > *"How do you design a continuous evaluation and automated prompt retraining pipeline that detects semantic drift in production RAG systems where LLM judges can be noisy, biased, or inconsistent? How do you balance accuracy gains against token cost and latency inflation?"*
 
-### Staff-Level Answer Framework
+### Architecture Answer Framework
 
 #### 1. Multi-Judge Calibration & Deterministic Rules
 Relying entirely on a single LLM-as-a-judge (e.g. GPT-4o evaluating GPT-4o) introduces **self-preference bias** and **verbosity bias** (longer answers receive higher scores regardless of accuracy).
@@ -3312,7 +3312,7 @@ Relying entirely on a single LLM-as-a-judge (e.g. GPT-4o evaluating GPT-4o) intr
      - Extract all URLs; assert HTTP 200 status code against MDN link graph.
      - Extract code blocks; run an AST parser (\`esprima\` for JS, \`ast.parse\` for Python) to verify syntax validity.
   2. **Cross-Model Entailment Judge**:
-     - Use a completely distinct model family (e.g., Claude 3.5 Sonnet judging OpenAI models) fine-tuned specifically for Natural Language Inference.
+     - Use a completely distinct model family (e.g., frontier judge models evaluating lightweight candidate models) fine-tuned specifically for Natural Language Inference.
      - Deconstruct answers into atomic claims; evaluate premise entailment independently.
 
 #### 2. Pareto Frontier Optimization (Accuracy vs. Token Cost)
