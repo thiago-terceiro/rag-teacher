@@ -1,13 +1,15 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Printer } from 'lucide-react';
+import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Printer, Globe } from 'lucide-react';
 import { useReadingSettings } from '../hooks/useReadingSettings';
+import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 
 const THEME_PRESETS = [
   {
     key: 'deep-blue',
-    label: 'Deep Blue',
+    labelKey: 'settings.themeDeepBlue',
+    fallbackLabel: 'Deep Blue',
     desc: 'Ambient navy (#090d16)',
     swatchBg: '#090d16',
     swatchAccent: '#3b82f6',
@@ -15,7 +17,8 @@ const THEME_PRESETS = [
   },
   {
     key: 'oled-midnight',
-    label: 'OLED Midnight',
+    labelKey: 'settings.themeOled',
+    fallbackLabel: 'OLED Midnight',
     desc: 'Pure black (#000000)',
     swatchBg: '#000000',
     swatchAccent: '#60a5fa',
@@ -23,7 +26,8 @@ const THEME_PRESETS = [
   },
   {
     key: 'daylight-paper',
-    label: 'Daylight Paper',
+    labelKey: 'settings.themeDaylight',
+    fallbackLabel: 'Daylight Paper',
     desc: 'High-contrast light',
     swatchBg: '#faf8f5',
     swatchAccent: '#2563eb',
@@ -33,6 +37,7 @@ const THEME_PRESETS = [
 
 export function ReadingSettingsModal({ isOpen, setIsOpen }) {
   const { settings, updateSetting, resetSettings } = useReadingSettings();
+  const { lang, setLang, supportedLanguages, t } = useI18n();
   const activeTheme = settings.theme || 'deep-blue';
 
   const handlePrintPdf = () => {
@@ -54,11 +59,12 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
             <div className="flex items-center space-x-2">
               <Type className="w-5 h-5 text-primary" />
               <Dialog.Title className="text-base font-bold text-foreground">
-                Display & Reading Comfort Settings
+                {t('settings.title', 'Display, Theme & Language Settings')}
               </Dialog.Title>
             </div>
             <button
               onClick={() => setIsOpen(false)}
+              aria-label="Close settings"
               className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -66,10 +72,42 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
           </div>
 
           <div className="py-5 space-y-6">
+            {/* Language Selector */}
+            <div>
+              <div className="flex items-center space-x-1.5 mb-2.5">
+                <Globe className="w-3.5 h-3.5 text-primary" />
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                  {t('settings.language', 'Language / Idioma')}
+                </label>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {supportedLanguages.map(item => {
+                  const isSelected = lang === item.code;
+                  return (
+                    <button
+                      key={item.code}
+                      type="button"
+                      onClick={() => setLang(item.code)}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'py-2 px-3 rounded-xl border text-center transition-all cursor-pointer flex items-center justify-center space-x-1.5 text-xs font-medium',
+                        isSelected
+                          ? 'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary/40 shadow-xs'
+                          : 'border-border/80 bg-secondary/30 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                      )}
+                    >
+                      <span className="text-sm">{item.flag}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Theme Preset Option */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
-                Color Theme Preset
+                {t('settings.theme', 'Color Theme Preset')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {THEME_PRESETS.map(item => {
@@ -80,6 +118,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                       key={item.key}
                       type="button"
                       onClick={() => updateSetting('theme', item.key)}
+                      aria-pressed={isSelected}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                         isSelected
@@ -103,7 +142,9 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                           <Icon className="w-3.5 h-3.5 opacity-60" />
                         )}
                       </div>
-                      <div className="text-sm font-medium leading-tight">{item.label}</div>
+                      <div className="text-sm font-medium leading-tight">
+                        {t(item.labelKey, item.fallbackLabel)}
+                      </div>
                       <div className="text-[11px] opacity-75 mt-0.5">{item.desc}</div>
                     </button>
                   );

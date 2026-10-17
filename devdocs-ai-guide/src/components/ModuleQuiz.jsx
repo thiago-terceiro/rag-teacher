@@ -9,12 +9,14 @@ import {
 } from 'lucide-react';
 import { moduleQuizzes } from '../data/moduleQuizzesData';
 import { useSteps } from '../hooks/useSteps';
+import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
   const { quizAnswers, answerQuizQuestion, resetModuleQuiz, updateStepProgress } = useSteps();
+  const { t } = useI18n();
   const questions = moduleQuizzes[stepKey] || [];
   const stepAnswers = quizAnswers[stepKey] || {};
 
@@ -51,14 +53,14 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base sm:text-lg font-bold text-foreground">
-                Module Knowledge Check
+                {t('quiz.knowledgeCheck', 'Module Knowledge Check')}
               </h3>
               <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
-                {answeredCount}/{questions.length} Answered
+                {answeredCount}/{questions.length} {t('quiz.answered', 'Answered')}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Verify your production architecture intuition before marking this module completed.
+              {t('quiz.subtitle', 'Verify your production architecture intuition before marking this module completed.')}
             </p>
           </div>
         </div>
@@ -76,16 +78,17 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                     : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
                 )}
               >
-                Score: {correctCount}/{questions.length} ({scorePct}%)
+                {t('quiz.scoreBadge', 'Score')}: {correctCount}/{questions.length} ({scorePct}%)
               </span>
               <button
                 type="button"
                 onClick={() => resetModuleQuiz(stepKey)}
-                title="Reset this module's quiz answers"
+                title={t('quiz.retry', "Reset this module's quiz answers")}
+                aria-label={t('quiz.retry', 'Retry Knowledge Check')}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Retry</span>
+                <span className="hidden sm:inline">{t('quiz.retry', 'Retry')}</span>
               </button>
             </>
           )}
@@ -171,6 +174,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
               {/* Instant Explanation upon answering */}
               {isAnswered && (
                 <div
+                  aria-live="polite"
                   className={cn(
                     'mt-3 p-3.5 rounded-xl border text-xs sm:text-[13px] leading-relaxed flex items-start gap-2.5 animate-in fade-in duration-150',
                     isCorrect
@@ -191,7 +195,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                         isCorrect ? 'text-emerald-400' : 'text-amber-400'
                       )}
                     >
-                      {isCorrect ? 'Spot on!' : `Correct Answer: ${OPTION_LABELS[q.correctIndex]}.`}
+                      {isCorrect ? t('quiz.correct', 'Correct!') : `${t('quiz.incorrect', 'Correct Answer')}: ${OPTION_LABELS[q.correctIndex]}.`}
                     </span>
                     <span className="text-muted-foreground">{q.explanation}</span>
                   </div>
@@ -231,7 +235,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>
-            {status === 'completed' ? 'Module Completed' : 'Complete Module'}
+            {status === 'completed' ? t('quiz.moduleCompleted', 'Module Completed') : t('quiz.completeModule', 'Complete Module')}
           </span>
         </button>
       </div>

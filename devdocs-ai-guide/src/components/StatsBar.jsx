@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { useI18n } from '../hooks/useI18n';
 import ProgressRing from './ProgressRing';
 
 const StatsBar = ({
@@ -31,6 +32,7 @@ const StatsBar = ({
   const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
   const scrollProgress = useScrollProgress('main-scroll-container');
   const { isOnline, canInstall, promptInstall } = useNetworkStatus();
+  const { t } = useI18n();
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset your learning progress, quiz scores, and notes?")) {
@@ -49,16 +51,16 @@ const StatsBar = ({
         <button
           onClick={onToggleMobileSidebar}
           aria-label="Open navigation menu"
-          className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground lg:hidden cursor-pointer"
+          className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground lg:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="hidden sm:flex items-center space-x-2 text-xs text-muted-foreground">
           <BookOpen className="w-4 h-4 text-primary" />
-          <span className="font-semibold text-foreground">Interactive Masterclass</span>
+          <span className="font-semibold text-foreground">{t('nav.masterclass', 'Interactive Masterclass')}</span>
           <span>•</span>
-          <span>28 Production Modules</span>
+          <span>{t('nav.modules', '28 Production Modules')}</span>
         </div>
 
         {/* Live Reading Scroll Badge */}
@@ -86,23 +88,24 @@ const StatsBar = ({
         {canInstall && (
           <button
             onClick={promptInstall}
-            title="Install RAG Teacher as an offline Progressive Web App"
+            title={t('nav.install', 'Install RAG Teacher as an offline Progressive Web App')}
+            aria-label={t('nav.install', 'Install application offline')}
             className="hidden md:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors cursor-pointer"
           >
             <DownloadCloud className="w-3.5 h-3.5" />
-            <span>Install</span>
+            <span>{t('nav.install', 'Install')}</span>
           </button>
         )}
 
         {/* Quick Search / Command Palette Trigger */}
         <button
           onClick={onOpenSearch}
-          aria-label="Search curriculum"
+          aria-label={t('nav.search', 'Search curriculum')}
           className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/70 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer group shadow-2xs"
         >
           <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-          <span className="hidden md:inline font-medium">Search topics...</span>
-          <span className="md:hidden font-medium">Search</span>
+          <span className="hidden md:inline font-medium">{t('nav.search', 'Search topics...')}</span>
+          <span className="md:hidden font-medium">{t('nav.searchShort', 'Search')}</span>
           <kbd className="hidden sm:inline-block text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground ml-1.5 group-hover:border-primary/40">
             ⌘K
           </kbd>
@@ -112,10 +115,11 @@ const StatsBar = ({
         <Link
           to="/interview-questions"
           title="Staff System Design Interview Scenarios (28 Questions)"
+          aria-label={t('nav.interview', 'Staff Interview Questions')}
           className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-primary/40 transition-colors shadow-2xs"
         >
           <HelpCircle className="w-3.5 h-3.5 text-primary" />
-          <span className="hidden xl:inline font-medium">Interview Questions</span>
+          <span className="hidden xl:inline font-medium">{t('nav.interview', 'Interview Questions')}</span>
           <span className="xl:hidden font-medium">Interview</span>
           <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded-full font-bold">28</span>
         </Link>
@@ -124,46 +128,51 @@ const StatsBar = ({
         <button
           onClick={onOpenPythonSandbox}
           title="In-Browser Python RAG Sandbox (Isolated Pyodide Web Worker)"
+          aria-label={t('nav.pythonLab', 'Open Python Sandbox Lab')}
           className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-emerald-400/40 transition-colors cursor-pointer shadow-2xs"
         >
           <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="font-medium">Python Lab</span>
+          <span className="font-medium">{t('nav.pythonLab', 'Python Lab')}</span>
         </button>
 
         {/* Vector Distance Visualizer Sandbox */}
         <button
           onClick={onOpenVectorSandbox}
           title="Interactive 2D Vector Distance Visualizer Sandbox"
+          aria-label={t('nav.vectorSandbox', 'Open Vector Visualizer Sandbox')}
           className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-indigo-400/40 transition-colors cursor-pointer shadow-2xs"
         >
           <Compass className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="font-medium">Vector Sandbox</span>
+          <span className="font-medium">{t('nav.vectorSandbox', 'Vector Sandbox')}</span>
         </button>
 
         {/* Reading Settings / Display */}
         <button
           onClick={onOpenReadingSettings}
           title="Theme presets, reading comfort & typography settings"
+          aria-label={t('settings.title', 'Display and language settings')}
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
         >
           <Type className="w-3.5 h-3.5" />
-          <span className="hidden 2xl:inline font-medium">Display</span>
+          <span className="hidden 2xl:inline font-medium">{t('nav.display', 'Display')}</span>
         </button>
 
         {/* Save as PDF / Print Handbook */}
         <button
           onClick={() => window.print()}
           title="Save current module as a formatted PDF handbook chapter"
+          aria-label={t('settings.savePdf', 'Save current chapter as PDF')}
           className="hidden md:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer"
         >
           <Printer className="w-3.5 h-3.5" />
-          <span className="hidden 2xl:inline font-medium">PDF</span>
+          <span className="hidden 2xl:inline font-medium">{t('nav.pdf', 'PDF')}</span>
         </button>
 
         {/* Export Notes / Study Guide */}
         <button
           onClick={exportStudyGuide}
-          title="Export your notes and study guide (.md)"
+          title={t('nav.exportStudyGuide', 'Export your notes and study guide (.md)')}
+          aria-label={t('nav.exportStudyGuide', 'Export study guide notes')}
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
         >
           <Download className="w-3.5 h-3.5" />
@@ -174,7 +183,8 @@ const StatsBar = ({
         {(stats.completedSteps > 0 || stats.answeredQuizQuestions > 0) && (
           <button
             onClick={handleReset}
-            title="Reset all progress & quiz scores"
+            title={t('nav.resetProgress', 'Reset all progress & quiz scores')}
+            aria-label={t('nav.resetProgress', 'Reset learning progress')}
             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />

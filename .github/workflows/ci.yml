@@ -1,0 +1,42 @@
+name: CI Pipeline Checks & Security Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Regression Tests, AST Security & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'devdocs-ai-guide/package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          cd devdocs-ai-guide
+          npm ci
+
+      - name: Run Vitest Regression & AST Security Suite
+        run: |
+          cd devdocs-ai-guide
+          npm test
+
+      - name: Run Vite Production Build
+        run: |
+          cd devdocs-ai-guide
+          npm run build

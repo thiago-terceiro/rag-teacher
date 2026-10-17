@@ -10,6 +10,7 @@ import PythonSandbox from './components/PythonSandbox';
 import InterviewQuestions from './components/InterviewQuestions';
 import { StepsProvider } from './hooks/useSteps';
 import { ReadingSettingsProvider } from './hooks/useReadingSettings';
+import { I18nProvider } from './hooks/useI18n';
 
 function App() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -34,10 +35,19 @@ function App() {
 
   return (
     <div className="bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
-      <ReadingSettingsProvider>
-        <StepsProvider>
-          <Router>
-            <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
+      <I18nProvider>
+        <ReadingSettingsProvider>
+          <StepsProvider>
+            <Router>
+              {/* Accessibility: Skip to Main Content Link for Keyboard & Screen Reader Users */}
+              <a
+                href="#main-scroll-container"
+                className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-white text-xs font-semibold"
+              >
+                Skip to main content
+              </a>
+
+              <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
             <ReadingSettingsModal isOpen={isReadingSettingsOpen} setIsOpen={setIsReadingSettingsOpen} />
             <VectorVisualizer isOpen={isVectorVisualizerOpen} setIsOpen={setIsVectorVisualizerOpen} />
             <PythonSandbox
@@ -81,8 +91,9 @@ function App() {
           </Router>
         </StepsProvider>
       </ReadingSettingsProvider>
-    </div>
-  );
+    </I18nProvider>
+  </div>
+);
 }
 
 export default App;
