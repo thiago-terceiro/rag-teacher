@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
@@ -6,6 +6,7 @@ import StepView from './components/StepView';
 import CommandPalette from './components/CommandPalette';
 import ReadingSettingsModal from './components/ReadingSettingsModal';
 import VectorVisualizer from './components/VectorVisualizer';
+import PythonSandbox from './components/PythonSandbox';
 import InterviewQuestions from './components/InterviewQuestions';
 import { StepsProvider } from './hooks/useSteps';
 import { ReadingSettingsProvider } from './hooks/useReadingSettings';
@@ -15,21 +16,42 @@ function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isReadingSettingsOpen, setIsReadingSettingsOpen] = useState(false);
   const [isVectorVisualizerOpen, setIsVectorVisualizerOpen] = useState(false);
+  const [isPythonSandboxOpen, setIsPythonSandboxOpen] = useState(false);
+  const [pythonSandboxCode, setPythonSandboxCode] = useState(null);
+
+  const handleOpenPythonSandbox = useCallback((customCode = null) => {
+    setPythonSandboxCode(typeof customCode === 'string' ? customCode : null);
+    setIsPythonSandboxOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const onCustomSandboxEvent = (e) => {
+      handleOpenPythonSandbox(e.detail?.code || null);
+    };
+    window.addEventListener('open-python-sandbox', onCustomSandboxEvent);
+    return () => window.removeEventListener('open-python-sandbox', onCustomSandboxEvent);
+  }, [handleOpenPythonSandbox]);
 
   return (
-    <div className="dark bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
+    <div className="bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
       <ReadingSettingsProvider>
         <StepsProvider>
           <Router>
             <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
             <ReadingSettingsModal isOpen={isReadingSettingsOpen} setIsOpen={setIsReadingSettingsOpen} />
             <VectorVisualizer isOpen={isVectorVisualizerOpen} setIsOpen={setIsVectorVisualizerOpen} />
+            <PythonSandbox
+              isOpen={isPythonSandboxOpen}
+              setIsOpen={setIsPythonSandboxOpen}
+              initialCode={pythonSandboxCode}
+            />
 
             <Sidebar
               isMobileOpen={isMobileSidebarOpen}
               setIsMobileOpen={setIsMobileSidebarOpen}
               onOpenSearch={() => setIsCommandPaletteOpen(true)}
               onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
+              onOpenPythonSandbox={() => handleOpenPythonSandbox(null)}
             />
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
               <StatsBar
@@ -37,11 +59,20 @@ function App() {
                 onOpenSearch={() => setIsCommandPaletteOpen(true)}
                 onOpenReadingSettings={() => setIsReadingSettingsOpen(true)}
                 onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
+                onOpenPythonSandbox={() => handleOpenPythonSandbox(null)}
               />
               <div id="main-scroll-container" className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar">
                 <Routes>
                   <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
-                  <Route path="/steps/:stepKey" element={<StepView onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)} />} />
+                  <Route
+                    path="/steps/:stepKey"
+                    element={
+                      <StepView
+                        onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
+                        onOpenPythonSandbox={() => handleOpenPythonSandbox(null)}
+                      />
+                    }
+                  />
                   <Route path="/interview-questions" element={<InterviewQuestions />} />
                   <Route path="*" element={<Navigate to="/steps/project-setup" replace />} />
                 </Routes>
@@ -55,3 +86,4 @@ function App() {
 }
 
 export default App;
+

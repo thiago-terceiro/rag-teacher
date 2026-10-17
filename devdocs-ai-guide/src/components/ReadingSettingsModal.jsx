@@ -1,25 +1,60 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Type, X, RotateCcw, Check } from 'lucide-react';
+import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Printer } from 'lucide-react';
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
+const THEME_PRESETS = [
+  {
+    key: 'deep-blue',
+    label: 'Deep Blue',
+    desc: 'Ambient navy (#090d16)',
+    swatchBg: '#090d16',
+    swatchAccent: '#3b82f6',
+    icon: Moon,
+  },
+  {
+    key: 'oled-midnight',
+    label: 'OLED Midnight',
+    desc: 'Pure black (#000000)',
+    swatchBg: '#000000',
+    swatchAccent: '#60a5fa',
+    icon: Sparkles,
+  },
+  {
+    key: 'daylight-paper',
+    label: 'Daylight Paper',
+    desc: 'High-contrast light',
+    swatchBg: '#faf8f5',
+    swatchAccent: '#2563eb',
+    icon: Sun,
+  },
+];
+
 export function ReadingSettingsModal({ isOpen, setIsOpen }) {
   const { settings, updateSetting, resetSettings } = useReadingSettings();
+  const activeTheme = settings.theme || 'deep-blue';
+
+  const handlePrintPdf = () => {
+    setIsOpen(false);
+    setTimeout(() => {
+      window.print();
+    }, 180);
+  };
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-150" />
+        <Dialog.Overlay className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-150" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card/95 border border-border rounded-2xl shadow-2xl z-50 p-6 focus:outline-none animate-in zoom-in-95 duration-150"
+          className="no-print fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-card/95 border border-border rounded-2xl shadow-2xl z-50 p-6 focus:outline-none animate-in zoom-in-95 duration-150 custom-scrollbar"
         >
           <div className="flex items-center justify-between pb-4 border-b border-border/80">
             <div className="flex items-center space-x-2">
               <Type className="w-5 h-5 text-primary" />
               <Dialog.Title className="text-base font-bold text-foreground">
-                Reading Comfort Settings
+                Display & Reading Comfort Settings
               </Dialog.Title>
             </div>
             <button
@@ -31,6 +66,51 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
           </div>
 
           <div className="py-5 space-y-6">
+            {/* Theme Preset Option */}
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
+                Color Theme Preset
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {THEME_PRESETS.map(item => {
+                  const isSelected = activeTheme === item.key;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => updateSetting('theme', item.key)}
+                      className={cn(
+                        'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
+                        isSelected
+                          ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40 shadow-xs'
+                          : 'border-border/80 bg-secondary/30 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                      )}
+                    >
+                      <div className="flex items-center justify-between w-full mb-2">
+                        <span
+                          className="w-6 h-6 rounded-lg border border-border/80 flex items-center justify-center shadow-inner"
+                          style={{ backgroundColor: item.swatchBg }}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: item.swatchAccent }}
+                          />
+                        </span>
+                        {isSelected ? (
+                          <Check className="w-3.5 h-3.5 text-primary" />
+                        ) : (
+                          <Icon className="w-3.5 h-3.5 opacity-60" />
+                        )}
+                      </div>
+                      <div className="text-sm font-medium leading-tight">{item.label}</div>
+                      <div className="text-[11px] opacity-75 mt-0.5">{item.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Font Size Option */}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
@@ -46,6 +126,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={item.key}
+                      type="button"
                       onClick={() => updateSetting('fontSize', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center',
@@ -76,6 +157,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={item.key}
+                      type="button"
                       onClick={() => updateSetting('contentWidth', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer',
@@ -109,6 +191,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={item.key}
+                      type="button"
                       onClick={() => updateSetting('lineSpacing', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer',
@@ -129,15 +212,27 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border/80 flex items-center justify-between">
+          <div className="pt-4 border-t border-border/80 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={resetSettings}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Defaults</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePrintPdf}
+                className="text-xs text-primary hover:text-primary/80 flex items-center space-x-1.5 transition-colors cursor-pointer font-medium"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Save Chapter as PDF</span>
+              </button>
+            </div>
             <button
-              onClick={resetSettings}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset to Defaults</span>
-            </button>
-            <button
+              type="button"
               onClick={() => setIsOpen(false)}
               className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition-colors cursor-pointer"
             >
@@ -151,3 +246,4 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 }
 
 export default React.memo(ReadingSettingsModal);
+

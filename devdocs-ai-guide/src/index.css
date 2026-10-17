@@ -3,68 +3,103 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 222.2 47.4% 11.2%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 47.4% 11.2%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
- 
-    --radius: 0.5rem;
-  }
- 
-  .dark {
+  :root,
+  .dark,
+  .theme-deep-blue {
     --background: 222.2 47.4% 8%;
     --foreground: 210 40% 98%;
- 
+
     --card: 222.2 47.4% 8%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 222.2 47.4% 8%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 217.2 91.2% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
- 
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
+
     --accent: 35.8 91.7% 50.6%;
- 
+    --accent-foreground: 210 40% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+  }
+
+  /* Option 3 Preset 2: OLED Midnight (Pure #000000 for OLED battery savings & ultra-contrast) */
+  .theme-oled-midnight {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 2%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 217.2 95% 64%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 9%;
+    --muted-foreground: 0 0% 72%;
+
+    --accent: 35.8 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 14%;
+    --ring: 217.2 95% 64%;
+  }
+
+  /* Option 3 Preset 3: Daylight Paper (Clean, high-legibility light theme for bright daylight reading) */
+  .theme-daylight-paper {
+    --background: 40 33% 98%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 221.2 83.2% 48%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 214.3 31.8% 91.4%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 93%;
+    --muted-foreground: 215.4 20% 34%;
+
+    --accent: 35.8 91.7% 45%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 82%;
+    --input: 214.3 31.8% 82%;
+    --ring: 221.2 83.2% 48%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -82,6 +117,34 @@
   }
 }
 
+/* OLED Midnight overrides for ultra-clean pure black surfaces */
+.theme-oled-midnight aside,
+.theme-oled-midnight header {
+  background-color: #000000 !important;
+}
+
+/* Daylight Paper high-legibility overrides for semantic accent text */
+.theme-daylight-paper .text-emerald-400 {
+  color: #047857 !important;
+}
+.theme-daylight-paper .text-amber-400 {
+  color: #b45309 !important;
+}
+.theme-daylight-paper .text-blue-400,
+.theme-daylight-paper .text-blue-300 {
+  color: #1d4ed8 !important;
+}
+.theme-daylight-paper .text-indigo-400,
+.theme-daylight-paper .text-indigo-300 {
+  color: #4338ca !important;
+}
+.theme-daylight-paper .text-cyan-400 {
+  color: #0e7490 !important;
+}
+.theme-daylight-paper .text-rose-400 {
+  color: #be123c !important;
+}
+
 /* Ensure main scroll container has hardware-accelerated compositor scrolling */
 #main-scroll-container {
   overscroll-behavior-y: contain;
@@ -90,7 +153,7 @@
 }
 
 .glassmorphism {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
 }
 
 /* Radix Collapsible Accordion Animations */
@@ -153,13 +216,21 @@
 }
 
 /* =========================================================================
-   Neon Glowing Blue Dark Scrollbar Styling (Global & Component-Level)
+   Neon Glowing Blue Scrollbar Styling (Global & Component-Level)
    ========================================================================= */
 
 /* Standard CSS for Firefox & modern engines */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(59, 130, 246, 0.45) #090d16;
+}
+
+.theme-oled-midnight * {
+  scrollbar-color: rgba(96, 165, 250, 0.5) #000000;
+}
+
+.theme-daylight-paper * {
+  scrollbar-color: rgba(37, 99, 235, 0.45) #f1f5f9;
 }
 
 /* WebKit (Chrome, Edge, Safari, Opera) */
@@ -172,12 +243,28 @@
   background: #090d16; /* Deep dark background matching app canvas */
 }
 
+.theme-oled-midnight ::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.theme-daylight-paper ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #3b82f6, #6366f1);
   border-radius: 9999px;
-  border: 2px solid #090d16; /* Padding around thumb */
+  border: 2px solid #090d16;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
+}
+
+.theme-oled-midnight ::-webkit-scrollbar-thumb {
+  border-color: #000000;
+}
+
+.theme-daylight-paper ::-webkit-scrollbar-thumb {
+  border-color: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -195,6 +282,14 @@
   scrollbar-color: rgba(59, 130, 246, 0.4) #0d1322;
 }
 
+.theme-oled-midnight .custom-scrollbar {
+  scrollbar-color: rgba(96, 165, 250, 0.5) #000000;
+}
+
+.theme-daylight-paper .custom-scrollbar {
+  scrollbar-color: rgba(37, 99, 235, 0.4) #f1f5f9;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -203,6 +298,14 @@
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #0d1322;
   border-radius: 9999px;
+}
+
+.theme-oled-midnight .custom-scrollbar::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.theme-daylight-paper .custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -268,4 +371,197 @@
   animation: deep-link-pulse 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   scroll-margin-top: 80px;
 }
+
+/* =========================================================================
+   Option 2: "Save as PDF / Handbook" Optimized Print Stylesheet
+   ========================================================================= */
+@media print {
+  @page {
+    margin: 16mm 14mm;
+    size: auto;
+  }
+
+  :root,
+  html,
+  body,
+  .dark,
+  .light,
+  .theme-deep-blue,
+  .theme-oled-midnight,
+  .theme-daylight-paper {
+    --background: 0 0% 100% !important;
+    --foreground: 222.2 47.4% 11.2% !important;
+    --card: 0 0% 100% !important;
+    --card-foreground: 222.2 47.4% 11.2% !important;
+    --secondary: 210 40% 96.1% !important;
+    --secondary-foreground: 222.2 47.4% 11.2% !important;
+    --muted: 210 40% 96.1% !important;
+    --muted-foreground: 215.4 16.3% 35% !important;
+    --primary: 221.2 83.2% 43% !important;
+    --border: 214.3 31.8% 82% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Unlock scroll containers so all pages print without viewport clipping */
+  html,
+  body,
+  #root,
+  #root > div,
+  main,
+  #main-scroll-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  /* Hide UI chrome, sidebars, stats bar, buttons, interactive widgets & modals */
+  aside,
+  header,
+  nav,
+  .no-print,
+  button,
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  /* Expand reading container to 100% width */
+  article {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Clean typography and page breaks before H2 chapter sections */
+  article h1 {
+    font-size: 24pt !important;
+    line-height: 1.25 !important;
+    color: #0f172a !important;
+    margin-bottom: 12pt !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  article h2 {
+    font-size: 16pt !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding-bottom: 4pt !important;
+    margin-top: 18pt !important;
+    break-before: page;
+    page-break-before: always;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Do not force a page break before the very first H2 on page 1 */
+  .markdown-content > h2:first-of-type {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
+  article h3,
+  article h4 {
+    color: #1e293b !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  article p,
+  article li,
+  article td {
+    color: #1e293b !important;
+    font-size: 10.5pt !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Print-friendly code blocks (override inline vscDarkPlus light colors with crisp dark ink) */
+  .print-code-block {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-code-block > div:first-child {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  .print-code-block pre,
+  .print-code-block code,
+  .print-code-block div,
+  .print-code-block span {
+    background: transparent !important;
+    color: #0f172a !important;
+    text-shadow: none !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    font-size: 8.5pt !important;
+  }
+
+  /* Keep tables, blockquotes, KaTeX math, and Mermaid diagrams intact across page breaks */
+  table,
+  blockquote,
+  .katex-display,
+  .print-diagram-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Print-friendly Mermaid architecture diagrams regardless of active screen theme */
+  .print-diagram-block,
+  .print-diagram-block > div {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  .print-diagram-block svg {
+    background: #ffffff !important;
+  }
+
+  .print-diagram-block svg rect,
+  .print-diagram-block svg polygon,
+  .print-diagram-block svg circle,
+  .print-diagram-block svg path.label-container {
+    fill: #f8fafc !important;
+    stroke: #334155 !important;
+  }
+
+  .print-diagram-block svg text,
+  .print-diagram-block svg tspan,
+  .print-diagram-block svg span,
+  .print-diagram-block svg .nodeLabel,
+  .print-diagram-block svg .edgeLabel,
+  .print-diagram-block svg .cluster-label {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+  }
+
+  .print-diagram-block svg .edgeLabel rect,
+  .print-diagram-block svg .labelBkg {
+    fill: #ffffff !important;
+    background-color: #ffffff !important;
+  }
+
+  .katex,
+  .katex-display {
+    color: #0f172a !important;
+  }
+}
+
 

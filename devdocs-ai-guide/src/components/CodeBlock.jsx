@@ -50,9 +50,18 @@ const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
 
   const cleanLang = (language || 'code').toLowerCase().trim();
   const displayLang = cleanLang.toUpperCase();
+  const isPython = cleanLang === 'python' || cleanLang === 'py';
+
+  const handleOpenInSandbox = () => {
+    window.dispatchEvent(
+      new CustomEvent('open-python-sandbox', {
+        detail: { code: value },
+      })
+    );
+  };
 
   return (
-    <div className={`relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 ${
+    <div className={`print-code-block relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 ${
       copied ? 'border-emerald-500/70 shadow-[0_0_22px_rgba(16,185,129,0.22)]' : 'border-border/80 shadow-md hover:border-primary/30'
     }`}>
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#181818] border-b border-border/50 text-xs text-muted-foreground select-none">
@@ -60,23 +69,36 @@ const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
           <span className="w-2 h-2 rounded-full bg-primary/60 group-hover:bg-primary group-hover:shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-200" />
           <span className="font-mono font-medium tracking-wider text-xs text-primary/90">{displayLang}</span>
         </div>
-        <button
-          onClick={handleCopy}
-          aria-label="Copy code to clipboard"
-          className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs active:scale-90"
-        >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 spin-in-90 duration-200" />
-              <span className="text-emerald-400 font-semibold animate-in fade-in zoom-in-75 duration-150">Copied!</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-150" />
-              <span>Copy</span>
-            </>
+        <div className="no-print flex items-center space-x-1.5">
+          {isPython && (
+            <button
+              type="button"
+              onClick={handleOpenInSandbox}
+              title="Open this Python snippet in the isolated Pyodide Web Worker Sandbox"
+              className="flex items-center space-x-1 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 transition-all duration-150 cursor-pointer text-xs active:scale-95"
+            >
+              <span>▶ Sandbox</span>
+            </button>
           )}
-        </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            aria-label="Copy code to clipboard"
+            className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs active:scale-90"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 spin-in-90 duration-200" />
+                <span className="text-emerald-400 font-semibold animate-in fade-in zoom-in-75 duration-150">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-150" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto text-sm">
         <SyntaxHighlighter
@@ -101,3 +123,4 @@ const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
 }, (prev, next) => prev.value === next.value && prev.language === next.language);
 
 export default CodeBlock;
+

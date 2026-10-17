@@ -2,53 +2,79 @@ import React, { useState, useEffect, useRef, useId } from 'react';
 import mermaid from 'mermaid';
 import { Code2, Eye, Copy, Check, AlertCircle } from 'lucide-react';
 import CodeBlock from './CodeBlock';
+import { useReadingSettings } from '../hooks/useReadingSettings';
+import { cn } from '../lib/utils';
 
-// Global in-memory cache for rendered diagram SVGs
+// Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}`
 const mermaidSvgCache = new Map();
 
-// Initialize mermaid once globally with dark theme
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  securityLevel: 'loose',
-  fontFamily: 'Inter, system-ui, sans-serif',
-  themeVariables: {
-    darkMode: true,
-    background: '#111827',
-    primaryColor: '#3b82f6',
-    primaryTextColor: '#f3f4f6',
-    primaryBorderColor: '#60a5fa',
-    lineColor: '#60a5fa',
-    secondaryColor: '#1e293b',
-    tertiaryColor: '#0f172a',
-    edgeLabelBackground: '#1e293b',
-    nodeBorder: '#3b82f6',
-    clusterBkg: '#0f172a',
-    clusterBorder: '#334155',
-    titleColor: '#f8fafc',
-  },
-});
+function configureMermaidTheme(isLight) {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: isLight ? 'default' : 'dark',
+    securityLevel: 'loose',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    themeVariables: isLight
+      ? {
+          darkMode: false,
+          background: '#f8fafc',
+          primaryColor: '#dbeafe',
+          primaryTextColor: '#0f172a',
+          primaryBorderColor: '#2563eb',
+          lineColor: '#334155',
+          secondaryColor: '#f1f5f9',
+          tertiaryColor: '#ffffff',
+          edgeLabelBackground: '#f8fafc',
+          nodeBorder: '#2563eb',
+          clusterBkg: '#f1f5f9',
+          clusterBorder: '#94a3b8',
+          titleColor: '#0f172a',
+        }
+      : {
+          darkMode: true,
+          background: '#111827',
+          primaryColor: '#3b82f6',
+          primaryTextColor: '#f3f4f6',
+          primaryBorderColor: '#60a5fa',
+          lineColor: '#60a5fa',
+          secondaryColor: '#1e293b',
+          tertiaryColor: '#0f172a',
+          edgeLabelBackground: '#1e293b',
+          nodeBorder: '#3b82f6',
+          clusterBkg: '#0f172a',
+          clusterBorder: '#334155',
+          titleColor: '#f8fafc',
+        },
+  });
+}
+
+// Initialize mermaid with dark theme by default
+configureMermaidTheme(false);
 
 const MermaidBlock = React.memo(({ chart }) => {
+  const { settings } = useReadingSettings();
+  const isLightTheme = settings.theme === 'daylight-paper';
+  const themeMode = isLightTheme ? 'light' : 'dark';
   const cleanChart = (chart || '').trim();
-  
+  const cacheKey = `${themeMode}:${cleanChart}`;
+
   // Instant synchronous initialization if already in cache
-  const [svgContent, setSvgContent] = useState(() => mermaidSvgCache.get(cleanChart) || '');
+  const [svgContent, setSvgContent] = useState(() => mermaidSvgCache.get(cacheKey) || '');
   const [hasError, setHasError] = useState(false);
   const [showSource, setShowSource] = useState(false);
   const [copied, setCopied] = useState(false);
   const containerRef = useRef(null);
-  
+
   // Create a unique clean ID for mermaid rendering
   const reactId = useId().replace(/[:]/g, '_');
-  const diagramId = `mermaid_svg_${reactId}`;
+  const diagramId = `mermaid_svg_${reactId}_${themeMode}`;
 
   useEffect(() => {
     if (!cleanChart) return;
 
     // If already in cache, skip rendering entirely
-    if (mermaidSvgCache.has(cleanChart)) {
-      setSvgContent(mermaidSvgCache.get(cleanChart));
+    if (mermaidSvgCache.has(cacheKey)) {
+      setSvgContent(mermaidSvgCache.get(cacheKey));
       return;
     }
 
@@ -56,8 +82,9 @@ const MermaidBlock = React.memo(({ chart }) => {
     const renderDiagram = async () => {
       try {
         setHasError(false);
+        configureMermaidTheme(isLightTheme);
         const { svg } = await mermaid.render(diagramId, cleanChart);
-        mermaidSvgCache.set(cleanChart, svg);
+        mermaidSvgCache.set(cacheKey, svg);
         if (isMounted) {
           setSvgContent(svg);
         }
@@ -78,7 +105,7 @@ const MermaidBlock = React.memo(({ chart }) => {
         tempElement.remove();
       }
     };
-  }, [cleanChart, diagramId]);
+  }, [cleanChart, cacheKey, diagramId, isLightTheme]);
 
   const handleCopy = async () => {
     try {
@@ -103,7 +130,7 @@ const MermaidBlock = React.memo(({ chart }) => {
   }
 
   return (
-    <div className="my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-all duration-300 group">
+    <div className="print-diagram-block my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-all duration-300 group">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-secondary/50 border-b border-border/60 text-xs text-muted-foreground select-none">
         <div className="flex items-center space-x-2">
@@ -113,7 +140,7 @@ const MermaidBlock = React.memo(({ chart }) => {
           </span>
         </div>
 
-        <div className="flex items-center space-x-1.5">
+        <div className="no-print flex items-center space-x-1.5">
           <button
             onClick={() => setShowSource(prev => !prev)}
             aria-label={showSource ? 'View rendered diagram' : 'View diagram source code'}
@@ -160,7 +187,10 @@ const MermaidBlock = React.memo(({ chart }) => {
       ) : (
         <div
           ref={containerRef}
-          className="p-6 overflow-x-auto flex items-center justify-center min-h-[160px] bg-[#0c1017]/80 [&_svg]:max-w-full [&_svg]:h-auto [&_svg]:transition-all"
+          className={cn(
+            'p-6 overflow-x-auto flex items-center justify-center min-h-[160px] [&_svg]:max-w-full [&_svg]:h-auto [&_svg]:transition-all',
+            isLightTheme ? 'bg-[#f8fafc]' : 'bg-[#0c1017]/80'
+          )}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       )}

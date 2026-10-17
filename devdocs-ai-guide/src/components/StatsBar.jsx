@@ -1,5 +1,20 @@
 import React, { memo } from 'react';
-import { Menu, RotateCcw, BookOpen, Eye, Search, Download, HelpCircle, Compass, Type, WifiOff, DownloadCloud } from 'lucide-react';
+import {
+  Menu,
+  RotateCcw,
+  BookOpen,
+  Eye,
+  Search,
+  Download,
+  HelpCircle,
+  Compass,
+  Type,
+  WifiOff,
+  DownloadCloud,
+  Terminal,
+  Printer,
+  Award,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
@@ -11,23 +26,24 @@ const StatsBar = ({
   onOpenSearch,
   onOpenReadingSettings,
   onOpenVectorSandbox,
+  onOpenPythonSandbox,
 }) => {
   const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
   const scrollProgress = useScrollProgress('main-scroll-container');
   const { isOnline, canInstall, promptInstall } = useNetworkStatus();
 
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to reset your learning progress and notes?")) {
+    if (window.confirm("Are you sure you want to reset your learning progress, quiz scores, and notes?")) {
       resetAllProgress();
     }
   };
 
   if (loading) {
-    return <header className="h-16 border-b border-border flex items-center px-6 text-sm text-muted-foreground">Loading progress...</header>;
+    return <header className="no-print h-16 border-b border-border flex items-center px-6 text-sm text-muted-foreground">Loading progress...</header>;
   }
 
   return (
-    <header className="h-16 border-b border-border bg-card/60 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 relative select-none">
+    <header className="no-print h-16 border-b border-border bg-card/60 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 relative select-none">
       <div className="flex items-center space-x-3">
         {/* Mobile Hamburger Toggle */}
         <button
@@ -54,7 +70,7 @@ const StatsBar = ({
         )}
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2 sm:space-x-2.5">
         {/* Offline Connectivity Warning */}
         {!isOnline && (
           <div
@@ -99,16 +115,26 @@ const StatsBar = ({
           className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-primary/40 transition-colors shadow-2xs"
         >
           <HelpCircle className="w-3.5 h-3.5 text-primary" />
-          <span className="hidden md:inline font-medium">Interview Questions</span>
-          <span className="md:hidden font-medium">Interview</span>
+          <span className="hidden xl:inline font-medium">Interview Questions</span>
+          <span className="xl:hidden font-medium">Interview</span>
           <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded-full font-bold">28</span>
         </Link>
+
+        {/* In-Browser Python Sandbox (Pyodide Web Worker) */}
+        <button
+          onClick={onOpenPythonSandbox}
+          title="In-Browser Python RAG Sandbox (Isolated Pyodide Web Worker)"
+          className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-emerald-400/40 transition-colors cursor-pointer shadow-2xs"
+        >
+          <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-medium">Python Lab</span>
+        </button>
 
         {/* Vector Distance Visualizer Sandbox */}
         <button
           onClick={onOpenVectorSandbox}
           title="Interactive 2D Vector Distance Visualizer Sandbox"
-          className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-indigo-400/40 transition-colors cursor-pointer shadow-2xs"
+          className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-indigo-400/40 transition-colors cursor-pointer shadow-2xs"
         >
           <Compass className="w-3.5 h-3.5 text-indigo-400" />
           <span className="font-medium">Vector Sandbox</span>
@@ -117,11 +143,21 @@ const StatsBar = ({
         {/* Reading Settings / Display */}
         <button
           onClick={onOpenReadingSettings}
-          title="Reading comfort & typography settings"
+          title="Theme presets, reading comfort & typography settings"
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
         >
           <Type className="w-3.5 h-3.5" />
-          <span className="hidden xl:inline font-medium">Display</span>
+          <span className="hidden 2xl:inline font-medium">Display</span>
+        </button>
+
+        {/* Save as PDF / Print Handbook */}
+        <button
+          onClick={() => window.print()}
+          title="Save current module as a formatted PDF handbook chapter"
+          className="hidden md:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span className="hidden 2xl:inline font-medium">PDF</span>
         </button>
 
         {/* Export Notes / Study Guide */}
@@ -131,23 +167,33 @@ const StatsBar = ({
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
         >
           <Download className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline font-medium">Export</span>
+          <span className="hidden 2xl:inline font-medium">Export</span>
         </button>
 
         {/* Reset progress */}
-        {stats.completedSteps > 0 && (
+        {(stats.completedSteps > 0 || stats.answeredQuizQuestions > 0) && (
           <button
             onClick={handleReset}
-            title="Reset all progress"
+            title="Reset all progress & quiz scores"
             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Reset</span>
           </button>
         )}
 
+        {/* Comprehension Score Badge (when quizzes have been answered) */}
+        {stats.comprehensionScore !== null && (
+          <div
+            title={`Comprehension Score: ${stats.correctQuizQuestions}/${stats.answeredQuizQuestions} quiz questions answered correctly`}
+            className="hidden sm:flex items-center space-x-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 py-1 px-2.5 rounded-full text-xs font-mono font-bold"
+          >
+            <Award className="w-3.5 h-3.5 shrink-0" />
+            <span>{stats.comprehensionScore}%</span>
+          </div>
+        )}
+
         {/* Progress Ring & Stats */}
-        <div className="flex items-center space-x-3 bg-secondary/30 py-1 px-3 rounded-full border border-border">
+        <div className="flex items-center space-x-2.5 bg-secondary/30 py-1 px-3 rounded-full border border-border">
           <ProgressRing value={stats.completionPercentage} />
           <div className="text-left">
             <div className="text-xs font-bold text-foreground">
@@ -189,3 +235,4 @@ const StatsBar = ({
 };
 
 export default React.memo(StatsBar);
+

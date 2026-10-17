@@ -1,5 +1,5 @@
 // RAG Teacher — High Performance Service Worker for Offline PWA Support
-const CACHE_NAME = 'rag-teacher-v1';
+const CACHE_NAME = 'rag-teacher-v2';
 
 const STATIC_PRECACHE = [
   '/',
@@ -38,8 +38,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests and internal browser/chrome-extension requests
-  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+  // Skip non-GET requests, cross-origin requests (e.g., Pyodide CDN), and non-HTTP schemes
+  if (
+    request.method !== 'GET' ||
+    !url.protocol.startsWith('http') ||
+    url.origin !== self.location.origin
+  ) {
     return;
   }
 
@@ -104,14 +108,17 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then((cached) => {
       return (
         cached ||
-        fetch(request).then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
+        fetch(request)
+          .then((response) => {
+            if (response && response.status === 200) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          })
+          .catch(() => new Response('Offline', { status: 503 }))
       );
     })
   );
 });
+

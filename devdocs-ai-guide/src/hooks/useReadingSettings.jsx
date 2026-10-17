@@ -1,24 +1,56 @@
-import { createContext, use, useState } from 'react';
+import { createContext, use, useEffect, useState } from 'react';
 
 const ReadingSettingsContext = createContext(null);
 
 const STORAGE_KEY = 'rag_reading_settings_v1';
 
+const VALID_THEMES = ['deep-blue', 'oled-midnight', 'daylight-paper'];
+
 const DEFAULT_SETTINGS = {
+  theme: 'deep-blue',       // 'deep-blue' (#090d16) | 'oled-midnight' (#000000) | 'daylight-paper' (light)
   fontSize: 'normal',       // 'normal' (15px) | 'comfortable' (17px) | 'large' (19px)
   contentWidth: 'normal',   // 'normal' (max-w-4xl) | 'wide' (max-w-5xl)
-  lineSpacing: 'relaxed',    // 'relaxed' | 'spacious'
+  lineSpacing: 'relaxed',   // 'relaxed' | 'spacious'
+};
+
+const THEME_META_COLORS = {
+  'deep-blue': '#090d16',
+  'oled-midnight': '#000000',
+  'daylight-paper': '#faf8f5',
 };
 
 export const ReadingSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+      if (!saved) return DEFAULT_SETTINGS;
+      const parsed = JSON.parse(saved);
+      const theme = VALID_THEMES.includes(parsed?.theme) ? parsed.theme : DEFAULT_SETTINGS.theme;
+      return { ...DEFAULT_SETTINGS, ...parsed, theme };
     } catch {
       return DEFAULT_SETTINGS;
     }
   });
+
+  // Synchronize theme classes on <html>, <body>, and <meta name="theme-color">
+  useEffect(() => {
+    const activeTheme = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
+    const isLight = activeTheme === 'daylight-paper';
+    const root = document.documentElement;
+    const body = document.body;
+
+    const themeClasses = ['theme-deep-blue', 'theme-oled-midnight', 'theme-daylight-paper', 'dark', 'light'];
+    root.classList.remove(...themeClasses);
+    body.classList.remove(...themeClasses);
+
+    root.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
+    body.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', THEME_META_COLORS[activeTheme] || '#090d16');
+    }
+  }, [settings.theme]);
 
   const updateSetting = (key, value) => {
     setSettings(prev => {
@@ -59,4 +91,5 @@ export const useReadingSettings = () => {
   }
   return context;
 };
+
 

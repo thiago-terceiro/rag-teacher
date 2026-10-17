@@ -1,9 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Compass, RotateCcw, X, Info, Sparkles, Check, Move } from 'lucide-react';
+import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
 export function VectorVisualizer({ isOpen, setIsOpen }) {
+  const { settings } = useReadingSettings();
+  const isLightTheme = settings.theme === 'daylight-paper';
+
   // Vector A: angle in radians, magnitude
   const [angleA, setAngleA] = useState(Math.PI / 6); // 30 deg
   const [magA, setMagA] = useState(1.0);
@@ -14,6 +18,16 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
 
   const [isNormalized, setIsNormalized] = useState(true);
   const [draggingVector, setDraggingVector] = useState(null); // 'A' | 'B' | null
+
+  const axisStroke = isLightTheme ? 'rgba(15,23,42,0.16)' : 'rgba(255,255,255,0.1)';
+  const innerCircleStroke = isLightTheme ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.06)';
+  const outerCircleStroke = isNormalized
+    ? 'rgba(59,130,246,0.45)'
+    : isLightTheme
+    ? 'rgba(15,23,42,0.22)'
+    : 'rgba(255,255,255,0.15)';
+  const arcStroke = isLightTheme ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.4)';
+  const originFill = isLightTheme ? '#0f172a' : '#ffffff';
 
   const svgRef = useRef(null);
 
@@ -161,12 +175,12 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                   </defs>
 
                   {/* Grid Lines */}
-                  <line x1="0" y1={CENTER} x2="360" y2={CENTER} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                  <line x1={CENTER} y1="0" x2={CENTER} y2="360" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                  <line x1="0" y1={CENTER} x2="360" y2={CENTER} stroke={axisStroke} strokeWidth="1" />
+                  <line x1={CENTER} y1="0" x2={CENTER} y2="360" stroke={axisStroke} strokeWidth="1" />
                   
                   {/* Subtle Grid Circles */}
-                  <circle cx={CENTER} cy={CENTER} r={SCALE * 0.5} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-                  <circle cx={CENTER} cy={CENTER} r={SCALE} fill="none" stroke={isNormalized ? "rgba(59,130,246,0.35)" : "rgba(255,255,255,0.15)"} strokeWidth={isNormalized ? "1.5" : "1"} />
+                  <circle cx={CENTER} cy={CENTER} r={SCALE * 0.5} fill="none" stroke={innerCircleStroke} strokeDasharray="3 3" />
+                  <circle cx={CENTER} cy={CENTER} r={SCALE} fill="none" stroke={outerCircleStroke} strokeWidth={isNormalized ? "1.5" : "1"} />
 
                   {/* Euclidean distance connection line between tips */}
                   <line
@@ -185,7 +199,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     <path
                       d={`M ${arcStartX} ${arcStartY} A ${arcRadius} ${arcRadius} 0 ${isLargeArc ? 1 : 0} ${angleA > angleB ? 0 : 1} ${arcEndX} ${arcEndY}`}
                       fill="none"
-                      stroke="rgba(255,255,255,0.4)"
+                      stroke={arcStroke}
                       strokeWidth="1.5"
                     />
                   )}
@@ -245,7 +259,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                   />
 
                   {/* Origin */}
-                  <circle cx={CENTER} cy={CENTER} r="3" fill="#ffffff" />
+                  <circle cx={CENTER} cy={CENTER} r="3" fill={originFill} />
                 </svg>
 
                 <div className="absolute bottom-3 left-4 text-[10px] text-muted-foreground flex items-center gap-1.5 pointer-events-none">

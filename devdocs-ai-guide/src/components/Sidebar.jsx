@@ -1,11 +1,11 @@
 import * as Collapsible from '@radix-ui/react-collapsible';
-import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu, HelpCircle, Compass } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu, HelpCircle, Compass, Terminal, Award } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import React, { useState, useMemo } from 'react';
 import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
 
-const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSandbox }) => {
+const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSandbox, onOpenPythonSandbox }) => {
   const { phases, loading, stats } = useSteps();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,7 +17,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 
   if (loading) {
     return (
-      <aside className="w-80 bg-card border-r border-border p-4 flex items-center justify-center">
+      <aside className="no-print w-80 bg-card border-r border-border p-4 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </aside>
     );
@@ -45,13 +45,13 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
+          className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
         />
       )}
 
       <aside
         className={cn(
-          'w-80 bg-card/95 backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
+          'no-print w-80 bg-card/95 backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
@@ -140,6 +140,22 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
           <button
             onClick={() => {
               setIsMobileOpen?.(false);
+              onOpenPythonSandbox?.();
+            }}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center space-x-2.5">
+              <Terminal className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>Python RAG Sandbox</span>
+            </div>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono">
+              Pyodide
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMobileOpen?.(false);
               onOpenVectorSandbox?.();
             }}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
@@ -218,16 +234,30 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
         </nav>
 
         {/* Footer Summary */}
-        <div className="p-3 border-t border-border bg-card/60 text-xs text-muted-foreground">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="font-medium text-foreground">Overall Mastery</span>
-            <span className="font-bold text-primary">{stats.completionPercentage}%</span>
+        <div className="p-3 border-t border-border bg-card/60 text-xs text-muted-foreground space-y-2">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-medium text-foreground">Overall Mastery</span>
+              <span className="font-bold text-primary">{stats.completionPercentage}%</span>
+            </div>
+            <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-primary h-full transition-all duration-500 rounded-full"
+                style={{ width: `${stats.completionPercentage}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-primary h-full transition-all duration-500 rounded-full"
-              style={{ width: `${stats.completionPercentage}%` }}
-            />
+
+          <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[11px]">
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Award className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Comprehension Score</span>
+            </span>
+            <span className="font-mono font-bold text-emerald-400">
+              {stats.comprehensionScore !== null
+                ? `${stats.comprehensionScore}% (${stats.correctQuizQuestions}/${stats.answeredQuizQuestions})`
+                : '—'}
+            </span>
           </div>
         </div>
       </aside>
@@ -236,3 +266,4 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 };
 
 export default React.memo(Sidebar);
+

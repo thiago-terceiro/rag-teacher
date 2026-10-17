@@ -1,5 +1,6 @@
-import { createContext, useCallback, use, useEffect, useState, startTransition } from 'react';
+import { createContext, useCallback, use, useState, useMemo, startTransition } from 'react';
 import { initialPhases, allSteps, getStepByKey } from '../data/guideData';
+import { moduleQuizzes } from '../data/moduleQuizzesData';
 
 const StepsContext = createContext(null);
 
@@ -7,6 +8,12 @@ const StepsContext = createContext(null);
 export const useSteps = () => use(StepsContext);
 
 const LOCAL_STORAGE_KEY = 'devdocs_ai_guide_progress_v1';
+const QUIZ_STORAGE_KEY = 'devdocs_ai_guide_quizzes_v1';
+
+const TOTAL_QUIZ_QUESTIONS = Object.values(moduleQuizzes).reduce(
+  (acc, list) => acc + list.length,
+  0
+);
 
 export const StepsProvider = ({ children }) => {
   const [phases, setPhases] = useState(() => {
@@ -14,7 +21,8 @@ export const StepsProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
-        const progressMap = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        const progressMap = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
         return initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => {
@@ -42,22 +50,71 @@ export const StepsProvider = ({ children }) => {
     }));
   });
 
+  // Quiz answers state: { [stepKey]: { [questionId]: selectedOptionIndex } }
+  const [quizAnswers, setQuizAnswers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(QUIZ_STORAGE_KEY);
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (e) {
+      console.warn("Failed to read quiz progress from localStorage", e);
+      return {};
+    }
+  });
+
   const [loading] = useState(false);
   const [error] = useState(null);
 
-  // Compute overall stats
-  const stepsFlat = phases.flatMap(p => p.steps);
-  const totalSteps = stepsFlat.length;
-  const completedSteps = stepsFlat.filter(s => s.status === 'completed').length;
-  const inProgressSteps = stepsFlat.filter(s => s.status === 'in_progress').length;
-  const completionPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  // Compute overall stats + Comprehension Score (memoized)
+  const stats = useMemo(() => {
+    const stepsFlat = phases.flatMap(p => p.steps);
+    const totalSteps = stepsFlat.length;
+    const completedSteps = stepsFlat.filter(s => s.status === 'completed').length;
+    const inProgressSteps = stepsFlat.filter(s => s.status === 'in_progress').length;
+    const completionPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
-  const stats = {
+    let answeredQuizQuestions = 0;
+    let correctQuizQuestions = 0;
+
+    for (const [sKey, questions] of Object.entries(moduleQuizzes)) {
+      const stepAns = quizAnswers[sKey];
+      if (!stepAns) continue;
+      for (const q of questions) {
+        if (typeof stepAns[q.id] === 'number') {
+          answeredQuizQuestions += 1;
+          if (stepAns[q.id] === q.correctIndex) {
+            correctQuizQuestions += 1;
+          }
+        }
+      }
+    }
+
+    const comprehensionScore =
+      answeredQuizQuestions > 0
+        ? Math.round((correctQuizQuestions / answeredQuizQuestions) * 100)
+        : null;
+
+    return {
+      totalSteps,
+      completedSteps,
+      inProgressSteps,
+      completionPercentage,
+      totalQuizQuestions: TOTAL_QUIZ_QUESTIONS,
+      answeredQuizQuestions,
+      correctQuizQuestions,
+      comprehensionScore,
+    };
+  }, [phases, quizAnswers]);
+
+  const {
     totalSteps,
     completedSteps,
-    inProgressSteps,
     completionPercentage,
-  };
+    answeredQuizQuestions,
+    correctQuizQuestions,
+    comprehensionScore,
+  } = stats;
 
   // Helper to persist current state to localStorage
   const persistToLocalStorage = (updatedPhases) => {
@@ -77,6 +134,40 @@ export const StepsProvider = ({ children }) => {
       console.error("Failed to save progress to localStorage", e);
     }
   };
+
+  // Record a quiz answer and persist to localStorage
+  const answerQuizQuestion = useCallback((stepKey, questionId, optionIndex) => {
+    setQuizAnswers(prev => {
+      const stepExisting = prev[stepKey] || {};
+      const next = {
+        ...prev,
+        [stepKey]: {
+          ...stepExisting,
+          [questionId]: optionIndex,
+        },
+      };
+      try {
+        localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.warn("Failed to save quiz answer", e);
+      }
+      return next;
+    });
+  }, []);
+
+  // Reset a specific module's quiz answers
+  const resetModuleQuiz = useCallback((stepKey) => {
+    setQuizAnswers(prev => {
+      const next = { ...prev };
+      delete next[stepKey];
+      try {
+        localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.warn("Failed to reset module quiz", e);
+      }
+      return next;
+    });
+  }, []);
 
   // Update progress for a step using React 19 startTransition
   const updateStepProgress = useCallback((stepKey, status, notes) => {
@@ -142,6 +233,8 @@ export const StepsProvider = ({ children }) => {
     startTransition(() => {
       try {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
+        localStorage.removeItem(QUIZ_STORAGE_KEY);
+        setQuizAnswers({});
         setPhases(initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => ({
@@ -163,6 +256,7 @@ export const StepsProvider = ({ children }) => {
       `# 🎓 RAG Teacher Masterclass — Personal Study Guide & Notes`,
       `*Generated on: ${new Date().toLocaleDateString()}*`,
       `*Curriculum Progress: ${completedSteps} / ${totalSteps} modules completed (${completionPercentage}%)*`,
+      `*Comprehension Score: ${comprehensionScore !== null ? `${comprehensionScore}% (${correctQuizQuestions}/${answeredQuizQuestions} correct)` : 'No quizzes taken yet'}*`,
       '',
       '---',
       '',
@@ -175,9 +269,17 @@ export const StepsProvider = ({ children }) => {
 
       phase.steps.forEach((step, idx) => {
         const statusEmoji = step.status === 'completed' ? '✅' : step.status === 'in_progress' ? '🔄' : '⚪';
+        const stepQuestions = moduleQuizzes[step.step_key] || [];
+        const stepAns = quizAnswers[step.step_key] || {};
+        const stepCorrect = stepQuestions.filter(q => stepAns[q.id] === q.correctIndex).length;
+        const stepAnswered = stepQuestions.filter(q => typeof stepAns[q.id] === 'number').length;
+
         lines.push(`### ${idx + 1}. ${step.title} (${statusEmoji} ${step.status})`);
         lines.push(`- **Module Key**: \`${step.step_key}\``);
         lines.push(`- **Estimated Read Time**: ${step.readTime || '10 min'}`);
+        if (stepAnswered > 0) {
+          lines.push(`- **Knowledge Check Score**: ${stepCorrect} / ${stepQuestions.length} correct`);
+        }
         if (step.completedAt) {
           lines.push(`- **Completed Date**: ${new Date(step.completedAt).toLocaleDateString()}`);
         }
@@ -203,13 +305,16 @@ export const StepsProvider = ({ children }) => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [phases, completedSteps, totalSteps, completionPercentage]);
+  }, [phases, completedSteps, totalSteps, completionPercentage, comprehensionScore, correctQuizQuestions, answeredQuizQuestions, quizAnswers]);
 
   const value = {
     phases,
     stats,
     loading,
     error,
+    quizAnswers,
+    answerQuizQuestion,
+    resetModuleQuiz,
     updateStepProgress,
     getStepContent,
     resetAllProgress,
@@ -220,3 +325,4 @@ export const StepsProvider = ({ children }) => {
   // React 19 `<Context value={value}>` standard (no `.Provider` needed)
   return <StepsContext value={value}>{children}</StepsContext>;
 };
+
