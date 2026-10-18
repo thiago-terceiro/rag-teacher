@@ -138,6 +138,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
             </div>
             <button
               onClick={() => setIsOpen(false)}
+              aria-label="Close vector visualizer"
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -150,6 +151,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
               <div className="relative p-2 rounded-2xl bg-secondary/30 border border-border/80 shadow-inner flex justify-center">
                 <svg
                   ref={svgRef}
+                  role="region"
+                  aria-label="Interactive 2D vector coordinate space"
                   viewBox="0 0 360 360"
                   width="360"
                   height="360"
@@ -234,8 +237,26 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     markerEnd="url(#arrow-b)"
                   />
 
-                  {/* Vector A Draggable Tip Handle */}
-                  <g className="cursor-grab active:cursor-grabbing">
+                  {/* Vector A Draggable & Keyboard-Accessible Tip Handle */}
+                  <g
+                    tabIndex={0}
+                    role="slider"
+                    aria-label="Vector A angle in degrees (use Arrow keys to rotate, Shift+Arrow for 15° steps)"
+                    aria-valuenow={Math.round((angleA * 180) / Math.PI)}
+                    aria-valuemin={-180}
+                    aria-valuemax={180}
+                    onKeyDown={(e) => {
+                      const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
+                      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setAngleA(prev => prev + step);
+                      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setAngleA(prev => prev - step);
+                      }
+                    }}
+                    className="cursor-grab active:cursor-grabbing focus:outline-none"
+                  >
                     {/* Wide transparent touch hit area */}
                     <circle
                       cx={svgAx}
@@ -264,8 +285,26 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     />
                   </g>
 
-                  {/* Vector B Draggable Tip Handle */}
-                  <g className="cursor-grab active:cursor-grabbing">
+                  {/* Vector B Draggable & Keyboard-Accessible Tip Handle */}
+                  <g
+                    tabIndex={0}
+                    role="slider"
+                    aria-label="Vector B angle in degrees (use Arrow keys to rotate, Shift+Arrow for 15° steps)"
+                    aria-valuenow={Math.round((angleB * 180) / Math.PI)}
+                    aria-valuemin={-180}
+                    aria-valuemax={180}
+                    onKeyDown={(e) => {
+                      const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
+                      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setAngleB(prev => prev + step);
+                      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setAngleB(prev => prev - step);
+                      }
+                    }}
+                    className="cursor-grab active:cursor-grabbing focus:outline-none"
+                  >
                     {/* Wide transparent touch hit area */}
                     <circle
                       cx={svgBx}
@@ -299,15 +338,17 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                 </svg>
 
                 <div className="absolute bottom-3 left-4 text-[10px] text-muted-foreground flex items-center gap-1.5 pointer-events-none">
-                  <Move className="w-3 h-3 text-primary animate-pulse" />
-                  <span>Drag vector tips directly on the canvas</span>
+                  <Move className="w-3 h-3 text-primary animate-pulse" aria-hidden="true" />
+                  <span>Drag vector tips or use Arrow keys when focused</span>
                 </div>
               </div>
 
               {/* Controls */}
               <div className="w-full mt-4 flex items-center justify-between gap-4">
                 <button
+                  type="button"
                   onClick={() => setIsNormalized(!isNormalized)}
+                  aria-pressed={isNormalized}
                   className={cn(
                     'px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer',
                     isNormalized
@@ -315,11 +356,12 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       : 'bg-secondary/50 text-muted-foreground border-border hover:text-foreground'
                   )}
                 >
-                  <span className={cn('w-2 h-2 rounded-full', isNormalized ? 'bg-primary animate-pulse' : 'bg-muted-foreground')} />
+                  <span className={cn('w-2 h-2 rounded-full', isNormalized ? 'bg-primary animate-pulse' : 'bg-muted-foreground')} aria-hidden="true" />
                   <span>Lock Unit Norm (||A|| = ||B|| = 1.0)</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setAngleA(Math.PI / 6);
                     setAngleB(Math.PI / 2.5);
@@ -327,16 +369,17 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     setMagB(1.0);
                     setIsNormalized(true);
                   }}
+                  aria-label="Reset vectors to default angles"
                   className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors flex items-center gap-1 cursor-pointer"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>Reset</span>
                 </button>
               </div>
             </div>
 
             {/* Live Metrics & Mathematical Proofs */}
-            <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+            <div aria-live="polite" className="lg:col-span-5 flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Live Distance & Similarity Metrics

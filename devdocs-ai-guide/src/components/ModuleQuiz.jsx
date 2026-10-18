@@ -103,20 +103,20 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
           const isCorrect = isAnswered && selectedIdx === q.correctIndex;
 
           return (
-            <div
+            <fieldset
               key={q.id}
               className="p-4 rounded-xl bg-secondary/25 border border-border/70 space-y-3"
             >
-              <div className="flex items-start gap-2.5">
-                <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-mono text-xs font-bold shrink-0 mt-0.5">
+              <legend className="flex items-start gap-2.5 mb-2 float-none w-auto">
+                <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-mono text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">
                   Q{qIdx + 1}
                 </span>
-                <p className="text-sm sm:text-[15px] font-semibold text-foreground leading-relaxed">
-                  {q.question}
-                </p>
-              </div>
+                <span className="text-sm sm:text-[15px] font-semibold text-foreground leading-relaxed">
+                  Question {qIdx + 1}: {q.question}
+                </span>
+              </legend>
 
-              <div className="grid grid-cols-1 gap-2 pt-1">
+              <div role="radiogroup" aria-label={`Question ${qIdx + 1} options`} className="grid grid-cols-1 gap-2 pt-1">
                 {q.options.map((optText, optIdx) => {
                   const isThisSelected = selectedIdx === optIdx;
                   const isThisCorrect = optIdx === q.correctIndex;
@@ -139,6 +139,8 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                     <button
                       key={optIdx}
                       type="button"
+                      role="radio"
+                      aria-checked={isThisSelected}
                       disabled={isAnswered}
                       onClick={() => handleSelectOption(q.id, optIdx)}
                       className={cn(
@@ -148,6 +150,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                       )}
                     >
                       <span
+                        aria-hidden="true"
                         className={cn(
                           'w-6 h-6 rounded-lg font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 border transition-colors',
                           isAnswered && isThisCorrect
@@ -161,10 +164,16 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                       </span>
                       <span className="flex-1 leading-relaxed">{optText}</span>
                       {isAnswered && isThisCorrect && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" aria-hidden="true" />
+                          <span className="sr-only"> (Correct answer)</span>
+                        </>
                       )}
                       {isAnswered && isThisSelected && !isThisCorrect && (
-                        <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-1" />
+                        <>
+                          <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-1" aria-hidden="true" />
+                          <span className="sr-only"> (Your selection, incorrect)</span>
+                        </>
                       )}
                     </button>
                   );
@@ -174,7 +183,9 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
               {/* Instant Explanation upon answering */}
               {isAnswered && (
                 <div
+                  role="status"
                   aria-live="polite"
+                  aria-atomic="true"
                   className={cn(
                     'mt-3 p-3.5 rounded-xl border text-xs sm:text-[13px] leading-relaxed flex items-start gap-2.5 animate-in fade-in duration-150',
                     isCorrect
@@ -201,7 +212,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
                   </div>
                 </div>
               )}
-            </div>
+            </fieldset>
           );
         })}
       </div>

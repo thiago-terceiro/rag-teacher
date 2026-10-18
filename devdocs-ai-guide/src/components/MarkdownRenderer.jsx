@@ -15,7 +15,7 @@ const rehypePlugins = [rehypeHeadingIds, rehypeKatex];
 const HeadingAnchor = ({ id }) => (
   <a
     href={`#${id}`}
-    aria-label="Link to this section"
+    aria-label={`Direct link to section: ${id.replace(/-/g, ' ')}`}
     className="ml-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground/70 hover:text-primary font-normal no-underline select-none"
     onClick={(e) => {
       e.preventDefault();
@@ -125,15 +125,28 @@ const markdownComponents = {
     return <strong className="font-semibold text-foreground tracking-[0.01em]">{children}</strong>;
   },
   a({ href, children }) {
+    const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
     return (
       <a
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noopener noreferrer' : undefined}
         className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors break-all [overflow-wrap:anywhere]"
       >
         {children}
+        {isExternal && <span className="sr-only"> (opens in a new tab)</span>}
       </a>
+    );
+  },
+  img({ src, alt, ...props }) {
+    return (
+      <img
+        src={src}
+        alt={alt || 'Document illustration'}
+        className="max-w-full h-auto rounded-lg my-4 border border-border"
+        loading="lazy"
+        {...props}
+      />
     );
   },
 };

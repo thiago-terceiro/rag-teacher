@@ -44,12 +44,15 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
       {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
+          role="presentation"
+          aria-hidden="true"
           onClick={() => setIsMobileOpen(false)}
           className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
         />
       )}
 
       <aside
+        id="curriculum-sidebar"
         className={cn(
           'no-print w-80 bg-card/95 backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
@@ -62,7 +65,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
             onClick={() => setIsMobileOpen?.(false)}
             className="flex items-center space-x-2.5 text-foreground hover:opacity-90 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-primary" aria-hidden="true">
               <Layers className="w-4 h-4" />
             </div>
             <div>
@@ -84,17 +87,19 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
         {/* Search Bar */}
         <div className="p-3 border-b border-border/70">
           <div className="relative">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search 28 RAG topics..."
+              aria-label="Search curriculum topics"
               className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
             {searchQuery ? (
               <button
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search query"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs cursor-pointer"
               >
                 ✕
@@ -103,6 +108,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
               <button
                 onClick={onOpenSearch}
                 title="Open Spotlight Search (⌘K)"
+                aria-label="Open Spotlight Search"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-secondary/80 hover:bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 ⌘K
@@ -196,12 +202,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
                       const isActive = step.step_key === currentStepKey;
                       const isCompleted = step.status === 'completed';
                       const isInProgress = step.status === 'in_progress';
+                      const statusLabel = isCompleted ? 'Completed' : isInProgress ? 'In Progress' : 'Not Started';
 
                       return (
                         <Link
                           key={step.step_key}
                           to={`/steps/${step.step_key}`}
                           onClick={() => setIsMobileOpen?.(false)}
+                          aria-current={isActive ? 'page' : undefined}
                           className={cn(
                             'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
                             isActive
@@ -210,13 +218,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
                           )}
                         >
                           {isCompleted ? (
-                            <CheckCircle2 className={cn('w-3.5 h-3.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-emerald-400')} />
+                            <CheckCircle2 aria-hidden="true" className={cn('w-3.5 h-3.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-emerald-400')} />
                           ) : isInProgress ? (
-                            <span className={cn('w-2 h-2 rounded-full shrink-0 animate-pulse', isActive ? 'bg-primary-foreground' : 'bg-amber-400')} />
+                            <span aria-hidden="true" className={cn('w-2 h-2 rounded-full shrink-0 animate-pulse', isActive ? 'bg-primary-foreground' : 'bg-amber-400')} />
                           ) : (
-                            <Circle className={cn('w-3 h-3 shrink-0 opacity-40', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
+                            <Circle aria-hidden="true" className={cn('w-3 h-3 shrink-0 opacity-40', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
                           )}
                           <span className="truncate">{step.title}</span>
+                          <span className="sr-only"> ({statusLabel})</span>
                         </Link>
                       );
                     })}
@@ -240,7 +249,15 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
               <span className="font-medium text-foreground">Overall Mastery</span>
               <span className="font-bold text-primary">{stats.completionPercentage}%</span>
             </div>
-            <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
+            <div
+              role="progressbar"
+              aria-label="Overall curriculum mastery progress"
+              aria-valuenow={stats.completionPercentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuetext={`${stats.completionPercentage}% completed`}
+              className="w-full bg-secondary h-1.5 rounded-full overflow-hidden"
+            >
               <div
                 className="bg-primary h-full transition-all duration-500 rounded-full"
                 style={{ width: `${stats.completionPercentage}%` }}

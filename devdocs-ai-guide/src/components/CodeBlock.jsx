@@ -75,25 +75,27 @@ const CodeBlock = React.memo(({ language = 'text', value = '' }) => {
               type="button"
               onClick={handleOpenInSandbox}
               title="Open this Python snippet in the isolated Pyodide Web Worker Sandbox"
+              aria-label="Open this Python snippet in the isolated Pyodide Web Worker Sandbox"
               className="flex items-center space-x-1 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 transition-all duration-150 cursor-pointer text-xs active:scale-95"
             >
-              <span>▶ Sandbox</span>
+              <span aria-hidden="true">▶</span>
+              <span>Sandbox</span>
             </button>
           )}
           <button
             type="button"
             onClick={handleCopy}
-            aria-label="Copy code to clipboard"
+            aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
             className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs active:scale-90"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 spin-in-90 duration-200" />
-                <span className="text-emerald-400 font-semibold animate-in fade-in zoom-in-75 duration-150">Copied!</span>
+                <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 spin-in-90 duration-200" aria-hidden="true" />
+                <span className="text-emerald-400 font-semibold animate-in fade-in zoom-in-75 duration-150" role="status" aria-live="polite">Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-150" />
+                <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-150" aria-hidden="true" />
                 <span>Copy</span>
               </>
             )}

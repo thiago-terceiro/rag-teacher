@@ -83,11 +83,12 @@ function ChunkingCalculator() {
         </div>
 
         {/* Presets */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap" role="toolbar" aria-label="Chunking presets">
           {PRESETS.map((p) => (
             <button
               key={p.name}
               onClick={() => applyPreset(p)}
+              aria-label={`Apply ${p.name} preset: length ${p.length}, chunk size ${p.chunkSize}, overlap ${p.overlapPct}%`}
               className="px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 hover:border-blue-500/40 transition-colors cursor-pointer"
             >
               {p.name}
@@ -103,16 +104,22 @@ function ChunkingCalculator() {
           {/* Document Length Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground font-medium">Document Length (Tokens)</span>
+              <label htmlFor="chunk-doc-length" className="text-muted-foreground font-medium">Document Length (Tokens)</label>
               <span className="font-mono font-semibold text-foreground">{docLength.toLocaleString()} tokens</span>
             </div>
             <input
+              id="chunk-doc-length"
               type="range"
               min="500"
               max="6000"
               step="100"
               value={docLength}
               onChange={(e) => setDocLength(Number(e.target.value))}
+              aria-label="Document Length in Tokens"
+              aria-valuemin="500"
+              aria-valuemax="6000"
+              aria-valuenow={docLength}
+              aria-valuetext={`${docLength.toLocaleString()} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
           </div>
@@ -120,16 +127,22 @@ function ChunkingCalculator() {
           {/* Chunk Size Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground font-medium">Chunk Window Size ($C$)</span>
+              <label htmlFor="chunk-size-slider" className="text-muted-foreground font-medium">Chunk Window Size ($C$)</label>
               <span className="font-mono font-semibold text-blue-400">{chunkSize} tokens</span>
             </div>
             <input
+              id="chunk-size-slider"
               type="range"
               min="128"
               max="2048"
               step="64"
               value={chunkSize}
               onChange={(e) => setChunkSize(Number(e.target.value))}
+              aria-label="Chunk Window Size in Tokens"
+              aria-valuemin="128"
+              aria-valuemax="2048"
+              aria-valuenow={chunkSize}
+              aria-valuetext={`${chunkSize} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
           </div>
@@ -137,24 +150,30 @@ function ChunkingCalculator() {
           {/* Overlap Percentage Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground font-medium">Overlap Percentage ($O$)</span>
+              <label htmlFor="chunk-overlap-slider" className="text-muted-foreground font-medium">Overlap Percentage ($O$)</label>
               <span className="font-mono font-semibold text-indigo-400">
                 {overlapPct}% ({metrics.overlapTokens} tokens)
               </span>
             </div>
             <input
+              id="chunk-overlap-slider"
               type="range"
               min="0"
               max="50"
               step="5"
               value={overlapPct}
               onChange={(e) => setOverlapPct(Number(e.target.value))}
+              aria-label="Overlap Percentage"
+              aria-valuemin="0"
+              aria-valuemax="50"
+              aria-valuenow={overlapPct}
+              aria-valuetext={`${overlapPct} percent, ${metrics.overlapTokens} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-indigo-500"
             />
           </div>
 
           {/* Visual Chunk Bands Timeline */}
-          <div className="pt-2">
+          <div className="pt-2" aria-hidden="true">
             <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>Timeline Window Segmentation ({visualSegments.length}{metrics.numChunks > 10 ? '+' : ''} segments)</span>
               <span className="text-[10px] font-mono text-muted-foreground">Stride: {metrics.stride}t</span>
@@ -193,7 +212,12 @@ function ChunkingCalculator() {
         </div>
 
         {/* Calculated Metrics KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 bg-secondary/20 p-3.5 rounded-xl border border-border/60">
+        <div
+          role="region"
+          aria-label="Calculated Storage Metrics"
+          aria-live="polite"
+          className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 bg-secondary/20 p-3.5 rounded-xl border border-border/60"
+        >
           <div className="p-2.5 rounded-lg bg-card/60 border border-border/50">
             <div className="text-[11px] text-muted-foreground">Total Generated Chunks</div>
             <div className="text-xl font-bold font-mono text-foreground mt-0.5">

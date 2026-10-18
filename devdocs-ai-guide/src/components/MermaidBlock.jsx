@@ -148,12 +148,12 @@ const MermaidBlock = React.memo(({ chart }) => {
           >
             {showSource ? (
               <>
-                <Eye className="w-3.5 h-3.5 text-primary" />
+                <Eye className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                 <span>Visual</span>
               </>
             ) : (
               <>
-                <Code2 className="w-3.5 h-3.5" />
+                <Code2 className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Source</span>
               </>
             )}
@@ -161,17 +161,17 @@ const MermaidBlock = React.memo(({ chart }) => {
 
           <button
             onClick={handleCopy}
-            aria-label="Copy mermaid source code"
+            aria-label={copied ? 'Mermaid source code copied to clipboard' : 'Copy mermaid source code'}
             className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400 font-semibold">Copied</span>
+                <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                <span className="text-emerald-400 font-semibold" role="status" aria-live="polite">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Copy</span>
               </>
             )}
@@ -187,6 +187,8 @@ const MermaidBlock = React.memo(({ chart }) => {
       ) : (
         <div
           ref={containerRef}
+          role="img"
+          aria-label="Architecture diagram rendered from Mermaid specification"
           className={cn(
             'p-6 overflow-x-auto flex items-center justify-center min-h-[160px] [&_svg]:max-w-full [&_svg]:h-auto [&_svg]:transition-all',
             isLightTheme ? 'bg-[#f8fafc]' : 'bg-[#0c1017]/80'

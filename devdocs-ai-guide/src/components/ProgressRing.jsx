@@ -5,7 +5,16 @@ const ProgressRing = ({ value }) => {
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 120 120">
+    <svg
+      role="progressbar"
+      aria-label="Curriculum progress"
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuetext={`${value}% completed`}
+      className="w-12 h-12 transform -rotate-90"
+      viewBox="0 0 120 120"
+    >
       <circle
         className="text-secondary"
         strokeWidth="10"

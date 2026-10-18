@@ -182,11 +182,14 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
           <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
 
           <div className="flex items-center space-x-2">
-            <Bookmark className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold">Your Learning Status:</span>
+            <Bookmark className="w-4 h-4 text-primary" aria-hidden="true" />
+            <span id="learning-status-label" className="text-sm font-semibold">Your Learning Status:</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div role="radiogroup" aria-labelledby="learning-status-label" className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
+              role="radio"
+              aria-checked={status === 'not_started'}
               onClick={() => handleStatusChange('not_started')}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
@@ -195,11 +198,14 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <Circle className="w-3.5 h-3.5" />
+              <Circle className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Not Started</span>
             </button>
             
             <button
+              type="button"
+              role="radio"
+              aria-checked={status === 'in_progress'}
               onClick={() => handleStatusChange('in_progress')}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
@@ -208,11 +214,14 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
               <span>In Progress</span>
             </button>
 
             <button
+              type="button"
+              role="radio"
+              aria-checked={status === 'completed'}
               onClick={() => handleStatusChange('completed')}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center space-x-1.5 cursor-pointer active:scale-95',
@@ -221,7 +230,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
               <span>Completed</span>
             </button>
 
@@ -229,9 +238,10 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
               type="button"
               onClick={onOpenPythonSandbox}
               title="Launch In-Browser Pyodide Python Sandbox"
+              aria-label="Launch In-Browser Python Sandbox"
               className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center space-x-1.5 cursor-pointer"
             >
-              <Terminal className="w-3.5 h-3.5" />
+              <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Python Lab</span>
             </button>
           </div>
@@ -342,9 +352,11 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
           {prevStep ? (
             <Link
               to={`/steps/${prevStep.step_key}`}
+              rel="prev"
+              aria-label={`Previous step: ${prevStep.title}`}
               className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border/80 bg-card/70 hover:bg-secondary/90 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] text-foreground transition-all duration-200 active:scale-[0.99] group cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" />
+              <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" aria-hidden="true" />
               <div className="text-left">
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                   <span>Previous Step</span>
@@ -358,6 +370,8 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
           {nextStep ? (
             <Link
               to={`/steps/${nextStep.step_key}`}
+              rel="next"
+              aria-label={`Next step: ${nextStep.title}`}
               className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
             >
               <div className="text-right">
@@ -367,7 +381,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
                 </div>
                 <div className="text-sm font-bold line-clamp-1">{nextStep.title}</div>
               </div>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" aria-hidden="true" />
             </Link>
           ) : (
             <div className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-center border border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.2)] animate-in zoom-in-95 duration-300">

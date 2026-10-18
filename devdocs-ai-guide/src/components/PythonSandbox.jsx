@@ -419,14 +419,16 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
               <span>Interactive RAG Algorithm Templates (Python 3.12 + NumPy)</span>
               <span className="font-mono text-[10px] opacity-80">5s Execution Limit • 16KB Output Cap</span>
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
+            <div role="tablist" aria-label="Interactive RAG algorithm templates" className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
               {selectedTemplateId === 'custom' && (
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={true}
                   onClick={() => setSelectedTemplateId('custom')}
                   className="px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs flex items-center gap-1.5"
                 >
-                  <Sparkles className="w-3 h-3" />
+                  <Sparkles className="w-3 h-3" aria-hidden="true" />
                   <span>Custom Module Snippet</span>
                 </button>
               )}
@@ -436,6 +438,8 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
                   <button
                     key={tpl.id}
                     type="button"
+                    role="tab"
+                    aria-selected={active}
                     onClick={() => handleSelectTemplate(tpl)}
                     className={cn(
                       'px-3 py-1.5 rounded-xl border text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0',
@@ -467,18 +471,21 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
                     <button
                       type="button"
                       onClick={() => terminateWorker('Execution aborted by user (Worker killed).')}
+                      aria-label="Terminate Python execution"
                       className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
-                      <Square className="w-3 h-3 fill-current" />
+                      <Square className="w-3 h-3 fill-current" aria-hidden="true" />
                       <span>Kill Worker</span>
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={handleRunCode}
+                      aria-busy={isBusy}
+                      aria-label="Run Python code snippet in sandbox"
                       className="px-3.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
                       <span>Run Python</span>
                     </button>
                   )}
@@ -513,13 +520,18 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
                 </span>
                 {output.elapsedMs !== null && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400">
-                    <Clock className="w-3 h-3" />
+                    <Clock className="w-3 h-3" aria-hidden="true" />
                     {output.elapsedMs} ms
                   </span>
                 )}
               </div>
 
-              <div className="flex-1 p-4 font-mono text-xs leading-relaxed overflow-y-auto max-h-80 sm:max-h-96 custom-scrollbar">
+              <div
+                role="region"
+                aria-label="Standard Output Console"
+                aria-live="polite"
+                className="flex-1 p-4 font-mono text-xs leading-relaxed overflow-y-auto max-h-80 sm:max-h-96 custom-scrollbar"
+              >
                 {isBusy ? (
                   <div className="h-full flex flex-col items-center justify-center text-slate-400 py-16 space-y-3">
                     <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />

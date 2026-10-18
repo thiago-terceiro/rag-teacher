@@ -75,6 +75,7 @@ function RRFSimulator() {
 
         <button
           onClick={resetDefaults}
+          aria-label="Reset document ranks to default values"
           className="self-start sm:self-auto px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
         >
           Reset Ranks
@@ -84,24 +85,30 @@ function RRFSimulator() {
       {/* Smoothing Constant k Slider */}
       <div className="pt-4 pb-2">
         <div className="flex justify-between items-center text-xs mb-1.5">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Sliders className="w-3.5 h-3.5 text-purple-400" />
+          <label htmlFor="rrf-k-slider" className="text-muted-foreground font-medium flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" />
             RRF Smoothing Constant ($k$)
-          </span>
+          </label>
           <span className="font-mono font-bold text-purple-400 text-sm">
             k = {kConstant} {kConstant === 60 ? '(Cormack Standard)' : ''}
           </span>
         </div>
         <input
+          id="rrf-k-slider"
           type="range"
           min="10"
           max="120"
           step="5"
           value={kConstant}
           onChange={(e) => setKConstant(Number(e.target.value))}
+          aria-label="RRF Smoothing Constant k"
+          aria-valuemin="10"
+          aria-valuemax="120"
+          aria-valuenow={kConstant}
+          aria-valuetext={`k equals ${kConstant}`}
           className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-purple-500"
         />
-        <div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-1">
+        <div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-1" aria-hidden="true">
           <span>k=10 (Aggressive rank bias)</span>
           <span>k=60 (Production standard)</span>
           <span>k=120 (Smooth uniform dampening)</span>
@@ -110,17 +117,17 @@ function RRFSimulator() {
 
       {/* Live Fused Ranking Table */}
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-xs text-left">
+        <table className="w-full text-xs text-left" aria-label="Reciprocal Rank Fusion rankings">
           <thead>
             <tr className="border-b border-border/60 text-muted-foreground text-[11px] uppercase tracking-wider font-semibold">
-              <th className="py-2.5 px-3">Fused Rank</th>
-              <th className="py-2.5 px-3">Document</th>
-              <th className="py-2.5 px-3 text-center">Dense Rank (Vector)</th>
-              <th className="py-2.5 px-3 text-center">Sparse Rank (BM25)</th>
-              <th className="py-2.5 px-3">Fused RRF Score & Relative Strength</th>
+              <th scope="col" className="py-2.5 px-3">Fused Rank</th>
+              <th scope="col" className="py-2.5 px-3">Document</th>
+              <th scope="col" className="py-2.5 px-3 text-center">Dense Rank (Vector)</th>
+              <th scope="col" className="py-2.5 px-3 text-center">Sparse Rank (BM25)</th>
+              <th scope="col" className="py-2.5 px-3">Fused RRF Score & Relative Strength</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/40 font-mono">
+          <tbody className="divide-y divide-border/40 font-mono" aria-live="polite">
             {rankedDocs.map((doc) => {
               const isWinner = doc.fusedRank === 1;
               return (
@@ -135,7 +142,7 @@ function RRFSimulator() {
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-1.5 font-bold">
                       {isWinner ? (
-                        <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
+                        <Trophy className="w-4 h-4 text-amber-400 shrink-0" aria-label="Top ranked winner" />
                       ) : (
                         <span className="text-muted-foreground">#{doc.fusedRank}</span>
                       )}
@@ -158,6 +165,7 @@ function RRFSimulator() {
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank - 1)}
+                        aria-label={`Promote vector rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
                       >
                         -
@@ -165,6 +173,7 @@ function RRFSimulator() {
                       <span className="w-6 text-center font-bold text-blue-400">#{doc.vectorRank}</span>
                       <button
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank + 1)}
+                        aria-label={`Demote vector rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
                       >
                         +
@@ -177,6 +186,7 @@ function RRFSimulator() {
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank - 1)}
+                        aria-label={`Promote BM25 rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
                       >
                         -
@@ -184,6 +194,7 @@ function RRFSimulator() {
                       <span className="w-6 text-center font-bold text-emerald-400">#{doc.bm25Rank}</span>
                       <button
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank + 1)}
+                        aria-label={`Demote BM25 rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
                       >
                         +
@@ -198,7 +209,14 @@ function RRFSimulator() {
                         <span className="text-purple-300 font-bold">{doc.rrfScore.toFixed(5)}</span>
                         <span className="text-muted-foreground">{doc.barWidthPct}%</span>
                       </div>
-                      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                      <div
+                        role="progressbar"
+                        aria-label={`Relative RRF strength for ${doc.title}`}
+                        aria-valuenow={doc.barWidthPct}
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        className="h-2 w-full bg-secondary rounded-full overflow-hidden"
+                      >
                         <div
                           style={{ width: `${doc.barWidthPct}%` }}
                           className={cn(

@@ -127,8 +127,16 @@ export function InterviewQuestions() {
       <div className="p-4 sm:p-5 rounded-2xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           {/* Circular Progress Ring - locked aspect ratio, never squashed sideways */}
-          <div className="relative w-14 h-14 shrink-0 aspect-square flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90 shrink-0" viewBox="0 0 48 48">
+          <div
+            role="progressbar"
+            aria-label="Interview scenarios mastered progress"
+            aria-valuenow={masteredPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuetext={`${masteredCount} of ${totalQuestions} scenarios mastered (${masteredPercent}%)`}
+            className="relative w-14 h-14 shrink-0 aspect-square flex items-center justify-center"
+          >
+            <svg aria-hidden="true" className="w-full h-full transform -rotate-90 shrink-0" viewBox="0 0 48 48">
               {/* Background circular track */}
               <circle
                 className="text-secondary/80"
@@ -169,7 +177,14 @@ export function InterviewQuestions() {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full sm:w-64 bg-secondary/60 rounded-full h-2.5 overflow-hidden border border-border/50">
+        <div
+          role="progressbar"
+          aria-label="Overall interview mastery percentage"
+          aria-valuenow={masteredPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className="w-full sm:w-64 bg-secondary/60 rounded-full h-2.5 overflow-hidden border border-border/50"
+        >
           <div
             className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 transition-all duration-300"
             style={{ width: `${masteredPercent}%` }}
@@ -180,7 +195,11 @@ export function InterviewQuestions() {
       {/* Search & Phase Filters - with elevated height and generous breathing room */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8 sm:mb-10">
         {/* Phase Filter Tabs */}
-        <div className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar">
+        <div
+          role="tablist"
+          aria-label="Filter interview scenarios by phase"
+          className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar"
+        >
           {[
             { key: 'all', label: `All (${totalQuestions})` },
             { key: '1', label: 'Phase 1: Foundation (9)' },
@@ -190,6 +209,8 @@ export function InterviewQuestions() {
           ].map(tab => (
             <button
               key={tab.key}
+              role="tab"
+              aria-selected={activePhase === tab.key}
               onClick={() => setActivePhase(tab.key)}
               className={cn(
                 'px-3.5 py-2 rounded-xl font-medium whitespace-nowrap transition-all cursor-pointer',
@@ -205,12 +226,13 @@ export function InterviewQuestions() {
 
         {/* Search Input */}
         <div className="relative min-w-[260px]">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search questions, topics..."
+            aria-label="Search interview questions by title, keyword, or track"
             className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"
           />
         </div>
@@ -250,7 +272,10 @@ export function InterviewQuestions() {
 
                     {/* Mastery Checkbox */}
                     <button
+                      type="button"
                       onClick={() => toggleMastery(q.id)}
+                      aria-pressed={isMastered}
+                      aria-label={isMastered ? `Mark scenario ${q.step_title} as not mastered` : `Mark scenario ${q.step_title} as mastered`}
                       className={cn(
                         'flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
                         isMastered
@@ -260,12 +285,12 @@ export function InterviewQuestions() {
                     >
                       {isMastered ? (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
                           <span>Mastered</span>
                         </>
                       ) : (
                         <>
-                          <Circle className="w-3.5 h-3.5" />
+                          <Circle className="w-3.5 h-3.5" aria-hidden="true" />
                           <span>Mark as Mastered</span>
                         </>
                       )}
@@ -279,7 +304,7 @@ export function InterviewQuestions() {
                       className="hover:text-primary transition-colors flex items-center gap-2 group"
                     >
                       <span>{q.step_title}</span>
-                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" />
+                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" aria-hidden="true" />
                     </Link>
                   </h2>
 
@@ -302,10 +327,11 @@ export function InterviewQuestions() {
 
                   {/* Draft Answer Scratchpad */}
                   <div className="mt-5 pt-4 border-t border-border/60">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                    <label htmlFor={`draft-${q.step_key}`} className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
                       Draft Your Solution & Latency / Storage Budget:
                     </label>
                     <textarea
+                      id={`draft-${q.step_key}`}
                       value={draft}
                       onChange={(e) => updateDraft(q.step_key, e.target.value)}
                       placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
@@ -316,7 +342,10 @@ export function InterviewQuestions() {
                   {/* Action Buttons */}
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <button
+                      type="button"
                       onClick={() => toggleReveal(q.id)}
+                      aria-expanded={isRevealed}
+                      aria-controls={`answer-${q.id}`}
                       className={cn(
                         'px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer',
                         isRevealed
@@ -326,12 +355,12 @@ export function InterviewQuestions() {
                     >
                       {isRevealed ? (
                         <>
-                          <EyeOff className="w-4 h-4" />
+                          <EyeOff className="w-4 h-4" aria-hidden="true" />
                           <span>Hide Architecture Answer</span>
                         </>
                       ) : (
                         <>
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4" aria-hidden="true" />
                           <span>Reveal Architecture Answer</span>
                         </>
                       )}
@@ -341,7 +370,7 @@ export function InterviewQuestions() {
                       to={`/steps/${q.step_key}`}
                       className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
                     >
-                      <BookOpen className="w-3.5 h-3.5" />
+                      <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Study Full Step Curriculum Module</span>
                     </Link>
                   </div>
@@ -349,9 +378,9 @@ export function InterviewQuestions() {
 
                 {/* Collapsible Architecture Answer Reveal */}
                 {isRevealed && (
-                  <div className="px-5 sm:px-6 py-6 border-t border-border/80 bg-secondary/20 animate-in fade-in duration-200">
+                  <div id={`answer-${q.id}`} role="region" aria-label="Architecture Answer & Tradeoffs" className="px-5 sm:px-6 py-6 border-t border-border/80 bg-secondary/20 animate-in fade-in duration-200">
                     <div className="flex items-center space-x-2 text-xs font-bold text-primary uppercase tracking-wider mb-4 pb-2 border-b border-border/60">
-                      <Sparkles className="w-4 h-4 text-primary" />
+                      <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
                       <span>Production Architecture Answer & Tradeoffs</span>
                     </div>
 

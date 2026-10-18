@@ -23,6 +23,7 @@ import { useI18n } from '../hooks/useI18n';
 import ProgressRing from './ProgressRing';
 
 const StatsBar = ({
+  isMobileOpen = false,
   onToggleMobileSidebar,
   onOpenSearch,
   onOpenReadingSettings,
@@ -50,7 +51,9 @@ const StatsBar = ({
         {/* Mobile Hamburger Toggle */}
         <button
           onClick={onToggleMobileSidebar}
-          aria-label="Open navigation menu"
+          aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileOpen}
+          aria-controls="curriculum-sidebar"
           className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground lg:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Menu className="w-5 h-5" />
@@ -230,7 +233,7 @@ const StatsBar = ({
       </div>
 
       {/* Sleek Hardware-Accelerated Neon Reading Scroll Progress Bar */}
-      <div className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
+      <div aria-hidden="true" className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
         <div
           id="header-scroll-progress-bar"
           className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.8)] will-change-transform"

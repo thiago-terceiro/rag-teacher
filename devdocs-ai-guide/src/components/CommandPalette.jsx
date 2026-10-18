@@ -171,10 +171,15 @@ export function CommandPalette({ isOpen, setIsOpen }) {
 
           {/* Search Header Input Bar */}
           <div className="flex items-center px-4 py-3.5 border-b border-border/80 gap-3">
-            <Search className="w-5 h-5 text-primary shrink-0 animate-pulse" />
+            <Search className="w-5 h-5 text-primary shrink-0 animate-pulse" aria-hidden="true" />
             <input
               ref={inputRef}
               type="text"
+              role="combobox"
+              aria-expanded={isOpen}
+              aria-autocomplete="list"
+              aria-controls="command-palette-results"
+              aria-label="Search curriculum modules, topics, and algorithms"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -187,18 +192,25 @@ export function CommandPalette({ isOpen, setIsOpen }) {
             {query && (
               <button
                 onClick={() => setQuery('')}
+                aria-label="Clear search input"
                 className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-xs transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-block px-2 py-0.5 rounded bg-secondary/80 text-[10px] font-mono text-muted-foreground border border-border/60">
+            <kbd aria-hidden="true" className="hidden sm:inline-block px-2 py-0.5 rounded bg-secondary/80 text-[10px] font-mono text-muted-foreground border border-border/60">
               ESC
             </kbd>
           </div>
 
           {/* Search Results List */}
-          <div ref={listRef} className="max-h-[26rem] overflow-y-auto p-2 space-y-1 custom-scrollbar">
+          <div
+            ref={listRef}
+            id="command-palette-results"
+            role="listbox"
+            aria-label="Curriculum Search Results"
+            className="max-h-[26rem] overflow-y-auto p-2 space-y-1 custom-scrollbar"
+          >
             {query ? (
               filteredResults.length > 0 ? (
                 filteredResults.map((item, idx) => {
@@ -209,6 +221,8 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={itemKey}
+                      role="option"
+                      aria-selected={isSelected}
                       data-selected={isSelected}
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}
@@ -257,7 +271,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                   );
                 })
               ) : (
-                <div className="py-12 text-center text-sm text-muted-foreground">
+                <div role="status" aria-live="polite" className="py-12 text-center text-sm text-muted-foreground">
                   <p>No topics found matching <span className="text-foreground font-semibold">"{query}"</span></p>
                   <p className="text-xs mt-1 text-muted-foreground/80">
                     Try searching for <span className="text-primary">chunking</span>, <span className="text-primary">hnsw</span>, <span className="text-primary">reranking</span>, or <span className="text-primary">dspy</span>.
@@ -267,7 +281,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
             ) : (
               <div>
                 <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-primary" />
+                  <Sparkles className="w-3 h-3 text-primary" aria-hidden="true" />
                   Popular Modules & Deep-Link Concepts
                 </div>
                 {POPULAR_SUGGESTIONS.map((item, idx) => {
@@ -275,6 +289,8 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={item.label}
+                      role="option"
+                      aria-selected={isSelected}
                       data-selected={isSelected}
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}

@@ -33,6 +33,17 @@ function App() {
     return () => window.removeEventListener('open-python-sandbox', onCustomSandboxEvent);
   }, [handleOpenPythonSandbox]);
 
+  // Accessibility: Close mobile sidebar when pressing Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isMobileSidebarOpen) {
+        setIsMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileSidebarOpen]);
+
   return (
     <div className="bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
       <I18nProvider>
@@ -65,13 +76,20 @@ function App() {
             />
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
               <StatsBar
+                isMobileOpen={isMobileSidebarOpen}
                 onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
                 onOpenSearch={() => setIsCommandPaletteOpen(true)}
                 onOpenReadingSettings={() => setIsReadingSettingsOpen(true)}
                 onOpenVectorSandbox={() => setIsVectorVisualizerOpen(true)}
                 onOpenPythonSandbox={() => handleOpenPythonSandbox(null)}
               />
-              <div id="main-scroll-container" className="flex-1 p-3.5 sm:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar max-w-full">
+              <div
+                id="main-scroll-container"
+                tabIndex={-1}
+                role="region"
+                aria-label="Main Content"
+                className="flex-1 p-3.5 sm:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar max-w-full focus:outline-none"
+              >
                 <Routes>
                   <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
                   <Route

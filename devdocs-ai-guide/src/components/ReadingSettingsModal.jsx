@@ -75,20 +75,21 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
             {/* Language Selector */}
             <div>
               <div className="flex items-center space-x-1.5 mb-2.5">
-                <Globe className="w-3.5 h-3.5 text-primary" />
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                <Globe className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                <span id="heading-language" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
                   {t('settings.language', 'Language / Idioma')}
-                </label>
+                </span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div role="radiogroup" aria-labelledby="heading-language" className="grid grid-cols-3 gap-2">
                 {supportedLanguages.map(item => {
                   const isSelected = lang === item.code;
                   return (
                     <button
                       key={item.code}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => setLang(item.code)}
-                      aria-pressed={isSelected}
                       className={cn(
                         'py-2 px-3 rounded-xl border text-center transition-all cursor-pointer flex items-center justify-center space-x-1.5 text-xs font-medium',
                         isSelected
@@ -106,10 +107,10 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 
             {/* Theme Preset Option */}
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
+              <span id="heading-theme" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
                 {t('settings.theme', 'Color Theme Preset')}
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              </span>
+              <div role="radiogroup" aria-labelledby="heading-theme" className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {THEME_PRESETS.map(item => {
                   const isSelected = activeTheme === item.key;
                   const Icon = item.icon;
@@ -117,8 +118,9 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     <button
                       key={item.key}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => updateSetting('theme', item.key)}
-                      aria-pressed={isSelected}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                         isSelected
@@ -128,6 +130,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     >
                       <div className="flex items-center justify-between w-full mb-2">
                         <span
+                          aria-hidden="true"
                           className="w-6 h-6 rounded-lg border border-border/80 flex items-center justify-center shadow-inner"
                           style={{ backgroundColor: item.swatchBg }}
                         >
@@ -137,9 +140,9 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                           />
                         </span>
                         {isSelected ? (
-                          <Check className="w-3.5 h-3.5 text-primary" />
+                          <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                         ) : (
-                          <Icon className="w-3.5 h-3.5 opacity-60" />
+                          <Icon className="w-3.5 h-3.5 opacity-60" aria-hidden="true" />
                         )}
                       </div>
                       <div className="text-sm font-medium leading-tight">
@@ -154,10 +157,10 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 
             {/* Font Size Option */}
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
+              <span id="heading-fontsize" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
                 Text Size
-              </label>
-              <div className="grid grid-cols-3 gap-2">
+              </span>
+              <div role="radiogroup" aria-labelledby="heading-fontsize" className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'normal', label: 'Default', size: '15px' },
                   { key: 'comfortable', label: 'Medium', size: '17px' },
@@ -168,6 +171,8 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     <button
                       key={item.key}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => updateSetting('fontSize', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center',
@@ -186,10 +191,10 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 
             {/* Content Width Option */}
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
+              <span id="heading-width" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
                 Reading Width
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+              </span>
+              <div role="radiogroup" aria-labelledby="heading-width" className="grid grid-cols-2 gap-2">
                 {[
                   { key: 'normal', label: 'Standard Column', desc: 'Optimal for reading' },
                   { key: 'wide', label: 'Wide Column', desc: 'Extra space for code' },
@@ -199,6 +204,8 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     <button
                       key={item.key}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => updateSetting('contentWidth', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer',
@@ -209,7 +216,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     >
                       <div className="text-sm font-medium flex items-center justify-between">
                         <span>{item.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />}
                       </div>
                       <div className="text-[11px] opacity-70 mt-0.5">{item.desc}</div>
                     </button>
@@ -220,10 +227,10 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 
             {/* Line Spacing Option */}
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
+              <span id="heading-spacing" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2.5">
                 Line Spacing
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+              </span>
+              <div role="radiogroup" aria-labelledby="heading-spacing" className="grid grid-cols-2 gap-2">
                 {[
                   { key: 'relaxed', label: 'Relaxed', desc: 'Standard book rhythm' },
                   { key: 'spacious', label: 'Spacious', desc: 'Higher breathability' },
@@ -233,6 +240,8 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     <button
                       key={item.key}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => updateSetting('lineSpacing', item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer',
@@ -243,7 +252,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
                     >
                       <div className="text-sm font-medium flex items-center justify-between">
                         <span>{item.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />}
                       </div>
                       <div className="text-[11px] opacity-70 mt-0.5">{item.desc}</div>
                     </button>
