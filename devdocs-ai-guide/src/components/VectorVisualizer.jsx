@@ -261,7 +261,6 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       stroke="#ffffff"
                       strokeWidth="2.5"
                       pointerEvents="none"
-                      className="transition-all duration-150 shadow-md"
                     />
                   </g>
 
@@ -292,7 +291,6 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       stroke="#ffffff"
                       strokeWidth="2.5"
                       pointerEvents="none"
-                      className="transition-all duration-150 shadow-md"
                     />
                   </g>
 

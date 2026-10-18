@@ -19,42 +19,78 @@ const THEME_META_COLORS = {
   'daylight-paper': '#faf8f5',
 };
 
+export function applyThemeAndReadingStyles(settings) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const body = document.body;
+
+  const activeTheme = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
+  const isLight = activeTheme === 'daylight-paper';
+
+  // 1. Instant Theme Classes
+  const themeClasses = ['theme-deep-blue', 'theme-oled-midnight', 'theme-daylight-paper', 'dark', 'light'];
+  root.classList.remove(...themeClasses);
+  body.classList.remove(...themeClasses);
+  root.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
+  body.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
+
+  // 2. Instant Font Size Classes
+  const sizeClasses = ['reading-size-normal', 'reading-size-comfortable', 'reading-size-large'];
+  root.classList.remove(...sizeClasses);
+  body.classList.remove(...sizeClasses);
+  root.classList.add(`reading-size-${settings.fontSize || 'normal'}`);
+  body.classList.add(`reading-size-${settings.fontSize || 'normal'}`);
+
+  // 3. Instant Line Spacing Classes
+  const spacingClasses = ['reading-spacing-relaxed', 'reading-spacing-spacious'];
+  root.classList.remove(...spacingClasses);
+  body.classList.remove(...spacingClasses);
+  root.classList.add(`reading-spacing-${settings.lineSpacing || 'relaxed'}`);
+  body.classList.add(`reading-spacing-${settings.lineSpacing || 'relaxed'}`);
+
+  // 4. Instant Content Width Classes
+  const widthClasses = ['reading-width-normal', 'reading-width-wide'];
+  root.classList.remove(...widthClasses);
+  body.classList.remove(...widthClasses);
+  root.classList.add(`reading-width-${settings.contentWidth || 'normal'}`);
+  body.classList.add(`reading-width-${settings.contentWidth || 'normal'}`);
+
+  // 5. Meta Theme Color
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', THEME_META_COLORS[activeTheme] || '#090d16');
+  }
+}
+
 export const ReadingSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return DEFAULT_SETTINGS;
+      if (!saved) {
+        applyThemeAndReadingStyles(DEFAULT_SETTINGS);
+        return DEFAULT_SETTINGS;
+      }
       const parsed = JSON.parse(saved);
       const theme = VALID_THEMES.includes(parsed?.theme) ? parsed.theme : DEFAULT_SETTINGS.theme;
-      return { ...DEFAULT_SETTINGS, ...parsed, theme };
+      const initial = { ...DEFAULT_SETTINGS, ...parsed, theme };
+      applyThemeAndReadingStyles(initial);
+      return initial;
     } catch {
+      applyThemeAndReadingStyles(DEFAULT_SETTINGS);
       return DEFAULT_SETTINGS;
     }
   });
 
-  // Synchronize theme classes on <html>, <body>, and <meta name="theme-color">
+  // Ensure DOM is strictly in sync upon mount
   useEffect(() => {
-    const activeTheme = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
-    const isLight = activeTheme === 'daylight-paper';
-    const root = document.documentElement;
-    const body = document.body;
-
-    const themeClasses = ['theme-deep-blue', 'theme-oled-midnight', 'theme-daylight-paper', 'dark', 'light'];
-    root.classList.remove(...themeClasses);
-    body.classList.remove(...themeClasses);
-
-    root.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
-    body.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
-
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) {
-      metaTheme.setAttribute('content', THEME_META_COLORS[activeTheme] || '#090d16');
-    }
-  }, [settings.theme]);
+    applyThemeAndReadingStyles(settings);
+  }, [settings]);
 
   const updateSetting = (key, value) => {
     setSettings(prev => {
       const next = { ...prev, [key]: value };
+      // Instant synchronous DOM update - zero latency, zero frame delay
+      applyThemeAndReadingStyles(next);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch (e) {
@@ -65,6 +101,7 @@ export const ReadingSettingsProvider = ({ children }) => {
   };
 
   const resetSettings = () => {
+    applyThemeAndReadingStyles(DEFAULT_SETTINGS);
     setSettings(DEFAULT_SETTINGS);
     try {
       localStorage.removeItem(STORAGE_KEY);

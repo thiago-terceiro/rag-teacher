@@ -98,7 +98,7 @@ export function InterviewQuestions() {
   const masteredPercent = Math.round((masteredCount / totalQuestions) * 100);
 
   return (
-    <div className="max-w-5xl mx-auto pb-24 relative px-2 sm:px-4">
+    <div className="max-w-5xl mx-auto pb-24 relative px-4 sm:px-6 lg:px-8">
       {/* Title & Metadata */}
       <title>Interview Questions — RAG Teacher</title>
       <meta
@@ -126,9 +126,38 @@ export function InterviewQuestions() {
       {/* Mastery Progress Card */}
       <div className="p-4 sm:p-5 rounded-2xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-lg font-mono">
-            {masteredPercent}%
+          {/* Circular Progress Ring - locked aspect ratio, never squashed sideways */}
+          <div className="relative w-14 h-14 shrink-0 aspect-square flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90 shrink-0" viewBox="0 0 48 48">
+              {/* Background circular track */}
+              <circle
+                className="text-secondary/80"
+                strokeWidth="4"
+                stroke="currentColor"
+                fill="transparent"
+                r="20"
+                cx="24"
+                cy="24"
+              />
+              {/* Dynamic progress arc */}
+              <circle
+                className="text-primary transition-all duration-300"
+                strokeWidth="4"
+                strokeDasharray={2 * Math.PI * 20}
+                strokeDashoffset={2 * Math.PI * 20 * (1 - masteredPercent / 100)}
+                strokeLinecap="round"
+                stroke="currentColor"
+                fill="transparent"
+                r="20"
+                cx="24"
+                cy="24"
+              />
+            </svg>
+            <span className="absolute font-mono font-bold text-xs sm:text-sm text-foreground">
+              {masteredPercent}%
+            </span>
           </div>
+
           <div>
             <div className="text-sm font-bold text-foreground">
               Interview Mastery: {masteredCount} of {totalQuestions} Scenarios Mastered
@@ -148,10 +177,10 @@ export function InterviewQuestions() {
         </div>
       </div>
 
-      {/* Search & Phase Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+      {/* Search & Phase Filters - with elevated height and generous breathing room */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8 sm:mb-10">
         {/* Phase Filter Tabs */}
-        <div className="flex items-center overflow-x-auto p-1 bg-secondary/40 rounded-xl border border-border/70 text-xs">
+        <div className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar">
           {[
             { key: 'all', label: `All (${totalQuestions})` },
             { key: '1', label: 'Phase 1: Foundation (9)' },
@@ -163,7 +192,7 @@ export function InterviewQuestions() {
               key={tab.key}
               onClick={() => setActivePhase(tab.key)}
               className={cn(
-                'px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer',
+                'px-3.5 py-2 rounded-xl font-medium whitespace-nowrap transition-all cursor-pointer',
                 activePhase === tab.key
                   ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
@@ -175,20 +204,20 @@ export function InterviewQuestions() {
         </div>
 
         {/* Search Input */}
-        <div className="relative min-w-[240px]">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="relative min-w-[260px]">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search questions, topics..."
-            className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+            className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"
           />
         </div>
       </div>
 
       {/* Questions List */}
-      <div className="space-y-6">
+      <div className="space-y-6 sm:space-y-8">
         {filteredQuestions.length > 0 ? (
           filteredQuestions.map((q) => {
             const isMastered = !!masteredIds[q.id];

@@ -224,32 +224,63 @@
   animation: collapsible-slide-up 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Reading Comfort Typography Modes */
+/* Reading Comfort Typography & Width Modes (Global Instant Application) */
+html.reading-size-normal,
+body.reading-size-normal,
 .reading-size-normal {
   font-size: 15px;
 }
+html.reading-size-normal .markdown-content p,
+html.reading-size-normal .markdown-content li,
+.reading-size-normal p,
+.reading-size-normal li {
+  font-size: 15px !important;
+}
+
+html.reading-size-comfortable,
+body.reading-size-comfortable,
 .reading-size-comfortable {
   font-size: 17px;
 }
+html.reading-size-comfortable .markdown-content p,
+html.reading-size-comfortable .markdown-content li,
 .reading-size-comfortable p,
 .reading-size-comfortable li {
   font-size: 17px !important;
 }
+
+html.reading-size-large,
+body.reading-size-large,
 .reading-size-large {
   font-size: 19px;
 }
+html.reading-size-large .markdown-content p,
+html.reading-size-large .markdown-content li,
 .reading-size-large p,
 .reading-size-large li {
   font-size: 19px !important;
 }
 
+html.reading-spacing-relaxed .markdown-content p,
+html.reading-spacing-relaxed .markdown-content li,
 .reading-spacing-relaxed p,
 .reading-spacing-relaxed li {
   line-height: 1.75 !important;
 }
+
+html.reading-spacing-spacious .markdown-content p,
+html.reading-spacing-spacious .markdown-content li,
 .reading-spacing-spacious p,
 .reading-spacing-spacious li {
-  line-height: 2.1 !important;
+  line-height: 2.15 !important;
+}
+
+/* Instant content width toggling */
+html.reading-width-wide .reading-container-outer {
+  max-width: 90rem !important;
+}
+html.reading-width-wide .reading-container-inner {
+  max-width: 64rem !important;
 }
 
 /* =========================================================================

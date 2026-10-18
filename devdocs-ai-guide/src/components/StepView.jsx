@@ -120,8 +120,8 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
   }, [updateStepProgress]);
 
   return (
-    <div key={stepKey} className={cn("mx-auto flex justify-center items-start gap-6 xl:gap-8 transition-all duration-200 w-full max-w-full min-w-0 overflow-x-hidden", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
-      <article className={cn("relative w-full max-w-full min-w-0 pb-16 transition-all duration-200", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
+    <div key={stepKey} className={cn("reading-container-outer mx-auto flex justify-center items-start gap-6 xl:gap-8 w-full max-w-full min-w-0 overflow-x-hidden", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
+      <article className={cn("reading-container-inner relative w-full max-w-full min-w-0 pb-16", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
         {/* React 19 Native Document Metadata Hoisting */}
         <title>{`${step.title} — RAG Teacher`}</title>
         <meta
@@ -280,7 +280,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
 
         {/* Main Content (Memoized against unnecessary re-renders) */}
         <div className={cn(
-          "prose max-w-none transition-all duration-150",
+          "prose max-w-none",
           !isLightTheme && "prose-invert",
           `reading-size-${settings.fontSize || 'normal'}`,
           `reading-spacing-${settings.lineSpacing || 'relaxed'}`
