@@ -1670,19 +1670,19 @@ The following diagram illustrates the multi-stage pipeline of our production sem
 
 \`\`\`mermaid
 flowchart TD
-    A[Markdown Document] --> B[Sentence Boundary Disambiguation: Regex / Code Preserving]
-    B --> C[Sentence Buffer: s_0, s_1, ..., s_m]
-    C --> D[Lightweight Bi-Encoder Embedder: sentence-transformers]
-    D --> E[Sentence Embedding Matrix: M x D]
-    E --> F[Compute Adjacent Cosine Distances: d_i = 1 - cos(e_i, e_i+1)]
-    F --> G[Rolling Window Distance Smoothing: window_size = 3]
-    G --> H[Statistical Inflection Threshold: tau = mu + k * sigma or 85th Percentile]
-    H --> I[Identify Split Points: Indices where d_tilde_i >= tau]
+    A[Markdown Document] --> B["Sentence Boundary Disambiguation: Regex / Code Preserving"]
+    B --> C["Sentence Buffer: s_0, s_1, ..., s_m"]
+    C --> D["Lightweight Bi-Encoder Embedder: sentence-transformers"]
+    D --> E["Sentence Embedding Matrix: M x D"]
+    E --> F["Compute Adjacent Cosine Distances: d_i = 1 - cos(e_i, e_i+1)"]
+    F --> G["Rolling Window Distance Smoothing: window_size = 3"]
+    G --> H["Statistical Inflection Threshold: tau = mu + k * sigma or 85th Percentile"]
+    H --> I["Identify Split Points: Indices where d_tilde_i >= tau"]
     I --> J[Group Sentences into Candidate Chunks]
     J --> K{Min / Max Token Clamps}
-    K -- Chunk < Min Tokens (100) --> L[Merge with Adjacent Neighbor]
-    K -- Chunk > Max Tokens (600) --> M[Fallback to Fixed Sliding Window]
-    K -- Valid Size --> N[Emit Production SemanticChunk]
+    K -->|"Chunk < Min Tokens (100)"| L[Merge with Adjacent Neighbor]
+    K -->|"Chunk > Max Tokens (600)"| M[Fallback to Fixed Sliding Window]
+    K -->|Valid Size| N[Emit Production SemanticChunk]
     L & M & N --> O[Downstream Vector Database]
 \`\`\`
 
@@ -2647,16 +2647,16 @@ The following diagram illustrates the tensor transformations inside our high-per
 
 \`\`\`mermaid
 flowchart TD
-    A[Text Batch: B Strings] --> B[WordPiece / BPE Tokenizer: Padding & Truncation]
-    B --> C[Input Tensor: input_ids (B x L)]
-    B --> D[Attention Mask: attention_mask (B x L)]
-    C & D --> E[Transformer Backbone: BERT / RoBERTa / BGE]
-    E --> F[Token Hidden States: H in R^(B x L x D)]
-    F & D --> G[Attention-Weighted Mean Pooling Engine]
-    G --> H[Raw Sentence Embeddings: U in R^(B x D)]
-    H --> I[L2 Normalization Layer: U / ||U||_2]
-    I --> J[Unit Hypersphere Embeddings: ||e||_2 = 1.0]
-    J --> K[Qdrant Ingestion Batch / Query MIPS Engine]
+    A["Text Batch: B Strings"] --> B["WordPiece / BPE Tokenizer: Padding & Truncation"]
+    B --> C["Input Tensor: input_ids (B x L)"]
+    B --> D["Attention Mask: attention_mask (B x L)"]
+    C & D --> E["Transformer Backbone: BERT / RoBERTa / BGE"]
+    E --> F["Token Hidden States: H in R^(B x L x D)"]
+    F & D --> G["Attention-Weighted Mean Pooling Engine"]
+    G --> H["Raw Sentence Embeddings: U in R^(B x D)"]
+    H --> I["L2 Normalization Layer: U / ||U||_2"]
+    I --> J["Unit Hypersphere Embeddings: ||e||_2 = 1.0"]
+    J --> K["Qdrant Ingestion Batch / Query MIPS Engine"]
 \`\`\`
 
 ### Component Breakdown

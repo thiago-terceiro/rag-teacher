@@ -1,6 +1,6 @@
 import { Check, Copy } from 'lucide-react';
 import React, { useState } from 'react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxActions } from '../context/SandboxContext';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -39,7 +39,7 @@ SyntaxHighlighter.registerLanguage('css', css);
 const CodeBlock = React.memo(({ language: languageProp, value: valueProp }) => {
   const language = languageProp || 'text';
   const value = valueProp || '';
-  const { openPythonSandbox } = useSandbox();
+  const { openPythonSandbox } = useSandboxActions();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

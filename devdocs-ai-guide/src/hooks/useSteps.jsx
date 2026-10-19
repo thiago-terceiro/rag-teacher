@@ -83,7 +83,21 @@ export const StepsProvider = ({ children }) => {
   const [phases, setPhases] = useState(loadStoredProgress);
   const [quizAnswers, setQuizAnswers] = useState(loadStoredQuizAnswers);
   const phasesRef = useRef(phases);
-  phasesRef.current = phases;
+
+  // Synchronize phasesRef cleanly in effect (zero render-phase mutations)
+  useEffect(() => {
+    phasesRef.current = phases;
+  }, [phases]);
+
+  // Persist phases progress strictly in effect (outside state updaters)
+  const isFirstPhasesMount = useRef(true);
+  useEffect(() => {
+    if (isFirstPhasesMount.current) {
+      isFirstPhasesMount.current = false;
+      return;
+    }
+    persistToLocalStorage(phases);
+  }, [phases]);
 
   // Persist quiz answers strictly outside state updaters
   const isFirstQuizMount = useRef(true);
@@ -98,6 +112,19 @@ export const StepsProvider = ({ children }) => {
       console.warn("Failed to save quiz answers", e);
     }
   }, [quizAnswers]);
+
+  // Real-time multi-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === LOCAL_STORAGE_KEY) {
+        setPhases(loadStoredProgress());
+      } else if (e.key === QUIZ_STORAGE_KEY) {
+        setQuizAnswers(loadStoredQuizAnswers());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Compute overall stats + Comprehension Score (memoized)
   const stats = useMemo(() => {
@@ -169,41 +196,34 @@ export const StepsProvider = ({ children }) => {
     });
   }, []);
 
-  // Update progress for a step using React 19 startTransition with pure updater
+  // Update progress for a step using React 19 startTransition with pure functional updater
   const updateStepProgress = useCallback((stepKey, status, notes) => {
-    let isNewlyCompleted = false;
-    const currentPhases = phasesRef.current;
-
-    const nextPhases = currentPhases.map(phase => ({
-      ...phase,
-      steps: phase.steps.map(step => {
-        if (step.step_key === stepKey) {
-          const prevStatus = step.status;
-          const nextStatus = status !== undefined ? status : prevStatus;
-          const nextNotes = notes !== undefined ? notes : step.notes;
-
-          if (prevStatus !== 'completed' && nextStatus === 'completed') {
-            isNewlyCompleted = true;
-          }
-
-          return {
-            ...step,
-            status: nextStatus,
-            notes: nextNotes,
-            completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
-          };
-        }
-        return step;
-      })
-    }));
+    // Check if this action completes a step for celebratory confetti
+    const currentStep = phasesRef.current?.flatMap(p => p.steps).find(s => s.step_key === stepKey);
+    const isNewlyCompleted = status === 'completed' && currentStep?.status !== 'completed';
 
     startTransition(() => {
-      setPhases(nextPhases);
-    });
-    phasesRef.current = nextPhases;
+      setPhases(prevPhases =>
+        prevPhases.map(phase => ({
+          ...phase,
+          steps: phase.steps.map(step => {
+            if (step.step_key === stepKey) {
+              const prevStatus = step.status;
+              const nextStatus = status !== undefined ? status : prevStatus;
+              const nextNotes = notes !== undefined ? notes : step.notes;
 
-    // Side-effects run cleanly outside the state updater
-    persistToLocalStorage(nextPhases);
+              return {
+                ...step,
+                status: nextStatus,
+                notes: nextNotes,
+                completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
+              };
+            }
+            return step;
+          })
+        }))
+      );
+    });
 
     if (isNewlyCompleted) {
       triggerConfetti();
@@ -237,7 +257,6 @@ export const StepsProvider = ({ children }) => {
             completedAt: null,
           }))
         }));
-        phasesRef.current = freshPhases;
         setPhases(freshPhases);
       } catch (e) {
         console.error(e);

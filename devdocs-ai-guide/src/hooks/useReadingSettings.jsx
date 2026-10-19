@@ -1,4 +1,4 @@
-import { createContext, use, useEffect, useState, useCallback, useMemo } from 'react';
+import { createContext, use, useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 const ReadingSettingsContext = createContext(null);
 
@@ -77,15 +77,35 @@ function loadStoredSettings() {
 export const ReadingSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(loadStoredSettings);
 
-  // Sync DOM styles and persist settings strictly in effect (outside render & updaters)
-  useEffect(() => {
+  // Sync DOM styles synchronously before paint to prevent FOUC (flash of unstyled content)
+  useLayoutEffect(() => {
     applyThemeAndReadingStyles(settings);
+  }, [settings]);
+
+  // Persist settings in useEffect outside render & updaters
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
       console.warn('Failed to save reading settings', e);
     }
   }, [settings]);
+
+  // Real-time multi-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === STORAGE_KEY) {
+        setSettings(loadStoredSettings());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const updateSetting = useCallback((key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }));

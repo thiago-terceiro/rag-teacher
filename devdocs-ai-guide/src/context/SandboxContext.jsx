@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
-const defaultSandboxContext = {
+const defaultActions = {
   openPythonSandbox: () => {},
   openVectorSandbox: () => {},
+};
+
+const defaultState = {
   isPythonSandboxOpen: false,
   setIsPythonSandboxOpen: () => {},
   pythonSandboxCode: null,
@@ -10,7 +13,8 @@ const defaultSandboxContext = {
   setIsVectorVisualizerOpen: () => {},
 };
 
-const SandboxContext = createContext(defaultSandboxContext);
+const SandboxActionsContext = createContext(defaultActions);
+const SandboxStateContext = createContext(defaultState);
 
 export function SandboxProvider({ children }) {
   const [isPythonSandboxOpen, setIsPythonSandboxOpen] = useState(false);
@@ -26,24 +30,48 @@ export function SandboxProvider({ children }) {
     setIsVectorVisualizerOpen(true);
   }, []);
 
-  const value = useMemo(() => ({
+  // Stable actions value — never changes across re-renders
+  const actionsValue = useMemo(() => ({
     openPythonSandbox,
     openVectorSandbox,
+  }), [openPythonSandbox, openVectorSandbox]);
+
+  // State value — only updates when sandbox visibility or code changes
+  const stateValue = useMemo(() => ({
     isPythonSandboxOpen,
     setIsPythonSandboxOpen,
     pythonSandboxCode,
     isVectorVisualizerOpen,
     setIsVectorVisualizerOpen,
-  }), [openPythonSandbox, openVectorSandbox, isPythonSandboxOpen, pythonSandboxCode, isVectorVisualizerOpen]);
+  }), [isPythonSandboxOpen, pythonSandboxCode, isVectorVisualizerOpen]);
 
   return (
-    <SandboxContext value={value}>
-      {children}
-    </SandboxContext>
+    <SandboxActionsContext value={actionsValue}>
+      <SandboxStateContext value={stateValue}>
+        {children}
+      </SandboxStateContext>
+    </SandboxActionsContext>
   );
 }
 
+/** Hook for action-only consumers (e.g. CodeBlock) to prevent re-rendering on sandbox toggle */
+export function useSandboxActions() {
+  const context = useContext(SandboxActionsContext);
+  return context || defaultActions;
+}
+
+/** Hook for sandbox modal consumers */
+export function useSandboxState() {
+  const context = useContext(SandboxStateContext);
+  return context || defaultState;
+}
+
+/** Combined hook for backwards compatibility */
 export function useSandbox() {
-  const context = useContext(SandboxContext);
-  return context || defaultSandboxContext;
+  const actions = useSandboxActions();
+  const state = useSandboxState();
+  return useMemo(() => ({
+    ...actions,
+    ...state,
+  }), [actions, state]);
 }

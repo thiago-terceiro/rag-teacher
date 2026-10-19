@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
@@ -26,6 +26,23 @@ function AppContent() {
     isVectorVisualizerOpen,
     setIsVectorVisualizerOpen,
   } = useSandbox();
+
+  // Stable callback handlers so React.memo on Sidebar, StatsBar, and StepView is preserved
+  const handleOpenPythonSandbox = useCallback(() => {
+    openPythonSandbox(null);
+  }, [openPythonSandbox]);
+
+  const handleToggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(prev => !prev);
+  }, []);
+
+  const handleOpenSearch = useCallback(() => {
+    setIsCommandPaletteOpen(true);
+  }, []);
+
+  const handleOpenReadingSettings = useCallback(() => {
+    setIsReadingSettingsOpen(true);
+  }, []);
 
   // Accessibility: Close mobile sidebar when pressing Escape
   useEffect(() => {
@@ -60,18 +77,18 @@ function AppContent() {
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}
         setIsMobileOpen={setIsMobileSidebarOpen}
-        onOpenSearch={() => setIsCommandPaletteOpen(true)}
+        onOpenSearch={handleOpenSearch}
         onOpenVectorSandbox={openVectorSandbox}
-        onOpenPythonSandbox={() => openPythonSandbox(null)}
+        onOpenPythonSandbox={handleOpenPythonSandbox}
       />
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <StatsBar
           isMobileOpen={isMobileSidebarOpen}
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
-          onOpenSearch={() => setIsCommandPaletteOpen(true)}
-          onOpenReadingSettings={() => setIsReadingSettingsOpen(true)}
+          onToggleMobileSidebar={handleToggleMobileSidebar}
+          onOpenSearch={handleOpenSearch}
+          onOpenReadingSettings={handleOpenReadingSettings}
           onOpenVectorSandbox={openVectorSandbox}
-          onOpenPythonSandbox={() => openPythonSandbox(null)}
+          onOpenPythonSandbox={handleOpenPythonSandbox}
         />
         <div
           id="main-scroll-container"
@@ -87,7 +104,7 @@ function AppContent() {
               element={
                 <StepView
                   onOpenVectorSandbox={openVectorSandbox}
-                  onOpenPythonSandbox={() => openPythonSandbox(null)}
+                  onOpenPythonSandbox={handleOpenPythonSandbox}
                 />
               }
             />

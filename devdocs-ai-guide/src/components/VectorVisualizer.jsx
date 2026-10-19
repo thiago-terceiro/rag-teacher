@@ -100,9 +100,11 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
     if (draggingVector) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
       return () => {
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('pointercancel', handlePointerUp);
       };
     }
   }, [draggingVector, handlePointerMove, handlePointerUp]);

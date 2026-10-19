@@ -26,20 +26,32 @@ function getInitialLanguage() {
 export function I18nProvider({ children }) {
   const [lang, setLangState] = useState(getInitialLanguage);
 
+  // Pure updater
   const setLang = useCallback((newLang) => {
     if (!translations[newLang]) return;
     setLangState(newLang);
+  }, []);
+
+  // Sync DOM lang attribute and persist in effect outside updaters
+  useEffect(() => {
+    document.documentElement.lang = lang;
     try {
-      localStorage.setItem(STORAGE_KEY, newLang);
-      document.documentElement.lang = newLang;
+      localStorage.setItem(STORAGE_KEY, lang);
     } catch {
       // Storage unavailable
     }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = lang;
   }, [lang]);
+
+  // Real-time multi-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === STORAGE_KEY && e.newValue && translations[e.newValue]) {
+        setLangState(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const t = useCallback((key, fallback = '') => {
     const langDict = translations[lang] || translations.en;

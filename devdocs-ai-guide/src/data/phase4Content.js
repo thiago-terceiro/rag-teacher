@@ -2040,12 +2040,12 @@ flowchart TD
 
     LLM["Inference Cluster\\n(vLLM / TensorRT-LLM / Hosted APIs)"]
 
-    Client <-->|HTTP/2 Server-Sent Events (SSE)| Gateway
+    Client <-->|"HTTP/2 Server-Sent Events (SSE)"| Gateway
     Gateway <-->|Check Tier-1 Hash| ExactCache
     Gateway <-->|Check Tier-2 Vector Similarity| SemanticCache
-    Gateway <-->|Cosine Search (efSearch=64, k=50)| Qdrant
+    Gateway <-->|"Cosine Search (efSearch=64, k=50)"| Qdrant
     Gateway <-->|Log Queries, Spans & Fetch BM25| Postgres
-    Gateway <-->|Prompt Streaming (TTFT < 300ms)| LLM
+    Gateway <-->|"Prompt Streaming (TTFT < 300ms)"| LLM
 \`\`\`
 
 ### C4 Level 3: Component Diagram (LangGraph Agent Pipeline)
@@ -2074,7 +2074,7 @@ flowchart TD
     Router -->|Malicious / Out-of-Domain| Fallback
     
     HybridRetriever --> Reranker --> Grader
-    Grader -->|High Confidence (>0.75)| Synthesizer --> OutStream
+    Grader -->|"High Confidence (>0.75)"| Synthesizer --> OutStream
     Grader -->|Low Relevance / Missing Context| Fallback --> OutStream
 \`\`\`
 
@@ -2372,9 +2372,9 @@ flowchart TD
     end
 
     UserQuery --> HashCalc --> RedisString
-    RedisString -->|Cache Hit (Latency: 2ms)| Return1["Return Cached Response Immediately"]
+    RedisString -->|"Cache Hit (Latency: 2ms)"| Return1["Return Cached Response Immediately"]
     RedisString -->|Cache Miss| QueryEmbed --> VectorSearch --> Threshold
-    Threshold -->|Cache Hit (Latency: 15ms)| Return2["Return Semantically Equivalent Answer"]
+    Threshold -->|"Cache Hit (Latency: 15ms)"| Return2["Return Semantically Equivalent Answer"]
     Threshold -->|Cache Miss| Retriever --> WriteCaches --> Return3["Stream Generated Answer"]
 \`\`\`
 
@@ -2409,15 +2409,15 @@ flowchart TD
 
     Req --> TryQdrant --> QdrantTimeout
     QdrantTimeout -->|No| TryRerank
-    QdrantTimeout -->|Yes (Degraded Mode 1)| PostgresBM25 --> TryRerank
+    QdrantTimeout -->|"Yes (Degraded Mode 1)"| PostgresBM25 --> TryRerank
     
     TryRerank --> RerankTimeout
     RerankTimeout -->|No| TryLLM
-    RerankTimeout -->|Yes (Degraded Mode 2)| BypassRerank --> TryLLM
+    RerankTimeout -->|"Yes (Degraded Mode 2)"| BypassRerank --> TryLLM
     
     TryLLM --> LLMError
     LLMError -->|No| Success["Stream Response to Client"]
-    LLMError -->|Yes (Degraded Mode 3)| FallbackLLM --> Success
+    LLMError -->|"Yes (Degraded Mode 3)"| FallbackLLM --> Success
 \`\`\`
 
 1. **Failure Mode 1: Vector Store Outage (Qdrant Crash/Partition)**

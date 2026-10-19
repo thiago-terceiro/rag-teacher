@@ -48,12 +48,41 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
   const [draft, setDraft] = useState(initialDraft || '');
   const debouncedDraft = useDebounce(draft, 400);
 
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const lastSavedRef = useRef(initialDraft || '');
+
+  // Keep internal draft synced with external props (e.g. multi-tab sync)
+  useEffect(() => {
+    if (initialDraft !== undefined && initialDraft !== lastSavedRef.current && draft === lastSavedRef.current) {
+      setDraft(initialDraft || '');
+      lastSavedRef.current = initialDraft || '';
+    }
+  }, [initialDraft]);
+
+  const flushDraft = useCallback((textToSave) => {
+    if (textToSave !== lastSavedRef.current) {
+      lastSavedRef.current = textToSave;
+      onDraftChange(q.step_key, textToSave);
+    }
+  }, [q.step_key, onDraftChange]);
+
   // Auto-save debounced draft text
   useEffect(() => {
-    if (debouncedDraft !== (initialDraft || '')) {
-      onDraftChange(q.step_key, debouncedDraft);
-    }
-  }, [debouncedDraft, q.step_key, onDraftChange, initialDraft]);
+    flushDraft(debouncedDraft);
+  }, [debouncedDraft, flushDraft]);
+
+  // Flush pending edits immediately on unmount or browser tab close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      flushDraft(draftRef.current);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      flushDraft(draftRef.current);
+    };
+  }, [flushDraft]);
 
   return (
     <div
@@ -142,6 +171,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             id={`draft-${q.step_key}`}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => flushDraft(draft)}
             placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
             className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
           />
@@ -232,6 +262,19 @@ export function InterviewQuestions() {
       console.warn('Failed to save draft', e);
     }
   }, [drafts]);
+
+  // Real-time multi-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === MASTERY_STORAGE_KEY) {
+        setMasteredIds(loadStoredMastery());
+      } else if (e.key === DRAFTS_STORAGE_KEY) {
+        setDrafts(loadStoredDrafts());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Toggle question mastery (pure updater)
   const toggleMastery = useCallback((id) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Check, Download } from 'lucide-react';
 import useDebounce from '../hooks/useDebounce';
 import { useSteps } from '../hooks/useSteps';
@@ -10,15 +10,42 @@ const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSa
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving'
   const debouncedNotes = useDebounce(notes, 500);
 
-  // Handle auto-saving debounced notes
-  useEffect(() => {
-    if (debouncedNotes !== initialNotes) {
+  const notesRef = useRef(notes);
+  notesRef.current = notes;
+  const lastSavedRef = useRef(initialNotes);
+
+  const flushNotes = useCallback((textToSave) => {
+    if (textToSave !== lastSavedRef.current) {
+      lastSavedRef.current = textToSave;
       setSaveStatus('saving');
-      onSaveNotes(stepKey, debouncedNotes);
-      const timer = setTimeout(() => setSaveStatus('saved'), 500);
+      onSaveNotes(stepKey, textToSave);
+      const timer = setTimeout(() => setSaveStatus('saved'), 400);
       return () => clearTimeout(timer);
     }
-  }, [debouncedNotes, stepKey, onSaveNotes, initialNotes]);
+  }, [stepKey, onSaveNotes]);
+
+  // Handle auto-saving debounced notes
+  useEffect(() => {
+    flushNotes(debouncedNotes);
+  }, [debouncedNotes, flushNotes]);
+
+  // Flush pending edits immediately on unmount or browser tab close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (notesRef.current !== lastSavedRef.current) {
+        lastSavedRef.current = notesRef.current;
+        onSaveNotes(stepKey, notesRef.current);
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (notesRef.current !== lastSavedRef.current) {
+        lastSavedRef.current = notesRef.current;
+        onSaveNotes(stepKey, notesRef.current);
+      }
+    };
+  }, [stepKey, onSaveNotes]);
 
   return (
     <div className="mt-14 pt-8 border-t border-border/80">
@@ -63,6 +90,7 @@ const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSa
         id={`notes-input-${stepKey}`}
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
+        onBlur={() => flushNotes(notes)}
         placeholder="Log key insights, terminal outputs, or design decisions for this step..."
         className="w-full h-36 p-3.5 bg-secondary/40 text-foreground placeholder:text-muted-foreground/60 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:border-transparent focus:outline-none transition-all text-sm font-sans"
       />
