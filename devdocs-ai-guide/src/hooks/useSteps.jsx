@@ -1,6 +1,7 @@
-import { createContext, useCallback, use, useState, useMemo, startTransition } from 'react';
+import { createContext, useCallback, use, useState, useMemo, useRef, useEffect, startTransition } from 'react';
 import { initialPhases, allSteps, getStepByKey } from '../data/guideData';
 import { moduleQuizzes } from '../data/moduleQuizzesData';
+import { triggerConfetti } from '../lib/confetti';
 
 const StepsContext = createContext(null);
 
@@ -15,56 +16,88 @@ const TOTAL_QUIZ_QUESTIONS = Object.values(moduleQuizzes).reduce(
   0
 );
 
-export const StepsProvider = ({ children }) => {
-  const [phases, setPhases] = useState(() => {
-    // Read saved progress from localStorage on initialization
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const progressMap = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-        return initialPhases.map(phase => ({
-          ...phase,
-          steps: phase.steps.map(step => {
-            const userProg = progressMap[step.step_key] || {};
-            return {
-              ...step,
-              status: userProg.status || 'not_started',
-              notes: userProg.notes || '',
-              completedAt: userProg.completedAt || null,
-            };
-          })
-        }));
-      }
-    } catch (e) {
-      console.warn("Failed to read progress from localStorage", e);
-    }
-    return initialPhases.map(phase => ({
-      ...phase,
-      steps: phase.steps.map(step => ({
-        ...step,
-        status: 'not_started',
-        notes: '',
-        completedAt: null,
-      }))
-    }));
-  });
-
-  // Quiz answers state: { [stepKey]: { [questionId]: selectedOptionIndex } }
-  const [quizAnswers, setQuizAnswers] = useState(() => {
-    try {
-      const saved = localStorage.getItem(QUIZ_STORAGE_KEY);
-      if (!saved) return {};
+function loadStoredProgress() {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
       const parsed = JSON.parse(saved);
-      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-    } catch (e) {
-      console.warn("Failed to read quiz progress from localStorage", e);
-      return {};
+      const progressMap = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+      return initialPhases.map(phase => ({
+        ...phase,
+        steps: phase.steps.map(step => {
+          const userProg = progressMap[step.step_key] || {};
+          return {
+            ...step,
+            status: userProg.status || 'not_started',
+            notes: userProg.notes || '',
+            completedAt: userProg.completedAt || null,
+          };
+        })
+      }));
     }
-  });
+  } catch (e) {
+    console.warn("Failed to read progress from localStorage", e);
+  }
+  return initialPhases.map(phase => ({
+    ...phase,
+    steps: phase.steps.map(step => ({
+      ...step,
+      status: 'not_started',
+      notes: '',
+      completedAt: null,
+    }))
+  }));
+}
 
-  const [loading] = useState(false);
-  const [error] = useState(null);
+function loadStoredQuizAnswers() {
+  try {
+    const saved = localStorage.getItem(QUIZ_STORAGE_KEY);
+    if (!saved) return {};
+    const parsed = JSON.parse(saved);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (e) {
+    console.warn("Failed to read quiz progress from localStorage", e);
+    return {};
+  }
+}
+
+function persistToLocalStorage(updatedPhases) {
+  try {
+    const progressMap = {};
+    updatedPhases.flatMap(p => p.steps).forEach(s => {
+      if (s.status !== 'not_started' || s.notes) {
+        progressMap[s.step_key] = {
+          status: s.status,
+          notes: s.notes,
+          completedAt: s.completedAt,
+        };
+      }
+    });
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progressMap));
+  } catch (e) {
+    console.error("Failed to save progress to localStorage", e);
+  }
+}
+
+export const StepsProvider = ({ children }) => {
+  const [phases, setPhases] = useState(loadStoredProgress);
+  const [quizAnswers, setQuizAnswers] = useState(loadStoredQuizAnswers);
+  const phasesRef = useRef(phases);
+  phasesRef.current = phases;
+
+  // Persist quiz answers strictly outside state updaters
+  const isFirstQuizMount = useRef(true);
+  useEffect(() => {
+    if (isFirstQuizMount.current) {
+      isFirstQuizMount.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(quizAnswers));
+    } catch (e) {
+      console.warn("Failed to save quiz answers", e);
+    }
+  }, [quizAnswers]);
 
   // Compute overall stats + Comprehension Score (memoized)
   const stats = useMemo(() => {
@@ -116,112 +149,72 @@ export const StepsProvider = ({ children }) => {
     comprehensionScore,
   } = stats;
 
-  // Helper to persist current state to localStorage
-  const persistToLocalStorage = (updatedPhases) => {
-    try {
-      const progressMap = {};
-      updatedPhases.flatMap(p => p.steps).forEach(s => {
-        if (s.status !== 'not_started' || s.notes) {
-          progressMap[s.step_key] = {
-            status: s.status,
-            notes: s.notes,
-            completedAt: s.completedAt,
-          };
-        }
-      });
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progressMap));
-    } catch (e) {
-      console.error("Failed to save progress to localStorage", e);
-    }
-  };
-
-  // Record a quiz answer and persist to localStorage
+  // Record a quiz answer purely (side-effect handled by useEffect)
   const answerQuizQuestion = useCallback((stepKey, questionId, optionIndex) => {
-    setQuizAnswers(prev => {
-      const stepExisting = prev[stepKey] || {};
-      const next = {
-        ...prev,
-        [stepKey]: {
-          ...stepExisting,
-          [questionId]: optionIndex,
-        },
-      };
-      try {
-        localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn("Failed to save quiz answer", e);
-      }
-      return next;
-    });
+    setQuizAnswers(prev => ({
+      ...prev,
+      [stepKey]: {
+        ...(prev[stepKey] || {}),
+        [questionId]: optionIndex,
+      },
+    }));
   }, []);
 
-  // Reset a specific module's quiz answers
+  // Reset a specific module's quiz answers purely
   const resetModuleQuiz = useCallback((stepKey) => {
     setQuizAnswers(prev => {
       const next = { ...prev };
       delete next[stepKey];
-      try {
-        localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn("Failed to reset module quiz", e);
-      }
       return next;
     });
   }, []);
 
-  // Update progress for a step using React 19 startTransition
+  // Update progress for a step using React 19 startTransition with pure updater
   const updateStepProgress = useCallback((stepKey, status, notes) => {
-    startTransition(() => {
-      setPhases(prevPhases => {
-        let isNewlyCompleted = false;
-        const nextPhases = prevPhases.map(phase => ({
-          ...phase,
-          steps: phase.steps.map(step => {
-            if (step.step_key === stepKey) {
-              const prevStatus = step.status;
-              const nextStatus = status !== undefined ? status : prevStatus;
-              const nextNotes = notes !== undefined ? notes : step.notes;
-              
-              if (prevStatus !== 'completed' && nextStatus === 'completed') {
-                isNewlyCompleted = true;
-              }
+    let isNewlyCompleted = false;
+    const currentPhases = phasesRef.current;
 
-              return {
-                ...step,
-                status: nextStatus,
-                notes: nextNotes,
-                completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
-              };
-            }
-            return step;
-          })
-        }));
+    const nextPhases = currentPhases.map(phase => ({
+      ...phase,
+      steps: phase.steps.map(step => {
+        if (step.step_key === stepKey) {
+          const prevStatus = step.status;
+          const nextStatus = status !== undefined ? status : prevStatus;
+          const nextNotes = notes !== undefined ? notes : step.notes;
 
-        persistToLocalStorage(nextPhases);
+          if (prevStatus !== 'completed' && nextStatus === 'completed') {
+            isNewlyCompleted = true;
+          }
 
-        // React 19 lazy code-splitting: load confetti on-demand only when completed
-        if (isNewlyCompleted) {
-          import('canvas-confetti').then(({ default: confetti }) => {
-            confetti({
-              particleCount: 80,
-              spread: 60,
-              origin: { y: 0.8 },
-              colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
-            });
-          }).catch(() => {});
+          return {
+            ...step,
+            status: nextStatus,
+            notes: nextNotes,
+            completedAt: nextStatus === 'completed' ? (step.completedAt || new Date().toISOString()) : null,
+          };
         }
+        return step;
+      })
+    }));
 
-        // Opportunistic API sync if backend is active
-        fetch(`/api/steps/${stepKey}/progress`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status, notes }),
-        }).catch(() => {
-          // Silently ignore if running in static/Vercel mode without backend
-        });
+    startTransition(() => {
+      setPhases(nextPhases);
+    });
+    phasesRef.current = nextPhases;
 
-        return nextPhases;
-      });
+    // Side-effects run cleanly outside the state updater
+    persistToLocalStorage(nextPhases);
+
+    if (isNewlyCompleted) {
+      triggerConfetti();
+    }
+
+    fetch(`/api/steps/${stepKey}/progress`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, notes }),
+    }).catch(() => {
+      // Silently ignore if running in static/Vercel mode without backend
     });
   }, []);
 
@@ -235,7 +228,7 @@ export const StepsProvider = ({ children }) => {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         localStorage.removeItem(QUIZ_STORAGE_KEY);
         setQuizAnswers({});
-        setPhases(initialPhases.map(phase => ({
+        const freshPhases = initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => ({
             ...step,
@@ -243,7 +236,9 @@ export const StepsProvider = ({ children }) => {
             notes: '',
             completedAt: null,
           }))
-        })));
+        }));
+        phasesRef.current = freshPhases;
+        setPhases(freshPhases);
       } catch (e) {
         console.error(e);
       }
@@ -307,11 +302,9 @@ export const StepsProvider = ({ children }) => {
     URL.revokeObjectURL(url);
   }, [phases, completedSteps, totalSteps, completionPercentage, comprehensionScore, correctQuizQuestions, answeredQuizQuestions, quizAnswers]);
 
-  const value = {
+  const value = useMemo(() => ({
     phases,
     stats,
-    loading,
-    error,
     quizAnswers,
     answerQuizQuestion,
     resetModuleQuiz,
@@ -320,9 +313,18 @@ export const StepsProvider = ({ children }) => {
     resetAllProgress,
     exportStudyGuide,
     allSteps,
-  };
+  }), [
+    phases,
+    stats,
+    quizAnswers,
+    answerQuizQuestion,
+    resetModuleQuiz,
+    updateStepProgress,
+    getStepContent,
+    resetAllProgress,
+    exportStudyGuide,
+  ]);
 
   // React 19 `<Context value={value}>` standard (no `.Provider` needed)
   return <StepsContext value={value}>{children}</StepsContext>;
 };
-

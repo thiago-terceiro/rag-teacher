@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlignLeft, ArrowUp, ChevronDown, ListTree } from 'lucide-react';
 import { scrollToHeading } from '../lib/headings';
-import { useActiveHeading } from '../hooks/useTableOfContents';
 import { cn } from '../lib/utils';
 
 const MIN_HEADINGS = 3;
@@ -14,9 +13,8 @@ function jump(e, id, setActiveId) {
 }
 
 /** Collapsible "On this page" panel shown above the content below the xl breakpoint. */
-export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({ headings }) {
+export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({ headings, activeId, setActiveId }) {
   const [open, setOpen] = useState(false);
-  const [activeId, setActiveId] = useActiveHeading(headings);
 
   if (!headings || headings.length < MIN_HEADINGS) return null;
 
@@ -71,9 +69,7 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
 });
 
 /** Sticky right-rail TOC with an active-section indicator (xl and up). */
-export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop({ headings }) {
-  const [activeId, setActiveId] = useActiveHeading(headings);
-
+export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
   if (!headings || headings.length < MIN_HEADINGS) return null;
 
   const scrollTop = () => {
@@ -123,4 +119,3 @@ export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop
     </aside>
   );
 });
-

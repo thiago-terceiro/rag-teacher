@@ -3,21 +3,16 @@ import { Check, Download } from 'lucide-react';
 import useDebounce from '../hooks/useDebounce';
 import { useSteps } from '../hooks/useSteps';
 
-const NotesJournal = React.memo(({ stepKey, initialNotes = '', onSaveNotes }) => {
+const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSaveNotes }) => {
+  const initialNotes = initialNotesProp || '';
   const { exportStudyGuide } = useSteps();
   const [notes, setNotes] = useState(initialNotes);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving'
   const debouncedNotes = useDebounce(notes, 500);
 
-  // Sync internal state if user switched to another step
-  useEffect(() => {
-    setNotes(initialNotes || '');
-    setSaveStatus('saved');
-  }, [stepKey, initialNotes]);
-
   // Handle auto-saving debounced notes
   useEffect(() => {
-    if (debouncedNotes !== (initialNotes || '')) {
+    if (debouncedNotes !== initialNotes) {
       setSaveStatus('saving');
       onSaveNotes(stepKey, debouncedNotes);
       const timer = setTimeout(() => setSaveStatus('saved'), 500);

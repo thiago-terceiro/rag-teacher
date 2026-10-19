@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   HelpCircle,
@@ -10,71 +10,237 @@ import {
   Eye,
   EyeOff,
   BookOpen,
-  Filter,
-  Check,
-  RotateCcw,
-  Layers,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import { interviewQuestions } from '../data/interviewQuestionsData';
 import MarkdownRenderer from './MarkdownRenderer';
+import useDebounce from '../hooks/useDebounce';
 import { cn } from '../lib/utils';
 
 const MASTERY_STORAGE_KEY = 'rag_interview_mastery_v1';
 const DRAFTS_STORAGE_KEY = 'rag_interview_drafts_v1';
 
+function loadStoredMastery() {
+  try {
+    const saved = localStorage.getItem(MASTERY_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
+function loadStoredDrafts() {
+  try {
+    const saved = localStorage.getItem(DRAFTS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
+const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
+  q,
+  isMastered,
+  initialDraft,
+  onToggleMastery,
+  onDraftChange,
+}) {
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [draft, setDraft] = useState(initialDraft || '');
+  const debouncedDraft = useDebounce(draft, 400);
+
+  // Auto-save debounced draft text
+  useEffect(() => {
+    if (debouncedDraft !== (initialDraft || '')) {
+      onDraftChange(q.step_key, debouncedDraft);
+    }
+  }, [debouncedDraft, q.step_key, onDraftChange, initialDraft]);
+
+  return (
+    <div
+      id={`q-${q.step_key}`}
+      className={cn(
+        'rounded-2xl border transition-all duration-200 overflow-hidden bg-card/80 backdrop-blur-md',
+        isMastered
+          ? 'border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.06)]'
+          : 'border-border/80 hover:border-primary/40 hover:shadow-[0_0_25px_rgba(59,130,246,0.06)]'
+      )}
+    >
+      {/* Question Header Card */}
+      <div className="p-5 sm:p-6">
+        {/* Metadata Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-semibold">
+              {q.track || q.company || 'System Architecture'}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Phase {q.phase} • Step {q.id}
+            </span>
+          </div>
+
+          {/* Mastery Checkbox */}
+          <button
+            type="button"
+            onClick={() => onToggleMastery(q.id)}
+            aria-pressed={isMastered}
+            aria-label={isMastered ? `Mark scenario ${q.step_title} as not mastered` : `Mark scenario ${q.step_title} as mastered`}
+            className={cn(
+              'flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              isMastered
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+            )}
+          >
+            {isMastered ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                <span>Mastered</span>
+              </>
+            ) : (
+              <>
+                <Circle className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Mark as Mastered</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Step Title Link */}
+        <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-[0.01em] mb-3">
+          <Link
+            to={`/steps/${q.step_key}`}
+            className="hover:text-primary transition-colors flex items-center gap-2 group"
+          >
+            <span>{q.step_title}</span>
+            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" aria-hidden="true" />
+          </Link>
+        </h2>
+
+        {/* Verbatim Question Prompt */}
+        <div className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary border-y border-r border-primary/20 text-foreground/95 text-sm sm:text-[15px] leading-relaxed my-3 italic">
+          "{q.question}"
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3">
+          {q.tags.map((tag, tIdx) => (
+            <span
+              key={tIdx}
+              className="px-2 py-0.5 rounded-md bg-secondary/80 text-[10px] text-muted-foreground font-mono"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Draft Answer Scratchpad */}
+        <div className="mt-5 pt-4 border-t border-border/60">
+          <label htmlFor={`draft-${q.step_key}`} className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+            Draft Your Solution & Latency / Storage Budget:
+          </label>
+          <textarea
+            id={`draft-${q.step_key}`}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
+            className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setIsRevealed(v => !v)}
+            aria-expanded={isRevealed}
+            aria-controls={`answer-${q.id}`}
+            className={cn(
+              'px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer',
+              isRevealed
+                ? 'bg-secondary text-foreground hover:bg-secondary/80'
+                : 'bg-primary text-primary-foreground hover:bg-primary/95 shadow-md shadow-primary/20'
+            )}
+          >
+            {isRevealed ? (
+              <>
+                <EyeOff className="w-4 h-4" aria-hidden="true" />
+                <span>Hide Architecture Answer</span>
+              </>
+            ) : (
+              <>
+                <Eye className="w-4 h-4" aria-hidden="true" />
+                <span>Reveal Architecture Answer</span>
+              </>
+            )}
+          </button>
+
+          <Link
+            to={`/steps/${q.step_key}`}
+            className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
+          >
+            <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Study Full Step Curriculum Module</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Collapsible Architecture Answer Reveal */}
+      {isRevealed && (
+        <div id={`answer-${q.id}`} role="region" aria-label="Architecture Answer & Tradeoffs" className="px-5 sm:px-6 py-6 border-t border-border/80 bg-secondary/20 animate-in fade-in duration-200">
+          <div className="flex items-center space-x-2 text-xs font-bold text-primary uppercase tracking-wider mb-4 pb-2 border-b border-border/60">
+            <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
+            <span>Production Architecture Answer & Tradeoffs</span>
+          </div>
+
+          <div className="prose prose-invert max-w-none text-sm">
+            <MarkdownRenderer markdown={q.answer} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
 export function InterviewQuestions() {
   const [activePhase, setActivePhase] = useState('all'); // 'all' | 1 | 2 | 3 | 4
   const [searchQuery, setSearchQuery] = useState('');
-  const [revealedAnswers, setRevealedAnswers] = useState({}); // { [id]: boolean }
-  const [masteredIds, setMasteredIds] = useState(() => {
-    try {
-      const saved = localStorage.getItem(MASTERY_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [masteredIds, setMasteredIds] = useState(loadStoredMastery);
+  const [drafts, setDrafts] = useState(loadStoredDrafts);
 
-  const [drafts, setDrafts] = useState(() => {
-    try {
-      const saved = localStorage.getItem(DRAFTS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
+  const isFirstMasteryMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMasteryMount.current) {
+      isFirstMasteryMount.current = false;
+      return;
     }
-  });
+    try {
+      localStorage.setItem(MASTERY_STORAGE_KEY, JSON.stringify(masteredIds));
+    } catch (e) {
+      console.warn('Failed to save mastery', e);
+    }
+  }, [masteredIds]);
 
-  // Toggle question mastery
+  const isFirstDraftsMount = useRef(true);
+  useEffect(() => {
+    if (isFirstDraftsMount.current) {
+      isFirstDraftsMount.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
+    } catch (e) {
+      console.warn('Failed to save draft', e);
+    }
+  }, [drafts]);
+
+  // Toggle question mastery (pure updater)
   const toggleMastery = useCallback((id) => {
-    setMasteredIds(prev => {
-      const next = { ...prev, [id]: !prev[id] };
-      try {
-        localStorage.setItem(MASTERY_STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn('Failed to save mastery', e);
-      }
-      return next;
-    });
+    setMasteredIds(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  // Update draft answer
+  // Update draft answer (pure updater)
   const updateDraft = useCallback((stepKey, text) => {
-    setDrafts(prev => {
-      const next = { ...prev, [stepKey]: text };
-      try {
-        localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn('Failed to save draft', e);
-      }
-      return next;
-    });
-  }, []);
-
-  // Toggle reveal answer
-  const toggleReveal = useCallback((id) => {
-    setRevealedAnswers(prev => ({ ...prev, [id]: !prev[id] }));
+    setDrafts(prev => ({ ...prev, [stepKey]: text }));
   }, []);
 
   // Filter questions
@@ -241,157 +407,16 @@ export function InterviewQuestions() {
       {/* Questions List */}
       <div className="space-y-6 sm:space-y-8">
         {filteredQuestions.length > 0 ? (
-          filteredQuestions.map((q) => {
-            const isMastered = !!masteredIds[q.id];
-            const isRevealed = !!revealedAnswers[q.id];
-            const draft = drafts[q.step_key] || '';
-
-            return (
-              <div
-                key={q.id}
-                id={`q-${q.step_key}`}
-                className={cn(
-                  'rounded-2xl border transition-all duration-200 overflow-hidden bg-card/80 backdrop-blur-md',
-                  isMastered
-                    ? 'border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.06)]'
-                    : 'border-border/80 hover:border-primary/40 hover:shadow-[0_0_25px_rgba(59,130,246,0.06)]'
-                )}
-              >
-                {/* Question Header Card */}
-                <div className="p-5 sm:p-6">
-                  {/* Metadata Row */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-semibold">
-                        {q.track || q.company || 'System Architecture'}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-medium">
-                        Phase {q.phase} • Step {q.id}
-                      </span>
-                    </div>
-
-                    {/* Mastery Checkbox */}
-                    <button
-                      type="button"
-                      onClick={() => toggleMastery(q.id)}
-                      aria-pressed={isMastered}
-                      aria-label={isMastered ? `Mark scenario ${q.step_title} as not mastered` : `Mark scenario ${q.step_title} as mastered`}
-                      className={cn(
-                        'flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
-                        isMastered
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                      )}
-                    >
-                      {isMastered ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                          <span>Mastered</span>
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Mark as Mastered</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Step Title Link */}
-                  <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-[0.01em] mb-3">
-                    <Link
-                      to={`/steps/${q.step_key}`}
-                      className="hover:text-primary transition-colors flex items-center gap-2 group"
-                    >
-                      <span>{q.step_title}</span>
-                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" aria-hidden="true" />
-                    </Link>
-                  </h2>
-
-                  {/* Verbatim Question Prompt */}
-                  <div className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary border-y border-r border-primary/20 text-foreground/95 text-sm sm:text-[15px] leading-relaxed my-3 italic">
-                    "{q.question}"
-                  </div>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                    {q.tags.map((tag, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="px-2 py-0.5 rounded-md bg-secondary/80 text-[10px] text-muted-foreground font-mono"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Draft Answer Scratchpad */}
-                  <div className="mt-5 pt-4 border-t border-border/60">
-                    <label htmlFor={`draft-${q.step_key}`} className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                      Draft Your Solution & Latency / Storage Budget:
-                    </label>
-                    <textarea
-                      id={`draft-${q.step_key}`}
-                      value={draft}
-                      onChange={(e) => updateDraft(q.step_key, e.target.value)}
-                      placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
-                      className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
-                    />
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleReveal(q.id)}
-                      aria-expanded={isRevealed}
-                      aria-controls={`answer-${q.id}`}
-                      className={cn(
-                        'px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer',
-                        isRevealed
-                          ? 'bg-secondary text-foreground hover:bg-secondary/80'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/95 shadow-md shadow-primary/20'
-                      )}
-                    >
-                      {isRevealed ? (
-                        <>
-                          <EyeOff className="w-4 h-4" aria-hidden="true" />
-                          <span>Hide Architecture Answer</span>
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-4 h-4" aria-hidden="true" />
-                          <span>Reveal Architecture Answer</span>
-                        </>
-                      )}
-                    </button>
-
-                    <Link
-                      to={`/steps/${q.step_key}`}
-                      className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Study Full Step Curriculum Module</span>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Collapsible Architecture Answer Reveal */}
-                {isRevealed && (
-                  <div id={`answer-${q.id}`} role="region" aria-label="Architecture Answer & Tradeoffs" className="px-5 sm:px-6 py-6 border-t border-border/80 bg-secondary/20 animate-in fade-in duration-200">
-                    <div className="flex items-center space-x-2 text-xs font-bold text-primary uppercase tracking-wider mb-4 pb-2 border-b border-border/60">
-                      <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
-                      <span>Production Architecture Answer & Tradeoffs</span>
-                    </div>
-
-                    <div className="prose prose-invert max-w-none text-sm">
-                      <MarkdownRenderer markdown={q.answer} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
+          filteredQuestions.map((q) => (
+            <InterviewQuestionCard
+              key={q.id}
+              q={q}
+              isMastered={!!masteredIds[q.id]}
+              initialDraft={drafts[q.step_key] || ''}
+              onToggleMastery={toggleMastery}
+              onDraftChange={updateDraft}
+            />
+          ))
         ) : (
           <div className="py-16 text-center text-muted-foreground">
             <p className="text-base font-semibold">No interview questions match your filter.</p>

@@ -20,7 +20,7 @@ import MarkdownRenderer from './MarkdownRenderer';
 import NotesJournal from './NotesJournal';
 import ModuleQuiz from './ModuleQuiz';
 import { TableOfContentsDesktop, TableOfContentsMobile } from './TableOfContents';
-import { useTableOfContents } from '../hooks/useTableOfContents';
+import { useTableOfContents, useActiveHeading } from '../hooks/useTableOfContents';
 import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
@@ -49,6 +49,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
 
   const status = currentStepFromPhases?.status || 'not_started';
   const { headings } = useTableOfContents(step.content);
+  const [activeId, setActiveId] = useActiveHeading(headings);
   const isLightTheme = settings.theme === 'daylight-paper';
 
   // On step change or hash change: honor #section deep link with smooth scroll and neon pulse highlight
@@ -285,7 +286,11 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
 
         {/* On-this-page panel (below xl; desktop rail renders beside the article) */}
         <div className="no-print">
-          <TableOfContentsMobile headings={headings} />
+          <TableOfContentsMobile
+            headings={headings}
+            activeId={activeId}
+            setActiveId={setActiveId}
+          />
         </div>
 
         {/* Main Content (Memoized against unnecessary re-renders) */}
@@ -308,6 +313,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
         {/* Isolated Notes Journal Component */}
         <div className="no-print">
           <NotesJournal
+            key={stepKey}
             stepKey={stepKey}
             initialNotes={currentStepFromPhases?.notes}
             onSaveNotes={handleSaveNotes}
@@ -392,7 +398,11 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
       </article>
 
       {/* Desktop Sticky Rail (Table of Contents) */}
-      <TableOfContentsDesktop headings={headings} />
+      <TableOfContentsDesktop
+        headings={headings}
+        activeId={activeId}
+        setActiveId={setActiveId}
+      />
     </div>
   );
 };

@@ -30,6 +30,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const originFill = isLightTheme ? '#0f172a' : '#ffffff';
 
   const svgRef = useRef(null);
+  const rectRef = useRef(null);
 
   // Cartesian coordinates
   const effectiveMagA = isNormalized ? 1.0 : magA;
@@ -62,11 +63,11 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const svgBx = toSvgX(bx);
   const svgBy = toSvgY(by);
 
-  // Handle drag to aim vectors
+  // Handle drag to aim vectors (uses cached rect from onPointerDown to avoid layout reflows)
   const handlePointerMove = useCallback((e) => {
     if (!draggingVector || !svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    const rect = rectRef.current || svgRef.current.getBoundingClientRect();
+    if (!rect || !rect.width || !rect.height) return;
 
     // Scale client coordinates accurately to 360x360 SVG viewBox space
     const scaleX = 360 / rect.width;
@@ -91,6 +92,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   }, [draggingVector, isNormalized]);
 
   const handlePointerUp = useCallback(() => {
+    rectRef.current = null;
     setDraggingVector(null);
   }, []);
 
@@ -266,10 +268,12 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       onPointerDown={(e) => {
                         e.stopPropagation();
                         try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+                        rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('A');
                       }}
                       onPointerUp={(e) => {
                         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+                        rectRef.current = null;
                         setDraggingVector(null);
                       }}
                     />
@@ -314,10 +318,12 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       onPointerDown={(e) => {
                         e.stopPropagation();
                         try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+                        rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('B');
                       }}
                       onPointerUp={(e) => {
                         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+                        rectRef.current = null;
                         setDraggingVector(null);
                       }}
                     />

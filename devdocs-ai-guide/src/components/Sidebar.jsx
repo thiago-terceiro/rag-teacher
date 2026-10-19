@@ -6,7 +6,7 @@ import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSandbox, onOpenPythonSandbox }) => {
-  const { phases, loading, stats } = useSteps();
+  const { phases, stats } = useSteps();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -14,14 +14,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
   const currentStepKey = location.pathname.startsWith('/steps/')
     ? location.pathname.replace('/steps/', '')
     : 'project-setup';
-
-  if (loading) {
-    return (
-      <aside className="no-print w-80 bg-card border-r border-border p-4 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </aside>
-    );
-  }
 
   // Filter steps if user typed a search query (memoized for instant keystroke rendering)
   const queryLower = searchQuery.toLowerCase().trim();

@@ -22,16 +22,43 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useI18n } from '../hooks/useI18n';
 import ProgressRing from './ProgressRing';
 
+const ScrollBadge = React.memo(function ScrollBadge() {
+  const scrollProgress = useScrollProgress('main-scroll-container');
+  if (scrollProgress <= 0.02) return null;
+  return (
+    <div className="hidden md:flex items-center space-x-1.5 text-[11px] font-medium text-muted-foreground bg-secondary/60 px-2.5 py-1 rounded-full border border-border/70 animate-in fade-in duration-200">
+      <Eye className="w-3.5 h-3.5 text-primary animate-pulse" />
+      <span>{Math.round(scrollProgress * 100)}% read</span>
+    </div>
+  );
+});
+
+const ScrollProgressBar = React.memo(function ScrollProgressBar() {
+  const scrollProgress = useScrollProgress('main-scroll-container');
+  return (
+    <div aria-hidden="true" className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
+      <div
+        id="header-scroll-progress-bar"
+        className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.8)] will-change-transform"
+        style={{
+          transform: `scaleX(${scrollProgress})`,
+          transformOrigin: 'left',
+        }}
+      />
+    </div>
+  );
+});
+
 const StatsBar = ({
-  isMobileOpen = false,
+  isMobileOpen: isMobileOpenProp,
   onToggleMobileSidebar,
   onOpenSearch,
   onOpenReadingSettings,
   onOpenVectorSandbox,
   onOpenPythonSandbox,
 }) => {
-  const { stats, loading, resetAllProgress, exportStudyGuide } = useSteps();
-  const scrollProgress = useScrollProgress('main-scroll-container');
+  const isMobileOpen = isMobileOpenProp ?? false;
+  const { stats, resetAllProgress, exportStudyGuide } = useSteps();
   const { isOnline, canInstall, promptInstall } = useNetworkStatus();
   const { t } = useI18n();
 
@@ -40,10 +67,6 @@ const StatsBar = ({
       resetAllProgress();
     }
   };
-
-  if (loading) {
-    return <header className="no-print h-16 border-b border-border flex items-center px-6 text-sm text-muted-foreground">Loading progress...</header>;
-  }
 
   return (
     <header className="no-print h-16 border-b border-border bg-card/60 backdrop-blur-md flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 relative select-none max-w-full overflow-hidden">
@@ -67,12 +90,7 @@ const StatsBar = ({
         </div>
 
         {/* Live Reading Scroll Badge */}
-        {scrollProgress > 0.02 && (
-          <div className="hidden md:flex items-center space-x-1.5 text-[11px] font-medium text-muted-foreground bg-secondary/60 px-2.5 py-1 rounded-full border border-border/70 animate-in fade-in duration-200">
-            <Eye className="w-3.5 h-3.5 text-primary animate-pulse" />
-            <span>{Math.round(scrollProgress * 100)}% read</span>
-          </div>
-        )}
+        <ScrollBadge />
       </div>
 
       <div className="flex items-center space-x-2 sm:space-x-2.5">
@@ -233,16 +251,7 @@ const StatsBar = ({
       </div>
 
       {/* Sleek Hardware-Accelerated Neon Reading Scroll Progress Bar */}
-      <div aria-hidden="true" className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
-        <div
-          id="header-scroll-progress-bar"
-          className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 shadow-[0_0_12px_rgba(59,130,246,0.8)] will-change-transform"
-          style={{
-            transform: `scaleX(${scrollProgress})`,
-            transformOrigin: 'left',
-          }}
-        />
-      </div>
+      <ScrollProgressBar />
     </header>
   );
 };

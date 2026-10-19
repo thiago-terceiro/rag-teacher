@@ -1,4 +1,4 @@
-import { createContext, use, useEffect, useState } from 'react';
+import { createContext, use, useEffect, useState, useCallback, useMemo } from 'react';
 
 const ReadingSettingsContext = createContext(null);
 
@@ -62,55 +62,51 @@ export function applyThemeAndReadingStyles(settings) {
   }
 }
 
-export const ReadingSettingsProvider = ({ children }) => {
-  const [settings, setSettings] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        applyThemeAndReadingStyles(DEFAULT_SETTINGS);
-        return DEFAULT_SETTINGS;
-      }
-      const parsed = JSON.parse(saved);
-      const theme = VALID_THEMES.includes(parsed?.theme) ? parsed.theme : DEFAULT_SETTINGS.theme;
-      const initial = { ...DEFAULT_SETTINGS, ...parsed, theme };
-      applyThemeAndReadingStyles(initial);
-      return initial;
-    } catch {
-      applyThemeAndReadingStyles(DEFAULT_SETTINGS);
-      return DEFAULT_SETTINGS;
-    }
-  });
+function loadStoredSettings() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return DEFAULT_SETTINGS;
+    const parsed = JSON.parse(saved);
+    const theme = VALID_THEMES.includes(parsed?.theme) ? parsed.theme : DEFAULT_SETTINGS.theme;
+    return { ...DEFAULT_SETTINGS, ...parsed, theme };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
 
-  // Ensure DOM is strictly in sync upon mount
+export const ReadingSettingsProvider = ({ children }) => {
+  const [settings, setSettings] = useState(loadStoredSettings);
+
+  // Sync DOM styles and persist settings strictly in effect (outside render & updaters)
   useEffect(() => {
     applyThemeAndReadingStyles(settings);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (e) {
+      console.warn('Failed to save reading settings', e);
+    }
   }, [settings]);
 
-  const updateSetting = (key, value) => {
-    setSettings(prev => {
-      const next = { ...prev, [key]: value };
-      // Instant synchronous DOM update - zero latency, zero frame delay
-      applyThemeAndReadingStyles(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn('Failed to save reading settings', e);
-      }
-      return next;
-    });
-  };
+  const updateSetting = useCallback((key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  }, []);
 
-  const resetSettings = () => {
-    applyThemeAndReadingStyles(DEFAULT_SETTINGS);
+  const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    settings,
+    updateSetting,
+    resetSettings,
+  }), [settings, updateSetting, resetSettings]);
 
   // React 19 standard `<Context value={...}>` (no .Provider required)
   return (
-    <ReadingSettingsContext value={{ settings, updateSetting, resetSettings }}>
+    <ReadingSettingsContext value={value}>
       {children}
     </ReadingSettingsContext>
   );
@@ -128,5 +124,3 @@ export const useReadingSettings = () => {
   }
   return context;
 };
-
-

@@ -33,7 +33,8 @@ const buttonVariants = cva(
 );
 
 // React 19: ref is a standard prop (no forwardRef wrapper needed)
-const Button = ({ className, variant, size, asChild = false, ref, ...props }) => {
+const Button = ({ className, variant, size, asChild: asChildProp, ref, ...props }) => {
+  const asChild = asChildProp ?? false;
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
