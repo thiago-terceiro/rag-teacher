@@ -73,6 +73,7 @@ configureMermaidTheme(false);
 const MermaidBlock = React.memo(({ chart }) => {
   const { settings } = useReadingSettings();
   const isLightTheme = settings.theme === 'daylight-paper';
+  const isOledMidnight = settings.theme === 'oled-midnight';
   const themeMode = isLightTheme ? 'light' : 'dark';
   const cleanChart = (chart || '').trim();
   const cacheKey = `${themeMode}:${cleanChart}`;
@@ -86,10 +87,22 @@ const MermaidBlock = React.memo(({ chart }) => {
   const [fitMode, setFitMode] = useState('fit'); // 'fit' | 'actual'
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
+  const triggerBtnRef = useRef(null);
+  const modalRef = useRef(null);
+  const closeBtnRef = useRef(null);
 
   // Create a unique clean ID for mermaid rendering
   const reactId = useId().replace(/[:]/g, '_');
   const diagramId = `mermaid_svg_${reactId}_${themeMode}`;
+
+  // Isolate SVG IDs for fullscreen modal to eliminate marker-end duplicate ID collision
+  const modalSvgContent = React.useMemo(() => {
+    if (!svgContent) return '';
+    return svgContent
+      .replace(/\bid="([^"]+)"/g, 'id="modal_$1"')
+      .replace(/url\(#([^)]+)\)/g, 'url(#modal_$1)')
+      .replace(/href="#([^"]+)"/g, 'href="#modal_$1"');
+  }, [svgContent]);
 
   useEffect(() => {
     if (!cleanChart) return;
@@ -146,16 +159,46 @@ const MermaidBlock = React.memo(({ chart }) => {
     setFitMode('fit');
   };
 
-  // Close fullscreen on Escape
+  // Fullscreen Accessibility: Focus Trap, Escape to Close & Focus Return
   useEffect(() => {
     if (!isFullscreen) return;
+
+    // Auto-focus Close button inside modal
+    requestAnimationFrame(() => {
+      closeBtnRef.current?.focus();
+    });
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         setIsFullscreen(false);
+        triggerBtnRef.current?.focus();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button:not([disabled]), [tabindex="0"]'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      triggerBtnRef.current?.focus();
+    };
   }, [isFullscreen]);
 
   if (hasError) {
@@ -180,9 +223,16 @@ const MermaidBlock = React.memo(({ chart }) => {
         fitMode === 'fit'
           ? '[&_svg]:max-w-full [&_svg]:h-auto'
           : '[&_svg]:max-w-none [&_svg]:w-auto [&_svg]:h-auto',
-        isLightTheme ? 'bg-[#f8fafc]' : 'bg-[#0c1017]/80'
+        isOledMidnight
+          ? 'bg-black'
+          : isLightTheme
+            ? 'bg-[#f8fafc]'
+            : 'bg-[#0c1017]/80'
       )}
     >
+      <div className="sr-only">
+        Interactive architecture diagram rendered from Mermaid code. Use the zoom controls or switch to the Source tab to read the specification.
+      </div>
       <div
         style={{
           transform: `scale(${zoom})`,
@@ -268,6 +318,7 @@ const MermaidBlock = React.memo(({ chart }) => {
             {/* Fullscreen Expand */}
             {!showSource && (
               <button
+                ref={triggerBtnRef}
                 type="button"
                 onClick={() => setIsFullscreen(true)}
                 aria-label="Open diagram in full screen modal"
@@ -333,10 +384,11 @@ const MermaidBlock = React.memo(({ chart }) => {
       {/* Fullscreen High-Resolution Modal */}
       {isFullscreen && (
         <div
+          ref={modalRef}
           role="dialog"
           aria-modal="true"
           aria-label="Fullscreen Architecture Diagram"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-150"
         >
           <div className="flex items-center justify-between pb-3 border-b border-border/80 text-foreground">
             <div className="flex items-center space-x-2">
@@ -373,8 +425,12 @@ const MermaidBlock = React.memo(({ chart }) => {
               </div>
 
               <button
+                ref={closeBtnRef}
                 type="button"
-                onClick={() => setIsFullscreen(false)}
+                onClick={() => {
+                  setIsFullscreen(false);
+                  triggerBtnRef.current?.focus();
+                }}
                 aria-label="Exit fullscreen view"
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold cursor-pointer border border-border/70"
               >
@@ -392,7 +448,7 @@ const MermaidBlock = React.memo(({ chart }) => {
                 transition: 'transform 0.15s ease-out',
               }}
               className="max-w-none flex items-center justify-center [&_svg]:max-w-none [&_svg]:w-auto [&_svg]:h-auto"
-              dangerouslySetInnerHTML={{ __html: svgContent }}
+              dangerouslySetInnerHTML={{ __html: modalSvgContent }}
             />
           </div>
         </div>

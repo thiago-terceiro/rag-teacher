@@ -76,24 +76,24 @@ sequenceDiagram
 
     API->>Agent: Initialize AgentState(session_id, query)
     Agent->>API: Yield Step Event (status: "Routing intent...")
-    API-->>Client: event: status\\ndata: {"step": "routing"}\\n\\n
+    API-->>Client: event: status<br/>data: {"step": "routing"}
 
     Agent->>DB: Execute Vector Search (HyDE + Dense)
     Agent->>API: Yield Tool Event (tool: "doc_search")
-    API-->>Client: event: tool_call\\ndata: {"tool": "doc_search", "args": {...}}\\n\\n
+    API-->>Client: event: tool_call<br/>data: {"tool": "doc_search", "args": {...}}
 
     DB-->>Agent: Return Top-5 Re-ranked Chunks
     Agent->>API: Yield Citations Event
-    API-->>Client: event: citation\\ndata: [{"title": "Array.prototype.flatMap()", "url": "..."}]\\n\\n
+    API-->>Client: event: citation<br/>data: [{"title": "Array.prototype.flatMap()", "url": "..."}]
 
     loop LLM Token Decoding
         Agent->>API: Yield Token Delta ("The")
-        API-->>Client: event: token\\ndata: {"delta": "The "}\\n\\n
+        API-->>Client: event: token<br/>data: {"delta": "The "}
         Note over API,Client: Heartbeat ping sent if idle > 15s
     end
 
     Agent->>API: Yield Finished State
-    API-->>Client: event: done\\ndata: {"total_tokens": 420, "latency_ms": 780}\\n\\n
+    API-->>Client: event: done<br/>data: {"total_tokens": 420, "latency_ms": 780}
     API->>API: Close connection cleanly
 \`\`\`
 

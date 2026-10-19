@@ -418,7 +418,7 @@ sequenceDiagram
         note over API,RAG: Retrieval Phase (Latency ~95ms)
         API->>RAG: Dense Search (Qdrant) + Cross-Encoder Rerank
         RAG-->>API: Top 5 Relevant Documentation Chunks
-        API-->>Hook: SSE Event: event: citations\\ndata: [{id, title, score, url}]
+        API-->>Hook: SSE Event: event: citations<br/>data: [{id, title, score, url}]
         Hook->>UI: Populate activeCitations & mount Citation Drawer
     end
 
@@ -427,13 +427,13 @@ sequenceDiagram
         API->>LLM: Stream prompt with retrieved context
         loop Token Stream (~60 tokens/sec)
             LLM-->>API: Token delta
-            API-->>Hook: SSE Event: event: token\\ndata: {"text": "The"}
+            API-->>Hook: SSE Event: event: token<br/>data: {"text": "The"}
             Hook->>Hook: Push token to RAF double-buffer
             Hook-->>UI: RAF tick: Render Markdown AST + Typewriter cursor
         end
     end
 
-    API-->>Hook: SSE Event: event: done\\ndata: {ttft_ms: 284, total_ms: 1820}
+    API-->>Hook: SSE Event: event: done<br/>data: {ttft_ms: 284, total_ms: 1820}
     Hook->>UI: Set state = COMPLETED & commit to PostgreSQL Telemetry
 \`\`\`
 
@@ -2007,12 +2007,12 @@ flowchart TD
     Dev["Developer (Web Engineer)"]
     
     subgraph System["DevDocs AI Platform"]
-        DevDocs["DevDocs AI System\\n(RAG & Agentic Documentation Assistant)"]
+        DevDocs["DevDocs AI System<br/>(RAG & Agentic Documentation Assistant)"]
     end
     
-    MDN["Mozilla Developer Network (MDN)\\nWeb Docs Upstream Repository"]
-    LLMProvider["LLM Inference Engine\\n(Local vLLM / Cloud API)"]
-    TelemetryConsumer["Engineering Leadership &\\nML Observability Team"]
+    MDN["Mozilla Developer Network (MDN)<br/>Web Docs Upstream Repository"]
+    LLMProvider["LLM Inference Engine<br/>(Local vLLM / Cloud API)"]
+    TelemetryConsumer["Engineering Leadership &<br/>ML Observability Team"]
 
     Dev <-->|Queries & Streams Code Answers| DevDocs
     MDN -->|Nightly Ingestion & Change Detection| DevDocs
@@ -2025,20 +2025,20 @@ Decomposes the system into deployable network containers, protocols, and persist
 
 \`\`\`mermaid
 flowchart TD
-    Client["Single-Page Application\\n(React 19 + Tailwind + Vite SPA)"]
-    Gateway["API Gateway & Ingestion Worker\\n(FastAPI + Python 3.11, Port 8000)"]
+    Client["Single-Page Application<br/>(React 19 + Tailwind + Vite SPA)"]
+    Gateway["API Gateway & Ingestion Worker<br/>(FastAPI + Python 3.11, Port 8000)"]
     
     subgraph Caches["Multi-Tier Caching Layer"]
-        ExactCache[("Redis Tier-1: Exact SHA-256 Hash Cache\\n(TTL: 24h, Latency: 1-2ms)")]
-        SemanticCache[("Redis/Qdrant Tier-2: Semantic Cache\\n(Cosine > 0.96, TTL: 12h, Latency: 10-15ms)")]
+        ExactCache[("Redis Tier-1: Exact SHA-256 Hash Cache<br/>(TTL: 24h, Latency: 1-2ms)")]
+        SemanticCache[("Redis/Qdrant Tier-2: Semantic Cache<br/>(Cosine > 0.96, TTL: 12h, Latency: 10-15ms)")]
     end
 
     subgraph Datastores["Persistent Datastores"]
-        Qdrant[("Qdrant Vector Database Cluster\\n(HNSW Dense Vectors, Port 6333)")]
-        Postgres[("PostgreSQL 16 DB\\n(Telemetry Spans, Feedback & BM25 Inverted Index)")]
+        Qdrant[("Qdrant Vector Database Cluster<br/>(HNSW Dense Vectors, Port 6333)")]
+        Postgres[("PostgreSQL 16 DB<br/>(Telemetry Spans, Feedback & BM25 Inverted Index)")]
     end
 
-    LLM["Inference Cluster\\n(vLLM / TensorRT-LLM / Hosted APIs)"]
+    LLM["Inference Cluster<br/>(vLLM / TensorRT-LLM / Hosted APIs)"]
 
     Client <-->|"HTTP/2 Server-Sent Events (SSE)"| Gateway
     Gateway <-->|Check Tier-1 Hash| ExactCache
