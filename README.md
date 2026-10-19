@@ -136,5 +136,11 @@ Or connect the repository on [Vercel Dashboard](https://vercel.com/new). The bui
 
 ---
 
+## 📌 Technical Notes & Architecture Decisions
+
+- **Mermaid Pinning (`11.4.1`)**: Mermaid is intentionally pinned to `11.4.1` rather than `12.x`. Mermaid v12 introduces the heavy ELK (Eclipse Layout Kernel) engine by default (~1.5 MB bundle overhead / 456 kB gzip) along with layout shifts and strict parser regressions for nested subgraphs. Version 11.4.1 provides a lean, rock-solid Dagre layout engine that preserves our zero-layout-shift and 100% Lighthouse performance targets.
+
+---
+
 ## 📄 License
 MIT © Thiago Terceiro
