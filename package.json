@@ -8,9 +8,27 @@
     "dev:ui": "npm --prefix devdocs-ai-guide run dev:ui",
     "build": "npm --prefix devdocs-ai-guide run build",
     "start": "npm --prefix devdocs-ai-guide run start",
-    "test": "npm --prefix devdocs-ai-guide test"
+    "test": "npm --prefix devdocs-ai-guide test",
+    "typecheck": "npm --prefix devdocs-ai-guide run typecheck"
   },
-  "keywords": ["rag", "llm", "retrieval-augmented-generation", "qdrant", "dspy", "langgraph", "fastapi"],
+  "keywords": [
+    "rag",
+    "llm",
+    "retrieval-augmented-generation",
+    "qdrant",
+    "dspy",
+    "langgraph",
+    "fastapi"
+  ],
   "author": "Thiago Terceiro",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
 }
