@@ -1,4 +1,6 @@
-export const phase1Steps = [
+import type { Step } from '../types';
+
+export const phase1Steps: Step[] = [
   {
     step_key: "project-setup",
     title: "Project Setup & Python Environment",

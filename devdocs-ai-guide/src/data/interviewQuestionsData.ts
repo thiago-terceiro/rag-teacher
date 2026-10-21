@@ -1,5 +1,7 @@
+import type { InterviewQuestion } from '../types';
+
 // Production system design interview questions compiled across all 28 modules
-export const interviewQuestions = [
+export const interviewQuestions: InterviewQuestion[] = [
   {
     "id": 1,
     "step_key": "project-setup",

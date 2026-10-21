@@ -1,4 +1,6 @@
-export const phase3Steps = [
+import type { Step } from '../types';
+
+export const phase3Steps: Step[] = [
   {
     step_key: "fastapi-backend",
     title: "FastAPI Backend Setup & SSE Streaming Architecture",

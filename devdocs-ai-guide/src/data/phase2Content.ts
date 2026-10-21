@@ -2,7 +2,9 @@
 // Masterclass Content for DevDocs AI (RAG Teacher)
 // Exported as phase2Steps
 
-export const phase2Steps = [
+import type { Step } from '../types';
+
+export const phase2Steps: Step[] = [
   {
     step_key: "cross-encoder-reranking",
     title: "Cross-Encoder Re-Ranking",

@@ -1,9 +1,10 @@
+import type { Phase, Step } from '../types';
 import { phase1Steps } from './phase1Content';
 import { phase2Steps } from './phase2Content';
 import { phase3Steps } from './phase3Content';
 import { phase4Steps } from './phase4Content';
 
-export const initialPhases = [
+export const initialPhases: Phase[] = [
   {
     id: 1,
     phase_key: "foundation",
@@ -38,20 +39,20 @@ export const initialPhases = [
   }
 ];
 
-export const allSteps = [
+export const allSteps: Step[] = [
   ...phase1Steps,
   ...phase2Steps,
   ...phase3Steps,
   ...phase4Steps
 ];
 
-export const stepMap = new Map(allSteps.map(step => [step.step_key, step]));
+export const stepMap: Map<string, Step> = new Map(allSteps.map(step => [step.step_key, step]));
 
-export const getStepByKey = (key) => {
+export const getStepByKey = (key: string): Step => {
   return stepMap.get(key) || allSteps[0];
 };
 
-export const getNextStep = (currentKey) => {
+export const getNextStep = (currentKey: string): Step | null => {
   const index = allSteps.findIndex(s => s.step_key === currentKey);
   if (index >= 0 && index < allSteps.length - 1) {
     return allSteps[index + 1];
@@ -59,7 +60,7 @@ export const getNextStep = (currentKey) => {
   return null;
 };
 
-export const getPrevStep = (currentKey) => {
+export const getPrevStep = (currentKey: string): Step | null => {
   const index = allSteps.findIndex(s => s.step_key === currentKey);
   if (index > 0) {
     return allSteps[index - 1];

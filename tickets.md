@@ -41,7 +41,7 @@
 
 ---
 
-### [ ] Ticket 4: Curriculum Data Migration
+### [x] Ticket 4: Curriculum Data Migration
 - **Scope**:
   - `src/data/guideData.js` -> `src/data/guideData.ts`
   - `src/data/interviewQuestionsData.js` -> `src/data/interviewQuestionsData.ts`

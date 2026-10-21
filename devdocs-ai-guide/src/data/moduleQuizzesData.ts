@@ -1,5 +1,7 @@
+import type { ModuleQuizzesMap } from '../types';
+
 // Scenario-based multiple-choice Knowledge Checks for all 28 RAG Curriculum Modules
-export const moduleQuizzes = {
+export const moduleQuizzes: ModuleQuizzesMap = {
   'project-setup': [
     {
       id: 'ps-1',

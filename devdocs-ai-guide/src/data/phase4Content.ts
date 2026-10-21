@@ -1,4 +1,6 @@
-export const phase4Steps = [
+import type { Step } from '../types';
+
+export const phase4Steps: Step[] = [
   {
     step_key: "react-frontend-setup",
     title: "React Frontend: Project Setup",
