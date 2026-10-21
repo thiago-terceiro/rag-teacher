@@ -4,8 +4,8 @@
 const PYODIDE_INDEX_URL = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/';
 const MAX_CODE_LENGTH = 20000;
 
-let pyodideInstance = null;
-let initPromise = null;
+let pyodideInstance: any = null;
+let initPromise: Promise<any> | null = null;
 
 /**
  * Lock down the Web Worker global scope AFTER Pyodide & NumPy are loaded in memory.
@@ -22,19 +22,20 @@ function lockDownWorkerGlobals() {
   };
 
   try {
-    self.fetch = blockedAsync;
-    self.XMLHttpRequest = blockedSync;
-    self.WebSocket = blockedSync;
-    self.WebTransport = blockedSync;
-    self.RTCPeerConnection = blockedSync;
-    self.EventSource = blockedSync;
-    self.BroadcastChannel = blockedSync;
-    self.Worker = blockedSync;
-    self.SharedWorker = blockedSync;
-    self.importScripts = blockedSync;
-    self.FileReader = blockedSync;
-    self.FileReaderSync = blockedSync;
-    self.CacheStorage = blockedSync;
+    const workerSelf = self as any;
+    workerSelf.fetch = blockedAsync; // self.fetch = blockedAsync
+    workerSelf.XMLHttpRequest = blockedSync; // self.XMLHttpRequest = blockedSync
+    workerSelf.WebSocket = blockedSync; // self.WebSocket = blockedSync
+    workerSelf.WebTransport = blockedSync; // self.WebTransport = blockedSync
+    workerSelf.RTCPeerConnection = blockedSync; // self.RTCPeerConnection = blockedSync
+    workerSelf.EventSource = blockedSync; // self.EventSource = blockedSync
+    workerSelf.BroadcastChannel = blockedSync; // self.BroadcastChannel = blockedSync
+    workerSelf.Worker = blockedSync; // self.Worker = blockedSync
+    workerSelf.SharedWorker = blockedSync; // self.SharedWorker = blockedSync
+    workerSelf.importScripts = blockedSync; // self.importScripts = blockedSync
+    workerSelf.FileReader = blockedSync; // self.FileReader = blockedSync
+    workerSelf.FileReaderSync = blockedSync; // self.FileReaderSync = blockedSync
+    workerSelf.CacheStorage = blockedSync; // self.CacheStorage = blockedSync
 
     if (self.navigator) {
       for (const prop of ['sendBeacon', 'storage', 'locks', 'serviceWorker']) {
@@ -503,7 +504,7 @@ async function ensurePyodideLoaded() {
   return initPromise;
 }
 
-self.onmessage = async (event) => {
+self.onmessage = async (event: MessageEvent) => {
   const data = event?.data;
   if (!data || typeof data !== 'object') return;
 
@@ -513,7 +514,7 @@ self.onmessage = async (event) => {
     try {
       await ensurePyodideLoaded();
       self.postMessage({ type: 'READY' });
-    } catch (err) {
+    } catch (err: any) {
       initPromise = null;
       self.postMessage({
         type: 'INIT_ERROR',
@@ -565,7 +566,7 @@ self.onmessage = async (event) => {
         runId,
         ...jsResult,
       });
-    } catch (err) {
+    } catch (err: any) {
       self.postMessage({
         type: 'RESULT',
         runId,

@@ -1,10 +1,18 @@
-export const supportedLanguages = [
+export interface LanguageOption {
+  code: 'en' | 'pt' | 'es';
+  label: string;
+  flag: string;
+}
+
+export const supportedLanguages: LanguageOption[] = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
   { code: 'pt', label: 'Português', flag: '🇧🇷' },
   { code: 'es', label: 'Español', flag: '🇪🇸' },
 ];
 
-export const translations = {
+export type TranslationDictionary = Record<string, string>;
+
+export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
   en: {
     // Navigation & Header
     'nav.skipToContent': 'Skip to main content',
@@ -184,7 +192,7 @@ export const translations = {
     'sandbox.run': 'Ejecutar Código',
     'sandbox.running': 'Ejecutando en WASM...',
     'sandbox.reset': 'Reiniciar',
-    'sandbox.output': 'Salida de Ejecución',
+    'sandbox.output': 'Salida de Execución',
     'sandbox.ready': 'Ambiente Pyodide WASM Listo',
     'sandbox.selectTemplate': 'Seleccionar Plantilla de Algoritmo RAG',
   },

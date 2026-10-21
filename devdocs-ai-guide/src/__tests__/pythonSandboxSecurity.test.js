@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 describe('Python Sandbox Security & AST Analysis Regression', () => {
-  const workerPath = path.resolve(__dirname, '../workers/pyodideWorker.js');
+  const workerPath = fs.existsSync(path.resolve(__dirname, '../workers/pyodideWorker.ts'))
+    ? path.resolve(__dirname, '../workers/pyodideWorker.ts')
+    : path.resolve(__dirname, '../workers/pyodideWorker.js');
   const workerContent = fs.readFileSync(workerPath, 'utf8');
 
   it('should enforce MAX_CODE_LENGTH of 20,000 characters', () => {

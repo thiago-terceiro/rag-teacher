@@ -1,5 +1,5 @@
 // Service Worker Registration & PWA Lifecycle Manager
-export function registerServiceWorker() {
+export function registerServiceWorker(): void {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker

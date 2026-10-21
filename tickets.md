@@ -29,7 +29,7 @@
 
 ---
 
-### [ ] Ticket 3: Utilities, Libraries, i18n & Worker Migration
+### [x] Ticket 3: Utilities, Libraries, i18n & Worker Migration
 - **Scope**:
   - `src/lib/utils.js` -> `src/lib/utils.ts`
   - `src/lib/headings.js` -> `src/lib/headings.ts`

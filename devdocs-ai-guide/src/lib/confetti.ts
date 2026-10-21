@@ -2,7 +2,7 @@
  * Lazy loads and triggers celebratory canvas-confetti.
  * Isolated in a standalone module to prevent AST HIR compilation bailout in React compiler.
  */
-export async function triggerConfetti() {
+export async function triggerConfetti(): Promise<void> {
   try {
     const { default: confetti } = await import('canvas-confetti');
     confetti({

@@ -1,3 +1,5 @@
+import type { HeadingItem } from '../types';
+
 /**
  * Single source of truth for heading slugs, shared by:
  *  - `rehypeHeadingIds` (assigns ids to rendered <h2>/<h3>)
@@ -6,7 +8,7 @@
  * form of a heading (inline math keeps its TeX source, e.g. `\mathcal{R}`).
  */
 
-export function slugify(text) {
+export function slugify(text: string | number): string {
   return String(text)
     .toLowerCase()
     .trim()
@@ -16,9 +18,9 @@ export function slugify(text) {
 }
 
 /** De-duplicates slugs within one document, github-slugger style (`foo`, `foo-1`, ...). */
-function createSlugger() {
-  const seen = new Map();
-  return (text) => {
+function createSlugger(): (text: string) => string {
+  const seen = new Map<string, number>();
+  return (text: string): string => {
     const base = slugify(text);
     if (!base) return '';
     const count = seen.get(base) || 0;
@@ -27,8 +29,16 @@ function createSlugger() {
   };
 }
 
-function hastText(node) {
-  if (node.type === 'text') return node.value;
+interface HastNode {
+  type?: string;
+  value?: string;
+  tagName?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+}
+
+function hastText(node: HastNode): string {
+  if (node.type === 'text') return node.value || '';
   return (node.children || []).map(hastText).join('');
 }
 
@@ -37,22 +47,26 @@ function hastText(node) {
  * inline math is still a `code.math-inline` node holding the TeX source.
  */
 export function rehypeHeadingIds() {
-  return (tree) => {
+  return (tree: HastNode): void => {
     const slug = createSlugger();
-    const visit = (node) => {
+    const visit = (node: HastNode): void => {
       if (node.type === 'element' && (node.tagName === 'h2' || node.tagName === 'h3')) {
         const id = slug(hastText(node));
-        if (id) node.properties = { ...node.properties, id };
+        if (id) {
+          node.properties = { ...node.properties, id };
+        }
         return;
       }
-      if (node.children) node.children.forEach(visit);
+      if (node.children) {
+        node.children.forEach(visit);
+      }
     };
     visit(tree);
   };
 }
 
 /** Prettifies TeX for display only (`\mathcal{R}` -> `R`, `O(1)` stays). */
-function prettifyTex(tex) {
+function prettifyTex(tex: string): string {
   return tex
     .replace(/\\[a-zA-Z]+\{([^}]*)\}/g, '$1')
     .replace(/\\[a-zA-Z]+/g, '')
@@ -63,12 +77,12 @@ function prettifyTex(tex) {
  * Extracts h2/h3 headings from markdown (ignoring fenced code blocks).
  * Returns `{ level, id, text }` where `id` matches `rehypeHeadingIds` output.
  */
-export function extractHeadings(markdown) {
+export function extractHeadings(markdown: string): HeadingItem[] {
   if (!markdown) return [];
 
   const stripped = markdown.replace(/```[\s\S]*?```/g, '');
   const slug = createSlugger();
-  const headings = [];
+  const headings: HeadingItem[] = [];
 
   for (const match of stripped.matchAll(/^(#{2,3})\s+(.+?)\s*#*$/gm)) {
     const raw = match[2];
@@ -84,10 +98,16 @@ export function extractHeadings(markdown) {
     const text = unformatted.replace(/\$([^$]+)\$/g, (_, tex) => prettifyTex(tex)).trim();
 
     const id = slug(idSource);
-    if (id) headings.push({ level: match[1].length, id, text });
+    if (id) {
+      headings.push({ level: match[1].length, id, text });
+    }
   }
 
   return headings;
+}
+
+export interface ScrollToHeadingOptions {
+  smooth?: boolean;
 }
 
 /**
@@ -96,7 +116,7 @@ export function extractHeadings(markdown) {
  * element.scrollIntoView(), preventing ancestor window/header scroll displacement
  * (which caused the sticky top navigation bar to disappear on mobile).
  */
-export function scrollToHeading(id, { smooth = true } = {}) {
+export function scrollToHeading(id: string, { smooth = true }: ScrollToHeadingOptions = {}): boolean {
   const el = document.getElementById(id);
   if (!el) return false;
 
