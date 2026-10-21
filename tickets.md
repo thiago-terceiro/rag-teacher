@@ -15,7 +15,7 @@
 
 ---
 
-### [ ] Ticket 2: Domain Types & Data Contracts Definition
+### [x] Ticket 2: Domain Types & Data Contracts Definition
 - **Scope**:
   - Create `src/types/index.ts`.
   - Define interfaces:
