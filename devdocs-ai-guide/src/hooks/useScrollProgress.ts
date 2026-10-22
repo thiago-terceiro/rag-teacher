@@ -7,9 +7,12 @@ import { useEffect, useRef, useState } from 'react';
  * while throttling React component state updates to whole integer percentage changes
  * to eliminate 95%+ of unnecessary React component re-renders.
  */
-export const useScrollProgress = (targetId = 'main-scroll-container', barId = 'header-scroll-progress-bar') => {
-  const [progress, setProgress] = useState(0);
-  const lastIntPctRef = useRef(0);
+export const useScrollProgress = (
+  targetId: string = 'main-scroll-container',
+  barId: string = 'header-scroll-progress-bar'
+): number => {
+  const [progress, setProgress] = useState<number>(0);
+  const lastIntPctRef = useRef<number>(0);
 
   useEffect(() => {
     const container = document.getElementById(targetId);

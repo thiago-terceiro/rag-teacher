@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import type { SandboxActionsContextType, SandboxStateContextType, SandboxContextType } from '../types';
 
-const defaultActions = {
+const defaultActions: SandboxActionsContextType = {
   openPythonSandbox: () => {},
   openVectorSandbox: () => {},
 };
 
-const defaultState = {
+const defaultState: SandboxStateContextType = {
   isPythonSandboxOpen: false,
   setIsPythonSandboxOpen: () => {},
   pythonSandboxCode: null,
@@ -13,15 +14,15 @@ const defaultState = {
   setIsVectorVisualizerOpen: () => {},
 };
 
-const SandboxActionsContext = createContext(defaultActions);
-const SandboxStateContext = createContext(defaultState);
+const SandboxActionsContext = createContext<SandboxActionsContextType>(defaultActions);
+const SandboxStateContext = createContext<SandboxStateContextType>(defaultState);
 
-export function SandboxProvider({ children }) {
-  const [isPythonSandboxOpen, setIsPythonSandboxOpen] = useState(false);
-  const [pythonSandboxCode, setPythonSandboxCode] = useState(null);
-  const [isVectorVisualizerOpen, setIsVectorVisualizerOpen] = useState(false);
+export function SandboxProvider({ children }: { children: React.ReactNode }) {
+  const [isPythonSandboxOpen, setIsPythonSandboxOpen] = useState<boolean>(false);
+  const [pythonSandboxCode, setPythonSandboxCode] = useState<string | null>(null);
+  const [isVectorVisualizerOpen, setIsVectorVisualizerOpen] = useState<boolean>(false);
 
-  const openPythonSandbox = useCallback((customCode = null) => {
+  const openPythonSandbox = useCallback((customCode: string | null = null) => {
     setPythonSandboxCode(typeof customCode === 'string' ? customCode : null);
     setIsPythonSandboxOpen(true);
   }, []);
@@ -31,13 +32,13 @@ export function SandboxProvider({ children }) {
   }, []);
 
   // Stable actions value — never changes across re-renders
-  const actionsValue = useMemo(() => ({
+  const actionsValue = useMemo<SandboxActionsContextType>(() => ({
     openPythonSandbox,
     openVectorSandbox,
   }), [openPythonSandbox, openVectorSandbox]);
 
   // State value — only updates when sandbox visibility or code changes
-  const stateValue = useMemo(() => ({
+  const stateValue = useMemo<SandboxStateContextType>(() => ({
     isPythonSandboxOpen,
     setIsPythonSandboxOpen,
     pythonSandboxCode,
@@ -55,19 +56,19 @@ export function SandboxProvider({ children }) {
 }
 
 /** Hook for action-only consumers (e.g. CodeBlock) to prevent re-rendering on sandbox toggle */
-export function useSandboxActions() {
+export function useSandboxActions(): SandboxActionsContextType {
   const context = useContext(SandboxActionsContext);
   return context || defaultActions;
 }
 
 /** Hook for sandbox modal consumers */
-export function useSandboxState() {
+export function useSandboxState(): SandboxStateContextType {
   const context = useContext(SandboxStateContext);
   return context || defaultState;
 }
 
 /** Combined hook for backwards compatibility */
-export function useSandbox() {
+export function useSandbox(): SandboxContextType {
   const actions = useSandboxActions();
   const state = useSandboxState();
   return useMemo(() => ({

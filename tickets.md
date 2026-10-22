@@ -54,7 +54,7 @@
 
 ---
 
-### [ ] Ticket 5: Context Providers & Custom Hooks Migration
+### [x] Ticket 5: Context Providers & Custom Hooks Migration
 - **Scope**:
   - `src/context/SandboxContext.jsx` -> `src/context/SandboxContext.tsx`
   - `src/hooks/useSteps.jsx` -> `src/hooks/useSteps.tsx`

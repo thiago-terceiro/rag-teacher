@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { extractHeadings } from '../lib/headings';
+import type { HeadingItem } from '../types';
 
 /**
  * High-performance active heading tracker using IntersectionObserver.
  * Runs off the main compositor thread with zero synchronous getBoundingClientRect layout reflows,
  * preventing scroll jank and mini-jumps.
  */
-export function useActiveHeading(headings) {
-  const [activeId, setActiveId] = useState('');
-  const lastActiveRef = useRef('');
+export function useActiveHeading(headings: HeadingItem[]): [string, React.Dispatch<React.SetStateAction<string>>] {
+  const [activeId, setActiveId] = useState<string>('');
+  const lastActiveRef = useRef<string>('');
 
   useEffect(() => {
     if (!headings || headings.length === 0) return undefined;
@@ -16,7 +17,9 @@ export function useActiveHeading(headings) {
     if (!container) return undefined;
 
     const headingIds = headings.map((h) => h.id);
-    const elements = headingIds.map((id) => document.getElementById(id)).filter(Boolean);
+    const elements = headingIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => Boolean(el));
     if (elements.length === 0) return undefined;
 
     // Set initial active heading
@@ -81,8 +84,7 @@ export function useActiveHeading(headings) {
 /**
  * Extracts headings from markdown memoized.
  */
-export function useTableOfContents(markdown) {
+export function useTableOfContents(markdown: string): { headings: HeadingItem[] } {
   const headings = useMemo(() => extractHeadings(markdown), [markdown]);
   return { headings };
 }
-

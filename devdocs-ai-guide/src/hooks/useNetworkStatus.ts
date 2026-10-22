@@ -1,11 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export function useNetworkStatus() {
-  const [isOnline, setIsOnline] = useState(() =>
+export interface BeforeInstallPromptChoice {
+  outcome: 'accepted' | 'dismissed';
+  platform: string;
+}
+
+export interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<BeforeInstallPromptChoice>;
+}
+
+export interface NetworkStatus {
+  isOnline: boolean;
+  canInstall: boolean;
+  isInstalled: boolean;
+  promptInstall: () => Promise<boolean>;
+}
+
+export function useNetworkStatus(): NetworkStatus {
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState<boolean>(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -15,9 +32,9 @@ export function useNetworkStatus() {
     window.addEventListener('offline', handleOffline);
 
     // Capture install prompt for PWA
-    const handleBeforeInstallPrompt = (e) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     const handleAppInstalled = () => {
@@ -36,7 +53,7 @@ export function useNetworkStatus() {
     };
   }, []);
 
-  const promptInstall = useCallback(async () => {
+  const promptInstall = useCallback(async (): Promise<boolean> => {
     if (!deferredPrompt) return false;
     deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;

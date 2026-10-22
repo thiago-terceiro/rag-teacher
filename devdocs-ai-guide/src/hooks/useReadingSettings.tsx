@@ -1,30 +1,31 @@
-import { createContext, use, useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { createContext, use, useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
+import type { ReadingSettings, ReadingSettingsContextType, ThemeMode } from '../types';
 
-const ReadingSettingsContext = createContext(null);
+const ReadingSettingsContext = createContext<ReadingSettingsContextType | null>(null);
 
 const STORAGE_KEY = 'rag_reading_settings_v1';
 
-const VALID_THEMES = ['deep-blue', 'oled-midnight', 'daylight-paper'];
+const VALID_THEMES: ThemeMode[] = ['deep-blue', 'oled-midnight', 'daylight-paper'];
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: ReadingSettings = {
   theme: 'deep-blue',       // 'deep-blue' (#090d16) | 'oled-midnight' (#000000) | 'daylight-paper' (light)
   fontSize: 'normal',       // 'normal' (15px) | 'comfortable' (17px) | 'large' (19px)
   contentWidth: 'normal',   // 'normal' (max-w-4xl) | 'wide' (max-w-5xl)
   lineSpacing: 'relaxed',   // 'relaxed' | 'spacious'
 };
 
-const THEME_META_COLORS = {
+const THEME_META_COLORS: Record<ThemeMode, string> = {
   'deep-blue': '#090d16',
   'oled-midnight': '#000000',
   'daylight-paper': '#faf8f5',
 };
 
-export function applyThemeAndReadingStyles(settings) {
+export function applyThemeAndReadingStyles(settings: ReadingSettings) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   const body = document.body;
 
-  const activeTheme = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
+  const activeTheme: ThemeMode = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
   const isLight = activeTheme === 'daylight-paper';
 
   // 1. Instant Theme Classes
@@ -62,7 +63,7 @@ export function applyThemeAndReadingStyles(settings) {
   }
 }
 
-function loadStoredSettings() {
+function loadStoredSettings(): ReadingSettings {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return DEFAULT_SETTINGS;
@@ -74,8 +75,8 @@ function loadStoredSettings() {
   }
 }
 
-export const ReadingSettingsProvider = ({ children }) => {
-  const [settings, setSettings] = useState(loadStoredSettings);
+export const ReadingSettingsProvider = ({ children }: { children: React.ReactNode }) => {
+  const [settings, setSettings] = useState<ReadingSettings>(loadStoredSettings);
 
   // Sync DOM styles synchronously before paint to prevent FOUC (flash of unstyled content)
   useLayoutEffect(() => {
@@ -98,7 +99,7 @@ export const ReadingSettingsProvider = ({ children }) => {
 
   // Real-time multi-tab synchronization
   useEffect(() => {
-    const handleStorageChange = (e) => {
+    const handleStorageChange = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) {
         setSettings(loadStoredSettings());
       }
@@ -107,7 +108,7 @@ export const ReadingSettingsProvider = ({ children }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const updateSetting = useCallback((key, value) => {
+  const updateSetting = useCallback(<K extends keyof ReadingSettings>(key: K, value: ReadingSettings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   }, []);
 
@@ -118,7 +119,7 @@ export const ReadingSettingsProvider = ({ children }) => {
     } catch {}
   }, []);
 
-  const value = useMemo(() => ({
+  const value = useMemo<ReadingSettingsContextType>(() => ({
     settings,
     updateSetting,
     resetSettings,
@@ -132,7 +133,7 @@ export const ReadingSettingsProvider = ({ children }) => {
   );
 };
 
-export const useReadingSettings = () => {
+export const useReadingSettings = (): ReadingSettingsContextType => {
   // React 19 native `use()` hook
   const context = use(ReadingSettingsContext);
   if (!context) {

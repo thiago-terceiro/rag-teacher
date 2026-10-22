@@ -1,12 +1,19 @@
-import { createContext, useCallback, use, useState, useMemo, useRef, useEffect, startTransition } from 'react';
+import React, { createContext, useCallback, use, useState, useMemo, useRef, useEffect, startTransition } from 'react';
 import { initialPhases, allSteps, getStepByKey } from '../data/guideData';
 import { moduleQuizzes } from '../data/moduleQuizzesData';
 import { triggerConfetti } from '../lib/confetti';
+import type { Phase, Step, StepStatus, CurriculumStats, QuizAnswerMap, StepsContextType } from '../types';
 
-const StepsContext = createContext(null);
+const StepsContext = createContext<StepsContextType | null>(null);
 
 // React 19 `use()` hook for reading context
-export const useSteps = () => use(StepsContext);
+export const useSteps = (): StepsContextType => {
+  const context = use(StepsContext);
+  if (!context) {
+    throw new Error('useSteps must be used within a StepsProvider');
+  }
+  return context;
+};
 
 const LOCAL_STORAGE_KEY = 'devdocs_ai_guide_progress_v1';
 const QUIZ_STORAGE_KEY = 'devdocs_ai_guide_quizzes_v1';
@@ -16,12 +23,13 @@ const TOTAL_QUIZ_QUESTIONS = Object.values(moduleQuizzes).reduce(
   0
 );
 
-function loadStoredProgress() {
+function loadStoredProgress(): Phase[] {
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      const progressMap = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+      const progressMap: Record<string, { status?: StepStatus; notes?: string; completedAt?: string | null }> =
+        parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
       return initialPhases.map(phase => ({
         ...phase,
         steps: phase.steps.map(step => {
@@ -42,14 +50,14 @@ function loadStoredProgress() {
     ...phase,
     steps: phase.steps.map(step => ({
       ...step,
-      status: 'not_started',
+      status: 'not_started' as StepStatus,
       notes: '',
       completedAt: null,
     }))
   }));
 }
 
-function loadStoredQuizAnswers() {
+function loadStoredQuizAnswers(): QuizAnswerMap {
   try {
     const saved = localStorage.getItem(QUIZ_STORAGE_KEY);
     if (!saved) return {};
@@ -61,9 +69,9 @@ function loadStoredQuizAnswers() {
   }
 }
 
-function persistToLocalStorage(updatedPhases) {
+function persistToLocalStorage(updatedPhases: Phase[]) {
   try {
-    const progressMap = {};
+    const progressMap: Record<string, { status?: StepStatus; notes?: string; completedAt?: string | null }> = {};
     updatedPhases.flatMap(p => p.steps).forEach(s => {
       if (s.status !== 'not_started' || s.notes) {
         progressMap[s.step_key] = {
@@ -79,9 +87,9 @@ function persistToLocalStorage(updatedPhases) {
   }
 }
 
-export const StepsProvider = ({ children }) => {
-  const [phases, setPhases] = useState(loadStoredProgress);
-  const [quizAnswers, setQuizAnswers] = useState(loadStoredQuizAnswers);
+export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
+  const [phases, setPhases] = useState<Phase[]>(loadStoredProgress);
+  const [quizAnswers, setQuizAnswers] = useState<QuizAnswerMap>(loadStoredQuizAnswers);
   const phasesRef = useRef(phases);
 
   // Synchronize phasesRef cleanly in effect (zero render-phase mutations)
@@ -115,7 +123,7 @@ export const StepsProvider = ({ children }) => {
 
   // Real-time multi-tab synchronization
   useEffect(() => {
-    const handleStorageChange = (e) => {
+    const handleStorageChange = (e: StorageEvent) => {
       if (e.key === LOCAL_STORAGE_KEY) {
         setPhases(loadStoredProgress());
       } else if (e.key === QUIZ_STORAGE_KEY) {
@@ -127,7 +135,7 @@ export const StepsProvider = ({ children }) => {
   }, []);
 
   // Compute overall stats + Comprehension Score (memoized)
-  const stats = useMemo(() => {
+  const stats: CurriculumStats = useMemo(() => {
     const stepsFlat = phases.flatMap(p => p.steps);
     const totalSteps = stepsFlat.length;
     const completedSteps = stepsFlat.filter(s => s.status === 'completed').length;
@@ -177,7 +185,7 @@ export const StepsProvider = ({ children }) => {
   } = stats;
 
   // Record a quiz answer purely (side-effect handled by useEffect)
-  const answerQuizQuestion = useCallback((stepKey, questionId, optionIndex) => {
+  const answerQuizQuestion = useCallback((stepKey: string, questionId: string, optionIndex: number) => {
     setQuizAnswers(prev => ({
       ...prev,
       [stepKey]: {
@@ -188,7 +196,7 @@ export const StepsProvider = ({ children }) => {
   }, []);
 
   // Reset a specific module's quiz answers purely
-  const resetModuleQuiz = useCallback((stepKey) => {
+  const resetModuleQuiz = useCallback((stepKey: string) => {
     setQuizAnswers(prev => {
       const next = { ...prev };
       delete next[stepKey];
@@ -197,7 +205,7 @@ export const StepsProvider = ({ children }) => {
   }, []);
 
   // Update progress for a step using React 19 startTransition with pure functional updater
-  const updateStepProgress = useCallback((stepKey, status, notes) => {
+  const updateStepProgress = useCallback((stepKey: string, status?: StepStatus, notes?: string) => {
     // Check if this action completes a step for celebratory confetti
     const currentStep = phasesRef.current?.flatMap(p => p.steps).find(s => s.step_key === stepKey);
     const isNewlyCompleted = status === 'completed' && currentStep?.status !== 'completed';
@@ -238,7 +246,7 @@ export const StepsProvider = ({ children }) => {
     });
   }, []);
 
-  const getStepContent = useCallback((stepKey) => {
+  const getStepContent = useCallback((stepKey: string): Step => {
     return getStepByKey(stepKey);
   }, []);
 
@@ -248,11 +256,11 @@ export const StepsProvider = ({ children }) => {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         localStorage.removeItem(QUIZ_STORAGE_KEY);
         setQuizAnswers({});
-        const freshPhases = initialPhases.map(phase => ({
+        const freshPhases: Phase[] = initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => ({
             ...step,
-            status: 'not_started',
+            status: 'not_started' as StepStatus,
             notes: '',
             completedAt: null,
           }))
@@ -321,7 +329,7 @@ export const StepsProvider = ({ children }) => {
     URL.revokeObjectURL(url);
   }, [phases, completedSteps, totalSteps, completionPercentage, comprehensionScore, correctQuizQuestions, answeredQuizQuestions, quizAnswers]);
 
-  const value = useMemo(() => ({
+  const value = useMemo<StepsContextType>(() => ({
     phases,
     stats,
     quizAnswers,

@@ -51,10 +51,13 @@ export interface StepsContextType {
   phases: Phase[];
   stats: CurriculumStats;
   quizAnswers: QuizAnswerMap;
-  updateStepProgress: (stepKey: string, status?: StepStatus, notes?: string) => void;
-  resetAllProgress: () => void;
   answerQuizQuestion: (stepKey: string, questionId: string, optionIndex: number) => void;
   resetModuleQuiz: (stepKey: string) => void;
+  updateStepProgress: (stepKey: string, status?: StepStatus, notes?: string) => void;
+  getStepContent: (stepKey: string) => Step;
+  resetAllProgress: () => void;
+  exportStudyGuide: () => void;
+  allSteps: Step[];
 }
 
 // ==========================================
@@ -114,7 +117,13 @@ export interface InterviewQuestion {
 // 5. INTERNATIONALIZATION (i18n)
 // ==========================================
 
-export type SupportedLocale = 'en' | 'pt-BR' | 'es';
+export type SupportedLocale = 'en' | 'pt' | 'es';
+
+export interface LanguageOption {
+  code: SupportedLocale;
+  label: string;
+  flag: string;
+}
 
 export interface TranslationDictionary {
   [key: string]: string | TranslationDictionary;
@@ -123,7 +132,8 @@ export interface TranslationDictionary {
 export interface I18nContextType {
   lang: SupportedLocale;
   setLang: (newLang: SupportedLocale) => void;
-  t: (path: string, params?: Record<string, string | number>) => string;
+  t: (key: string, fallback?: string) => string;
+  supportedLanguages: LanguageOption[];
 }
 
 // ==========================================
@@ -160,6 +170,8 @@ export interface SandboxStateContextType {
   isVectorVisualizerOpen: boolean;
   setIsVectorVisualizerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export type SandboxContextType = SandboxActionsContextType & SandboxStateContextType;
 
 // ==========================================
 // 7. HEADINGS & TABLE OF CONTENTS

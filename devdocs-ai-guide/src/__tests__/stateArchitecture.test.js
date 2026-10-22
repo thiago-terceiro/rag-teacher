@@ -26,15 +26,21 @@ describe('React State Architecture & Performance Invariants', () => {
       });
     });
 
+    const getUseStepsContent = () => {
+      const tsPath = path.join(srcDir, 'hooks/useSteps.tsx');
+      const jsPath = path.join(srcDir, 'hooks/useSteps.jsx');
+      return fs.readFileSync(fs.existsSync(tsPath) ? tsPath : jsPath, 'utf8');
+    };
+
     it('useSteps must not import canvas-confetti directly to avoid AST HIR bailout', () => {
-      const useStepsContent = fs.readFileSync(path.join(srcDir, 'hooks/useSteps.jsx'), 'utf8');
+      const useStepsContent = getUseStepsContent();
       expect(useStepsContent).not.toContain("import('canvas-confetti')");
       expect(useStepsContent).not.toContain("from 'canvas-confetti'");
       expect(useStepsContent).toContain("from '../lib/confetti'");
     });
 
     it('useSteps must not mutate refs during the render phase', () => {
-      const useStepsContent = fs.readFileSync(path.join(srcDir, 'hooks/useSteps.jsx'), 'utf8');
+      const useStepsContent = getUseStepsContent();
       // Should NOT have a bare phasesRef.current = phases directly in component body after useRef
       expect(useStepsContent).not.toMatch(/useRef\(phases\);\s*\n\s*phasesRef\.current\s*=\s*phases;/);
       expect(useStepsContent).toContain('phasesRef.current = phases;');
