@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useId, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import mermaid from 'mermaid';
 import {
   Code2,
@@ -8,7 +8,6 @@ import {
   AlertCircle,
   ZoomIn,
   ZoomOut,
-  RotateCcw,
   Maximize2,
   Minimize2,
   Expand,
@@ -19,9 +18,9 @@ import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
 // Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}`
-const mermaidSvgCache = new Map();
+const mermaidSvgCache = new Map<string, string>();
 
-function configureMermaidTheme(isLight) {
+function configureMermaidTheme(isLight: boolean) {
   mermaid.initialize({
     startOnLoad: false,
     theme: isLight ? 'default' : 'dark',
@@ -70,7 +69,11 @@ function configureMermaidTheme(isLight) {
 // Initialize mermaid with dark theme by default
 configureMermaidTheme(false);
 
-const MermaidBlock = React.memo(({ chart }) => {
+export interface MermaidBlockProps {
+  chart: string;
+}
+
+const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
   const { settings } = useReadingSettings();
   const isLightTheme = settings.theme === 'daylight-paper';
   const isOledMidnight = settings.theme === 'oled-midnight';
@@ -79,17 +82,17 @@ const MermaidBlock = React.memo(({ chart }) => {
   const cacheKey = `${themeMode}:${cleanChart}`;
 
   // Instant synchronous initialization if already in cache
-  const [svgContent, setSvgContent] = useState(() => mermaidSvgCache.get(cacheKey) || '');
-  const [hasError, setHasError] = useState(false);
-  const [showSource, setShowSource] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [fitMode, setFitMode] = useState('fit'); // 'fit' | 'actual'
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const containerRef = useRef(null);
-  const triggerBtnRef = useRef(null);
-  const modalRef = useRef(null);
-  const closeBtnRef = useRef(null);
+  const [svgContent, setSvgContent] = useState<string>(() => mermaidSvgCache.get(cacheKey) || '');
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [showSource, setShowSource] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [zoom, setZoom] = useState<number>(1);
+  const [fitMode, setFitMode] = useState<'fit' | 'actual'>('fit');
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const triggerBtnRef = useRef<HTMLButtonElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Create a unique clean ID for mermaid rendering
   const reactId = useId().replace(/[:]/g, '_');
@@ -109,7 +112,7 @@ const MermaidBlock = React.memo(({ chart }) => {
 
     // If already in cache, skip rendering entirely
     if (mermaidSvgCache.has(cacheKey)) {
-      setSvgContent(mermaidSvgCache.get(cacheKey));
+      setSvgContent(mermaidSvgCache.get(cacheKey) || '');
       return;
     }
 
@@ -168,7 +171,7 @@ const MermaidBlock = React.memo(({ chart }) => {
       closeBtnRef.current?.focus();
     });
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         setIsFullscreen(false);
@@ -177,7 +180,7 @@ const MermaidBlock = React.memo(({ chart }) => {
       }
 
       if (e.key === 'Tab') {
-        const focusable = modalRef.current?.querySelectorAll(
+        const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [tabindex="0"]'
         );
         if (!focusable || focusable.length === 0) return;

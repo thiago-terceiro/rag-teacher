@@ -68,7 +68,7 @@
 
 ---
 
-### [ ] Ticket 6: UI Primitives & Core Display Components Migration
+### [x] Ticket 6: UI Primitives & Core Display Components Migration
 - **Scope**:
   - `src/components/ui/button.jsx` -> `src/components/ui/button.tsx`
   - `src/components/ui/card.jsx` -> `src/components/ui/card.tsx`

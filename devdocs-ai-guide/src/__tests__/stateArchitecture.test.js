@@ -9,12 +9,20 @@ describe('React State Architecture & Performance Invariants', () => {
   describe('AST & Compiler Compliance Checks', () => {
     const srcDir = path.resolve(__dirname, '..');
 
+    const resolveComponentPath = (relPath) => {
+      const p = path.join(srcDir, relPath);
+      if (fs.existsSync(p)) return p;
+      const tsx = p.replace(/\.jsx$/, '.tsx');
+      if (fs.existsSync(tsx)) return tsx;
+      return p;
+    };
+
     it('React.memo components should NOT have default parameters in their parameter lists', () => {
       const filesToCheck = [
-        path.join(srcDir, 'components/StatsBar.jsx'),
-        path.join(srcDir, 'components/NotesJournal.jsx'),
-        path.join(srcDir, 'components/CodeBlock.jsx'),
-        path.join(srcDir, 'components/ui/button.jsx'),
+        resolveComponentPath('components/StatsBar.jsx'),
+        resolveComponentPath('components/NotesJournal.jsx'),
+        resolveComponentPath('components/CodeBlock.jsx'),
+        resolveComponentPath('components/ui/button.jsx'),
       ];
 
       filesToCheck.forEach(filePath => {
@@ -48,7 +56,7 @@ describe('React State Architecture & Performance Invariants', () => {
     });
 
     it('CodeBlock must consume useSandboxActions instead of useSandbox to avoid re-renders on sandbox state toggle', () => {
-      const codeBlockContent = fs.readFileSync(path.join(srcDir, 'components/CodeBlock.jsx'), 'utf8');
+      const codeBlockContent = fs.readFileSync(resolveComponentPath('components/CodeBlock.jsx'), 'utf8');
       expect(codeBlockContent).toContain("useSandboxActions");
       expect(codeBlockContent).not.toMatch(/const\s*\{[^}]*\}\s*=\s*useSandbox\(\)/);
     });

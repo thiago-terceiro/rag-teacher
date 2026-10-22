@@ -1,5 +1,10 @@
+import React from 'react';
 
-const ProgressRing = ({ value }) => {
+export interface ProgressRingProps {
+  value: number;
+}
+
+const ProgressRing: React.FC<ProgressRingProps> = ({ value }) => {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;

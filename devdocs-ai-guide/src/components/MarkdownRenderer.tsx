@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -11,8 +11,12 @@ const remarkPlugins = [remarkGfm, remarkMath];
 // rehypeHeadingIds must run before rehypeKatex so math headings slug from their TeX source.
 const rehypePlugins = [rehypeHeadingIds, rehypeKatex];
 
+export interface HeadingAnchorProps {
+  id: string;
+}
+
 /** Hover-revealed `#` permalink that smooth-scrolls inside the main scroll container. */
-const HeadingAnchor = ({ id }) => (
+const HeadingAnchor: React.FC<HeadingAnchorProps> = ({ id }) => (
   <a
     href={`#${id}`}
     aria-label={`Direct link to section: ${id.replace(/-/g, ' ')}`}
@@ -27,8 +31,8 @@ const HeadingAnchor = ({ id }) => (
 );
 
 // Module scope: static lifetime, zero per-render allocation.
-const markdownComponents = {
-  code({ node, className, children, ...props }) {
+const markdownComponents: Partial<Components> = {
+  code({ className, children, ...props }: any) {
     const match = /language-([\w-]+)/.exec(className || '');
     const lang = match ? match[1].toLowerCase() : '';
     const codeString = String(children).replace(/\n$/, '');
@@ -59,7 +63,7 @@ const markdownComponents = {
       </code>
     );
   },
-  table({ children }) {
+  table({ children }: any) {
     return (
       <div className="my-6 w-full max-w-full overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm text-left border-collapse">
@@ -68,38 +72,38 @@ const markdownComponents = {
       </div>
     );
   },
-  thead({ children }) {
+  thead({ children }: any) {
     return <thead className="bg-secondary/60 text-foreground font-semibold border-b border-border">{children}</thead>;
   },
-  tbody({ children }) {
+  tbody({ children }: any) {
     return <tbody className="divide-y divide-border/60">{children}</tbody>;
   },
-  tr({ children }) {
+  tr({ children }: any) {
     return <tr className="hover:bg-secondary/30 transition-colors">{children}</tr>;
   },
-  th({ children }) {
+  th({ children }: any) {
     return <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">{children}</th>;
   },
-  td({ children }) {
+  td({ children }: any) {
     return <td className="px-4 py-3 text-sm leading-relaxed">{children}</td>;
   },
-  blockquote({ children }) {
+  blockquote({ children }: any) {
     return (
       <blockquote className="my-5 pl-4 py-1.5 border-l-4 border-primary bg-primary/5 rounded-r-lg italic text-muted-foreground break-words [overflow-wrap:break-word]">
         {children}
       </blockquote>
     );
   },
-  ul({ children }) {
+  ul({ children }: any) {
     return <ul className="my-4 ml-6 list-disc space-y-1.5 leading-relaxed">{children}</ul>;
   },
-  ol({ children }) {
+  ol({ children }: any) {
     return <ol className="my-4 ml-6 list-decimal space-y-1.5 leading-relaxed">{children}</ol>;
   },
-  li({ children }) {
+  li({ children }: any) {
     return <li className="pl-1 leading-relaxed text-foreground/90 break-words [overflow-wrap:break-word]">{children}</li>;
   },
-  h2({ id, children }) {
+  h2({ id, children }: any) {
     return (
       <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6">
         {children}
@@ -107,7 +111,7 @@ const markdownComponents = {
       </h2>
     );
   },
-  h3({ id, children }) {
+  h3({ id, children }: any) {
     return (
       <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6">
         {children}
@@ -115,16 +119,16 @@ const markdownComponents = {
       </h3>
     );
   },
-  h4({ children }) {
+  h4({ children }: any) {
     return <h4 className="text-lg font-medium mt-5 mb-2 text-foreground/90 tracking-[0.01em] break-words [overflow-wrap:break-word]">{children}</h4>;
   },
-  p({ children }) {
+  p({ children }: any) {
     return <p className="my-3.5 leading-relaxed text-foreground/90 text-[15px] tracking-[0.015em] break-words [overflow-wrap:break-word]">{children}</p>;
   },
-  strong({ children }) {
+  strong({ children }: any) {
     return <strong className="font-semibold text-foreground tracking-[0.01em]">{children}</strong>;
   },
-  a({ href, children }) {
+  a({ href, children }: any) {
     const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
     return (
       <a
@@ -138,7 +142,7 @@ const markdownComponents = {
       </a>
     );
   },
-  img({ src, alt, ...props }) {
+  img({ src, alt, ...props }: any) {
     return (
       <img
         src={src}
@@ -151,12 +155,16 @@ const markdownComponents = {
   },
 };
 
-const MarkdownRenderer = React.memo(({ markdown }) => {
+export interface MarkdownRendererProps {
+  markdown: string;
+}
+
+const MarkdownRenderer = React.memo(({ markdown }: MarkdownRendererProps) => {
   return (
     <div className="markdown-content w-full max-w-full min-w-0">
       <ReactMarkdown
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
+        remarkPlugins={remarkPlugins as any}
+        rehypePlugins={rehypePlugins as any}
         components={markdownComponents}
       >
         {markdown}

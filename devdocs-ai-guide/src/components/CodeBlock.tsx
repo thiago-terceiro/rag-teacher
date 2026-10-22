@@ -36,11 +36,16 @@ SyntaxHighlighter.registerLanguage('markdown', markdown);
 SyntaxHighlighter.registerLanguage('md', markdown);
 SyntaxHighlighter.registerLanguage('css', css);
 
-const CodeBlock = React.memo(({ language: languageProp, value: valueProp }) => {
+export interface CodeBlockProps {
+  language?: string;
+  value?: string;
+}
+
+const CodeBlock = React.memo(({ language: languageProp, value: valueProp }: CodeBlockProps) => {
   const language = languageProp || 'text';
   const value = valueProp || '';
   const { openPythonSandbox } = useSandboxActions();
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopy = async () => {
     try {
@@ -125,4 +130,3 @@ const CodeBlock = React.memo(({ language: languageProp, value: valueProp }) => {
 }, (prev, next) => prev.value === next.value && prev.language === next.language);
 
 export default CodeBlock;
-
