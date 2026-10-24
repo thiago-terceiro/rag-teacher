@@ -15,11 +15,12 @@ import { interviewQuestions } from '../data/interviewQuestionsData';
 import MarkdownRenderer from './MarkdownRenderer';
 import useDebounce from '../hooks/useDebounce';
 import { cn } from '../lib/utils';
+import type { InterviewQuestion } from '../types';
 
 const MASTERY_STORAGE_KEY = 'rag_interview_mastery_v1';
 const DRAFTS_STORAGE_KEY = 'rag_interview_drafts_v1';
 
-function loadStoredMastery() {
+function loadStoredMastery(): Record<number, boolean> {
   try {
     const saved = localStorage.getItem(MASTERY_STORAGE_KEY);
     return saved ? JSON.parse(saved) : {};
@@ -28,7 +29,7 @@ function loadStoredMastery() {
   }
 }
 
-function loadStoredDrafts() {
+function loadStoredDrafts(): Record<string, string> {
   try {
     const saved = localStorage.getItem(DRAFTS_STORAGE_KEY);
     return saved ? JSON.parse(saved) : {};
@@ -37,20 +38,28 @@ function loadStoredDrafts() {
   }
 }
 
+export interface InterviewQuestionCardProps {
+  q: InterviewQuestion & { track?: string };
+  isMastered: boolean;
+  initialDraft: string;
+  onToggleMastery: (id: number) => void;
+  onDraftChange: (stepKey: string, text: string) => void;
+}
+
 const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
   q,
   isMastered,
   initialDraft,
   onToggleMastery,
   onDraftChange,
-}) {
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [draft, setDraft] = useState(initialDraft || '');
-  const debouncedDraft = useDebounce(draft, 400);
+}: InterviewQuestionCardProps): React.JSX.Element {
+  const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const [draft, setDraft] = useState<string>(initialDraft || '');
+  const debouncedDraft = useDebounce<string>(draft, 400);
 
-  const draftRef = useRef(draft);
+  const draftRef = useRef<string>(draft);
   draftRef.current = draft;
-  const lastSavedRef = useRef(initialDraft || '');
+  const lastSavedRef = useRef<string>(initialDraft || '');
 
   // Keep internal draft synced with external props (e.g. multi-tab sync)
   useEffect(() => {
@@ -58,9 +67,9 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
       setDraft(initialDraft || '');
       lastSavedRef.current = initialDraft || '';
     }
-  }, [initialDraft]);
+  }, [initialDraft, draft]);
 
-  const flushDraft = useCallback((textToSave) => {
+  const flushDraft = useCallback((textToSave: string) => {
     if (textToSave !== lastSavedRef.current) {
       lastSavedRef.current = textToSave;
       onDraftChange(q.step_key, textToSave);
@@ -147,12 +156,12 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
 
         {/* Verbatim Question Prompt */}
         <div className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary border-y border-r border-primary/20 text-foreground/95 text-sm sm:text-[15px] leading-relaxed my-3 italic">
-          "{q.question}"
+          &quot;{q.question}&quot;
         </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5 mt-3">
-          {q.tags.map((tag, tIdx) => (
+          {q.tags.map((tag: string, tIdx: number) => (
             <span
               key={tIdx}
               className="px-2 py-0.5 rounded-md bg-secondary/80 text-[10px] text-muted-foreground font-mono"
@@ -170,7 +179,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
           <textarea
             id={`draft-${q.step_key}`}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDraft(e.target.value)}
             onBlur={() => flushDraft(draft)}
             placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
             className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
@@ -231,13 +240,13 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
   );
 });
 
-export function InterviewQuestions() {
-  const [activePhase, setActivePhase] = useState('all'); // 'all' | 1 | 2 | 3 | 4
-  const [searchQuery, setSearchQuery] = useState('');
-  const [masteredIds, setMasteredIds] = useState(loadStoredMastery);
-  const [drafts, setDrafts] = useState(loadStoredDrafts);
+export function InterviewQuestions(): React.JSX.Element {
+  const [activePhase, setActivePhase] = useState<string>('all'); // 'all' | '1' | '2' | '3' | '4'
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [masteredIds, setMasteredIds] = useState<Record<number, boolean>>(loadStoredMastery);
+  const [drafts, setDrafts] = useState<Record<string, string>>(loadStoredDrafts);
 
-  const isFirstMasteryMount = useRef(true);
+  const isFirstMasteryMount = useRef<boolean>(true);
   useEffect(() => {
     if (isFirstMasteryMount.current) {
       isFirstMasteryMount.current = false;
@@ -250,7 +259,7 @@ export function InterviewQuestions() {
     }
   }, [masteredIds]);
 
-  const isFirstDraftsMount = useRef(true);
+  const isFirstDraftsMount = useRef<boolean>(true);
   useEffect(() => {
     if (isFirstDraftsMount.current) {
       isFirstDraftsMount.current = false;
@@ -265,7 +274,7 @@ export function InterviewQuestions() {
 
   // Real-time multi-tab synchronization
   useEffect(() => {
-    const handleStorageChange = (e) => {
+    const handleStorageChange = (e: StorageEvent) => {
       if (e.key === MASTERY_STORAGE_KEY) {
         setMasteredIds(loadStoredMastery());
       } else if (e.key === DRAFTS_STORAGE_KEY) {
@@ -277,26 +286,26 @@ export function InterviewQuestions() {
   }, []);
 
   // Toggle question mastery (pure updater)
-  const toggleMastery = useCallback((id) => {
+  const toggleMastery = useCallback((id: number) => {
     setMasteredIds(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   // Update draft answer (pure updater)
-  const updateDraft = useCallback((stepKey, text) => {
+  const updateDraft = useCallback((stepKey: string, text: string) => {
     setDrafts(prev => ({ ...prev, [stepKey]: text }));
   }, []);
 
   // Filter questions
   const filteredQuestions = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return interviewQuestions.filter(item => {
+    return interviewQuestions.filter((item: InterviewQuestion) => {
       const matchesPhase = activePhase === 'all' || item.phase === Number(activePhase);
       const matchesSearch =
         !q ||
         item.step_title.toLowerCase().includes(q) ||
         item.question.toLowerCase().includes(q) ||
         item.company.toLowerCase().includes(q) ||
-        item.tags.some(t => t.toLowerCase().includes(q));
+        item.tags.some((t: string) => t.toLowerCase().includes(q));
       return matchesPhase && matchesSearch;
     });
   }, [activePhase, searchQuery]);
@@ -304,7 +313,7 @@ export function InterviewQuestions() {
   // Mastery statistics
   const totalQuestions = interviewQuestions.length;
   const masteredCount = Object.values(masteredIds).filter(Boolean).length;
-  const masteredPercent = Math.round((masteredCount / totalQuestions) * 100);
+  const masteredPercent = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
 
   return (
     <div className="max-w-5xl mx-auto pb-24 relative px-4 sm:px-6 lg:px-8">
@@ -439,7 +448,7 @@ export function InterviewQuestions() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             placeholder="Search questions, topics..."
             aria-label="Search interview questions by title, keyword, or track"
             className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"

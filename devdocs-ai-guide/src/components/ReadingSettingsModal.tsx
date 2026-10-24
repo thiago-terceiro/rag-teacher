@@ -4,8 +4,29 @@ import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Printer, Globe } from '
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
+import type {
+  ThemeMode,
+  FontSizeMode,
+  ContentWidthMode,
+  LineSpacingMode,
+} from '../types';
 
-const THEME_PRESETS = [
+export interface ReadingSettingsModalProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+export interface ThemePreset {
+  key: ThemeMode;
+  labelKey: string;
+  fallbackLabel: string;
+  desc: string;
+  swatchBg: string;
+  swatchAccent: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+}
+
+const THEME_PRESETS: readonly ThemePreset[] = [
   {
     key: 'deep-blue',
     labelKey: 'settings.themeDeepBlue',
@@ -35,7 +56,7 @@ const THEME_PRESETS = [
   },
 ];
 
-export function ReadingSettingsModal({ isOpen, setIsOpen }) {
+export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModalProps): React.JSX.Element {
   const { settings, updateSetting, resetSettings } = useReadingSettings();
   const { lang, setLang, supportedLanguages, t } = useI18n();
   const activeTheme = settings.theme || 'deep-blue';
@@ -63,6 +84,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
               </Dialog.Title>
             </div>
             <button
+              type="button"
               onClick={() => setIsOpen(false)}
               aria-label="Close settings"
               className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
@@ -162,9 +184,9 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
               </span>
               <div role="radiogroup" aria-labelledby="heading-fontsize" className="grid grid-cols-3 gap-2">
                 {[
-                  { key: 'normal', label: 'Default', size: '15px' },
-                  { key: 'comfortable', label: 'Medium', size: '17px' },
-                  { key: 'large', label: 'Large', size: '19px' },
+                  { key: 'normal' as FontSizeMode, label: 'Default', size: '15px' },
+                  { key: 'comfortable' as FontSizeMode, label: 'Medium', size: '17px' },
+                  { key: 'large' as FontSizeMode, label: 'Large', size: '19px' },
                 ].map(item => {
                   const isSelected = settings.fontSize === item.key;
                   return (
@@ -196,8 +218,8 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
               </span>
               <div role="radiogroup" aria-labelledby="heading-width" className="grid grid-cols-2 gap-2">
                 {[
-                  { key: 'normal', label: 'Standard Column', desc: 'Optimal for reading' },
-                  { key: 'wide', label: 'Wide Column', desc: 'Extra space for code' },
+                  { key: 'normal' as ContentWidthMode, label: 'Standard Column', desc: 'Optimal for reading' },
+                  { key: 'wide' as ContentWidthMode, label: 'Wide Column', desc: 'Extra space for code' },
                 ].map(item => {
                   const isSelected = settings.contentWidth === item.key;
                   return (
@@ -232,8 +254,8 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
               </span>
               <div role="radiogroup" aria-labelledby="heading-spacing" className="grid grid-cols-2 gap-2">
                 {[
-                  { key: 'relaxed', label: 'Relaxed', desc: 'Standard book rhythm' },
-                  { key: 'spacious', label: 'Spacious', desc: 'Higher breathability' },
+                  { key: 'relaxed' as LineSpacingMode, label: 'Relaxed', desc: 'Standard book rhythm' },
+                  { key: 'spacious' as LineSpacingMode, label: 'Spacious', desc: 'Higher breathability' },
                 ].map(item => {
                   const isSelected = settings.lineSpacing === item.key;
                   return (
@@ -296,4 +318,3 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }) {
 }
 
 export default React.memo(ReadingSettingsModal);
-

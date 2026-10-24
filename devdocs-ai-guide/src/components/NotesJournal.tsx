@@ -3,18 +3,24 @@ import { Check, Download } from 'lucide-react';
 import useDebounce from '../hooks/useDebounce';
 import { useSteps } from '../hooks/useSteps';
 
-const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSaveNotes }) => {
+export interface NotesJournalProps {
+  stepKey: string;
+  initialNotes?: string;
+  onSaveNotes: (stepKey: string, notes: string) => void;
+}
+
+const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSaveNotes }: NotesJournalProps): React.JSX.Element => {
   const initialNotes = initialNotesProp || '';
   const { exportStudyGuide } = useSteps();
-  const [notes, setNotes] = useState(initialNotes);
-  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving'
-  const debouncedNotes = useDebounce(notes, 500);
+  const [notes, setNotes] = useState<string>(initialNotes);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const debouncedNotes = useDebounce<string>(notes, 500);
 
-  const notesRef = useRef(notes);
+  const notesRef = useRef<string>(notes);
   notesRef.current = notes;
-  const lastSavedRef = useRef(initialNotes);
+  const lastSavedRef = useRef<string>(initialNotes);
 
-  const flushNotes = useCallback((textToSave) => {
+  const flushNotes = useCallback((textToSave: string) => {
     if (textToSave !== lastSavedRef.current) {
       lastSavedRef.current = textToSave;
       setSaveStatus('saving');
@@ -89,7 +95,7 @@ const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSa
       <textarea
         id={`notes-input-${stepKey}`}
         value={notes}
-        onChange={(e) => setNotes(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
         onBlur={() => flushNotes(notes)}
         placeholder="Log key insights, terminal outputs, or design decisions for this step..."
         className="w-full h-36 p-3.5 bg-secondary/40 text-foreground placeholder:text-muted-foreground/60 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:border-transparent focus:outline-none transition-all text-sm font-sans"

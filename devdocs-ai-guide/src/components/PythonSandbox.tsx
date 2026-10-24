@@ -7,18 +7,36 @@ import {
   RotateCcw,
   X,
   ShieldCheck,
-  Sparkles,
-  CheckCircle2,
   AlertTriangle,
   Clock,
   Cpu,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+export interface PythonSandboxProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  initialCode?: string | null;
+}
+
+export interface PythonTemplate {
+  id: string;
+  title: string;
+  category: string;
+  code: string;
+}
+
+export interface PythonSandboxOutput {
+  stdout: string;
+  stderr: string;
+  error: string | null;
+  elapsedMs: number | null;
+}
+
 const EXECUTION_TIMEOUT_MS = 5000;
 const INIT_DOWNLOAD_TIMEOUT_MS = 35000;
 
-export const PYTHON_TEMPLATES = [
+export const PYTHON_TEMPLATES: readonly PythonTemplate[] = [
   {
     id: 'chunking',
     title: '1. Sliding Window Chunker & Context Prefix',
@@ -148,49 +166,51 @@ stage1_relevances = [0, 1, 0, 3, 2]  # Correct answer buried at Rank 4!
 stage2_relevances = [3, 2, 1, 0, 0]  # Cross-encoder promoted exact answer to Rank 1!
 
 def dcg_at_k(relevances, k=5):
-    rels = np.asarray(relevances[:k], dtype=float)
-    discounts = np.log2(np.arange(2, len(rels) + 2))
-    gains = (2.0 ** rels) - 1.0
-    return float(np.sum(gains / discounts))
+    rel = np.asfarray(relevances)[:k]
+    if rel.size == 0:
+        return 0.0
+    discounts = np.log2(np.arange(len(rel)) + 2)
+    return float(np.sum((2**rel - 1) / discounts))
 
 def ndcg_at_k(relevances, k=5):
-    ideal = sorted(relevances, reverse=True)
-    idcg = dcg_at_k(ideal, k)
-    return dcg_at_k(relevances, k) / idcg if idcg > 0 else 0.0
+    dcg = dcg_at_k(relevances, k)
+    ideal_relevances = sorted(relevances, reverse=True)
+    idcg = dcg_at_k(ideal_relevances, k)
+    return (dcg / idcg) if idcg > 0 else 0.0
 
-def reciprocal_rank(relevances, threshold=2):
-    for idx, rel in enumerate(relevances, start=1):
-        if rel >= threshold:
-            return 1.0 / idx
+def reciprocal_rank(relevances, binary_threshold=2):
+    for rank_idx, rel in enumerate(relevances, start=1):
+        if rel >= binary_threshold:
+            return 1.0 / rank_idx
     return 0.0
 
-for name, rels in [("Stage-1 Dense Only", stage1_relevances), ("Stage-2 Cross-Encoder", stage2_relevances)]:
-    print(f"=== {name} {rels} ===")
-    print(f"  MRR (rel >= 2) : {reciprocal_rank(rels):.4f}")
-    print(f"  NDCG@5         : {ndcg_at_k(rels, k=5):.4f}")
+print(f"Stage 1 (Bi-Encoder Only)  -> NDCG@5: {ndcg_at_k(stage1_relevances):.4f} | MRR: {reciprocal_rank(stage1_relevances):.4f}")
+print(f"Stage 2 (With Reranker)    -> NDCG@5: {ndcg_at_k(stage2_relevances):.4f} | MRR: {reciprocal_rank(stage2_relevances):.4f}")
 `,
   },
   {
-    id: 'entropy',
-    title: '5. Active Disambiguation via Shannon Entropy',
-    category: 'Phase 3 • Agent Tools',
-    code: `# Phase 3: Normalized Shannon Entropy Gate for Ambiguous Queries
+    id: 'ambiguity-entropy',
+    title: '5. Clarification Routing: Shannon Entropy of Retrieval',
+    category: 'Phase 3 • Agent Routing',
+    code: `# Phase 3: Shannon Routing Entropy to Trigger Proactive Clarification Loops
 import numpy as np
 
-def evaluate_query_ambiguity(cluster_scores: dict, entropy_threshold: float = 0.82):
-    labels = list(cluster_scores.keys())
-    scores = np.array(list(cluster_scores.values()), dtype=float)
+def softmax(x: np.ndarray) -> np.ndarray:
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum()
+
+def evaluate_query_ambiguity(candidate_scores: dict, entropy_threshold: float = 0.85):
+    docs = list(candidate_scores.keys())
+    scores = np.array(list(candidate_scores.values()))
+    probs = softmax(scores)
     
-    # Convert similarity scores into probability distribution via Softmax (T=0.15)
-    exp_s = np.exp(scores / 0.15)
-    probs = exp_s / np.sum(exp_s)
+    # Normalized Shannon Entropy: H / log(N)
+    h = -float(np.sum(probs * np.log2(probs + 1e-12)))
+    max_h = np.log2(len(docs))
+    h_norm = h / max_h if max_h > 0 else 0.0
     
-    # Compute normalized Shannon Entropy H_norm in [0, 1]
-    k = len(probs)
-    shannon_h = -np.sum(probs * np.log(probs + 1e-12))
-    h_norm = float(shannon_h / np.log(k)) if k > 1 else 0.0
-    
-    print(f"Cluster Probabilities : {dict(zip(labels, np.round(probs, 3)))}")
+    print(f"Candidates            : {docs}")
+    print(f"Softmax Probabilities : {[round(p, 4) for p in probs]}")
     print(f"Normalized Entropy    : {h_norm:.4f} (Threshold: {entropy_threshold})")
     print(f"Action                : {'ASK CLARIFYING QUESTION' if h_norm >= entropy_threshold else 'DIRECT ANSWER'}\\n")
 
@@ -203,21 +223,21 @@ evaluate_query_ambiguity({"Array.slice": 0.94, "String.slice": 0.42, "Blob.slice
   },
 ];
 
-export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState(PYTHON_TEMPLATES[0].id);
-  const [code, setCode] = useState(PYTHON_TEMPLATES[0].code);
-  const [workerStatus, setWorkerStatus] = useState('idle'); // 'idle' | 'loading' | 'ready' | 'running' | 'error'
-  const [statusMessage, setStatusMessage] = useState('WASM Worker on standby');
-  const [output, setOutput] = useState({
+export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxProps): React.JSX.Element {
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(PYTHON_TEMPLATES[0].id);
+  const [code, setCode] = useState<string>(PYTHON_TEMPLATES[0].code);
+  const [workerStatus, setWorkerStatus] = useState<'idle' | 'loading' | 'ready' | 'running' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string>('WASM Worker on standby');
+  const [output, setOutput] = useState<PythonSandboxOutput>({
     stdout: '',
     stderr: '',
     error: null,
     elapsedMs: null,
   });
 
-  const workerRef = useRef(null);
-  const runIdRef = useRef(0);
-  const timeoutRef = useRef(null);
+  const workerRef = useRef<Worker | null>(null);
+  const runIdRef = useRef<number>(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync external initialCode when opened from a Markdown CodeBlock
   useEffect(() => {
@@ -268,11 +288,11 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
   const getOrCreateWorker = useCallback(() => {
     if (workerRef.current) return workerRef.current;
 
-    const worker = new Worker(new URL('../workers/pyodideWorker.js', import.meta.url), {
+    const worker = new Worker(new URL('../workers/pyodideWorker.ts', import.meta.url), {
       type: 'module',
     });
 
-    worker.onmessage = (event) => {
+    worker.onmessage = (event: MessageEvent) => {
       const data = event.data;
       if (!data) return;
 
@@ -313,7 +333,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
       }
     };
 
-    worker.onerror = (err) => {
+    worker.onerror = (err: ErrorEvent) => {
       clearWatchdog();
       setWorkerStatus('error');
       setStatusMessage('Worker error');
@@ -348,20 +368,30 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
       terminateWorker(
         isAlreadyReady
           ? `TimeoutError: Execution exceeded hard ${EXECUTION_TIMEOUT_MS / 1000}s CPU sandbox limit. Worker terminated.`
-          : 'TimeoutError: Pyodide WASM initialization timed out. Check your network connection.'
+          : 'TimeoutError: Pyodide WASM engine download timed out. Check your internet connection.'
       );
     }, timeoutDuration);
 
     worker.postMessage({
       type: 'RUN',
-      runId: currentRunId,
       code,
+      runId: currentRunId,
     });
-  }, [clearWatchdog, code, getOrCreateWorker, terminateWorker, workerStatus]);
+  }, [code, clearWatchdog, getOrCreateWorker, terminateWorker, workerStatus]);
 
-  const handleSelectTemplate = (tpl) => {
+  const handleSelectTemplate = (tpl: PythonTemplate) => {
     setSelectedTemplateId(tpl.id);
     setCode(tpl.code);
+    setOutput({ stdout: '', stderr: '', error: null, elapsedMs: null });
+  };
+
+  const handleResetCurrentTemplate = () => {
+    const tpl = PYTHON_TEMPLATES.find((t) => t.id === selectedTemplateId);
+    if (tpl) {
+      setCode(tpl.code);
+    } else {
+      setCode('');
+    }
     setOutput({ stdout: '', stderr: '', error: null, elapsedMs: null });
   };
 
@@ -370,82 +400,79 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="no-print fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-in fade-in duration-150" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="no-print fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[96vw] max-w-5xl max-h-[92vh] overflow-y-auto bg-card/95 border border-border rounded-2xl shadow-2xl z-50 p-5 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-150 custom-scrollbar"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-border/90 rounded-2xl shadow-2xl z-50 p-5 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar text-slate-100"
         >
           {/* Header */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border/80">
+          <div className="flex items-center justify-between pb-4 border-b border-border/70">
             <div className="flex items-center space-x-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+              <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                 <Terminal className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Dialog.Title className="text-base sm:text-lg font-bold text-foreground">
-                    In-Browser Python RAG Sandbox
-                  </Dialog.Title>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    <ShieldCheck className="w-3 h-3" />
-                    Air-Gapped Web Worker • AST Guarded
+                <Dialog.Title className="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
+                  Air-Gapped Python Sandbox (Pyodide WASM)
+                  <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    Client-Side
                   </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Run chunking algorithms, NumPy vector math, RRF fusion, and IR metrics live in WebAssembly with zero main-thread blocking.
+                </Dialog.Title>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Execute RAG algorithms, dense vector math, and IR evaluation metrics securely inside an isolated Web Worker.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/70 border border-border text-[11px] font-mono text-muted-foreground">
-                <Cpu className="w-3.5 h-3.5 text-primary" />
-                {statusMessage}
-              </span>
+              <button
+                type="button"
+                onClick={handleResetCurrentTemplate}
+                title="Reset code to original template"
+                aria-label="Reset code to original template"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 text-xs transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                aria-label="Close Python Sandbox"
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                aria-label="Close Python sandbox"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 text-xs transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Preset Algorithm Selector Pills */}
+          {/* Preset Algorithm Switcher Toolbar */}
           <div className="mt-4">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center justify-between">
-              <span>Interactive RAG Algorithm Templates (Python 3.12 + NumPy)</span>
-              <span className="font-mono text-[10px] opacity-80">5s Execution Limit • 16KB Output Cap</span>
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span>Curriculum Algorithm Templates</span>
+              <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+                <Cpu className="w-3 h-3" />
+                {statusMessage}
+              </span>
             </div>
-            <div role="tablist" aria-label="Interactive RAG algorithm templates" className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
-              {selectedTemplateId === 'custom' && (
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={true}
-                  onClick={() => setSelectedTemplateId('custom')}
-                  className="px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3 h-3" aria-hidden="true" />
-                  <span>Custom Module Snippet</span>
-                </button>
-              )}
+            <div
+              role="tablist"
+              aria-label="Python code templates"
+              className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar"
+            >
               {PYTHON_TEMPLATES.map((tpl) => {
-                const active = selectedTemplateId === tpl.id;
+                const isSelected = selectedTemplateId === tpl.id;
                 return (
                   <button
                     key={tpl.id}
                     type="button"
                     role="tab"
-                    aria-selected={active}
+                    aria-selected={isSelected}
                     onClick={() => handleSelectTemplate(tpl)}
                     className={cn(
-                      'px-3 py-1.5 rounded-xl border text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0',
-                      active
-                        ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-xs'
-                        : 'bg-secondary/50 text-muted-foreground border-border/70 hover:text-foreground hover:bg-secondary'
+                      'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border cursor-pointer shrink-0',
+                      isSelected
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                        : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-border/60 hover:bg-slate-800'
                     )}
                   >
                     {tpl.title}
@@ -494,8 +521,8 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }) {
 
               <textarea
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCode(e.target.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !isBusy) {
                     e.preventDefault();
                     handleRunCode();

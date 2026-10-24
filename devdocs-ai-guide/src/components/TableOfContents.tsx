@@ -2,10 +2,21 @@ import React, { useState } from 'react';
 import { AlignLeft, ArrowUp, ChevronDown, ListTree } from 'lucide-react';
 import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
+import type { HeadingItem } from '../types';
+
+export interface TableOfContentsProps {
+  headings?: HeadingItem[] | null;
+  activeId?: string | null;
+  setActiveId?: (id: string) => void;
+}
 
 const MIN_HEADINGS = 3;
 
-function jump(e, id, setActiveId) {
+function jump(
+  e: React.MouseEvent<HTMLAnchorElement>,
+  id: string,
+  setActiveId?: (id: string) => void
+): void {
   e.preventDefault();
   if (scrollToHeading(id)) {
     setActiveId?.(id);
@@ -13,8 +24,12 @@ function jump(e, id, setActiveId) {
 }
 
 /** Collapsible "On this page" panel shown above the content below the xl breakpoint. */
-export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({ headings, activeId, setActiveId }) {
-  const [open, setOpen] = useState(false);
+export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
+  headings,
+  activeId,
+  setActiveId,
+}: TableOfContentsProps): React.JSX.Element | null {
+  const [open, setOpen] = useState<boolean>(false);
 
   if (!headings || headings.length < MIN_HEADINGS) return null;
 
@@ -41,7 +56,7 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
             <a
               key={h.id}
               href={`#${h.id}`}
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 e.preventDefault();
                 setOpen(false);
                 // Wait for mobile dropdown collapse layout shift to settle before measuring
@@ -69,7 +84,11 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
 });
 
 /** Sticky right-rail TOC with an active-section indicator (xl and up). */
-export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop({ headings, activeId, setActiveId }) {
+export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop({
+  headings,
+  activeId,
+  setActiveId,
+}: TableOfContentsProps): React.JSX.Element | null {
   if (!headings || headings.length < MIN_HEADINGS) return null;
 
   const scrollTop = () => {
@@ -92,7 +111,7 @@ export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop
             <a
               key={h.id}
               href={`#${h.id}`}
-              onClick={(e) => jump(e, h.id, setActiveId)}
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => jump(e, h.id, setActiveId)}
               aria-current={active ? 'location' : undefined}
               className={cn(
                 'relative -ml-px block border-l-2 py-1 leading-snug transition-colors duration-150',

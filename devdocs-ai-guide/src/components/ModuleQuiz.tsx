@@ -11,10 +11,17 @@ import { moduleQuizzes } from '../data/moduleQuizzesData';
 import { useSteps } from '../hooks/useSteps';
 import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
+import type { StepStatus } from '../types';
 
-const OPTION_LABELS = ['A', 'B', 'C', 'D'];
+export interface ModuleQuizProps {
+  stepKey: string;
+  status?: StepStatus;
+  onCompleteStep: (status: StepStatus) => void;
+}
 
-const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
+const OPTION_LABELS: readonly string[] = ['A', 'B', 'C', 'D'];
+
+const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): React.JSX.Element | null => {
   const { quizAnswers, answerQuizQuestion, resetModuleQuiz, updateStepProgress } = useSteps();
   const { t } = useI18n();
   const questions = moduleQuizzes[stepKey] || [];
@@ -27,7 +34,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }) => {
   const allAnswered = answeredCount === questions.length;
   const scorePct = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
 
-  const handleSelectOption = (questionId, optionIdx) => {
+  const handleSelectOption = (questionId: string, optionIdx: number) => {
     if (typeof stepAnswers[questionId] === 'number') return;
     answerQuizQuestion(stepKey, questionId, optionIdx);
     // Automatically transition 'not_started' -> 'in_progress' when starting the knowledge check

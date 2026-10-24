@@ -80,7 +80,7 @@
 
 ---
 
-### [ ] Ticket 7: Interactive Features & Calculator Widgets Migration
+### [x] Ticket 7: Interactive Features & Calculator Widgets Migration
 - **Scope**:
   - `src/components/ChunkingCalculator.jsx` -> `src/components/ChunkingCalculator.tsx`
   - `src/components/RRFSimulator.jsx` -> `src/components/RRFSimulator.tsx`

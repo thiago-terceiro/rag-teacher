@@ -1,8 +1,24 @@
 import React, { useState, useMemo, memo } from 'react';
-import { GitMerge, Sparkles, Sliders, Trophy, ArrowUpDown, Info } from 'lucide-react';
+import { GitMerge, Sparkles, Sliders, Trophy } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-const INITIAL_DOCS = [
+export interface RRFDoc {
+  id: string;
+  title: string;
+  vectorRank: number;
+  bm25Rank: number;
+  tag: string;
+}
+
+export interface ScoredRRFDoc extends RRFDoc {
+  vectorScore: number;
+  bm25Score: number;
+  rrfScore: number;
+  fusedRank: number;
+  barWidthPct: number;
+}
+
+const INITIAL_DOCS: readonly RRFDoc[] = [
   { id: 'doc-1', title: 'HNSW Graph Indexing (M=16, ef=64)', vectorRank: 1, bm25Rank: 7, tag: 'Architecture' },
   { id: 'doc-2', title: 'Two-Stage Cross-Encoder Reranking', vectorRank: 4, bm25Rank: 1, tag: 'Reranker' },
   { id: 'doc-3', title: 'FastAPI Little\'s Law Backpressure', vectorRank: 2, bm25Rank: 6, tag: 'Backend' },
@@ -10,12 +26,12 @@ const INITIAL_DOCS = [
   { id: 'doc-5', title: 'Ragas Faithfulness & Precision', vectorRank: 3, bm25Rank: 3, tag: 'Evaluation' },
 ];
 
-function RRFSimulator() {
-  const [kConstant, setKConstant] = useState(60);
-  const [docs, setDocs] = useState(INITIAL_DOCS);
+function RRFSimulator(): React.JSX.Element {
+  const [kConstant, setKConstant] = useState<number>(60);
+  const [docs, setDocs] = useState<RRFDoc[]>([...INITIAL_DOCS]);
 
   // Compute RRF scores and fused rankings in O(N log N) with pure memoized arithmetic
-  const rankedDocs = useMemo(() => {
+  const rankedDocs: ScoredRRFDoc[] = useMemo(() => {
     const scored = docs.map((doc) => {
       const vectorScore = 1 / (kConstant + doc.vectorRank);
       const bm25Score = 1 / (kConstant + doc.bm25Rank);
@@ -41,7 +57,7 @@ function RRFSimulator() {
     }));
   }, [docs, kConstant]);
 
-  const updateDocRank = (docId, field, newRank) => {
+  const updateDocRank = (docId: string, field: 'vectorRank' | 'bm25Rank', newRank: number) => {
     setDocs((prev) =>
       prev.map((d) => (d.id === docId ? { ...d, [field]: Math.max(1, Math.min(20, newRank)) } : d))
     );
@@ -49,7 +65,7 @@ function RRFSimulator() {
 
   const resetDefaults = () => {
     setKConstant(60);
-    setDocs(INITIAL_DOCS);
+    setDocs([...INITIAL_DOCS]);
   };
 
   return (
@@ -68,12 +84,13 @@ function RRFSimulator() {
               </span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Simulate multi-retriever rank merging using Cormack's algorithm: $\text{RRF}(d) = \sum \frac{1}{k + r_m(d)}$.
+              {"Simulate multi-retriever rank merging using Cormack's algorithm: $\\text{RRF}(d) = \\sum \\frac{1}{k + r_m(d)}$."}
             </p>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={resetDefaults}
           aria-label="Reset document ranks to default values"
           className="self-start sm:self-auto px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
@@ -100,10 +117,10 @@ function RRFSimulator() {
           max="120"
           step="5"
           value={kConstant}
-          onChange={(e) => setKConstant(Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKConstant(Number(e.target.value))}
           aria-label="RRF Smoothing Constant k"
-          aria-valuemin="10"
-          aria-valuemax="120"
+          aria-valuemin={10}
+          aria-valuemax={120}
           aria-valuenow={kConstant}
           aria-valuetext={`k equals ${kConstant}`}
           className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-purple-500"
@@ -164,6 +181,7 @@ function RRFSimulator() {
                   <td className="py-3 px-3 text-center">
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
+                        type="button"
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank - 1)}
                         aria-label={`Promote vector rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
@@ -172,6 +190,7 @@ function RRFSimulator() {
                       </button>
                       <span className="w-6 text-center font-bold text-blue-400">#{doc.vectorRank}</span>
                       <button
+                        type="button"
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank + 1)}
                         aria-label={`Demote vector rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
@@ -185,6 +204,7 @@ function RRFSimulator() {
                   <td className="py-3 px-3 text-center">
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
+                        type="button"
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank - 1)}
                         aria-label={`Promote BM25 rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
@@ -193,6 +213,7 @@ function RRFSimulator() {
                       </button>
                       <span className="w-6 text-center font-bold text-emerald-400">#{doc.bm25Rank}</span>
                       <button
+                        type="button"
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank + 1)}
                         aria-label={`Demote BM25 rank for ${doc.title}`}
                         className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
@@ -213,8 +234,8 @@ function RRFSimulator() {
                         role="progressbar"
                         aria-label={`Relative RRF strength for ${doc.title}`}
                         aria-valuenow={doc.barWidthPct}
-                        aria-valuemin="0"
-                        aria-valuemax="100"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
                         className="h-2 w-full bg-secondary rounded-full overflow-hidden"
                       >
                         <div

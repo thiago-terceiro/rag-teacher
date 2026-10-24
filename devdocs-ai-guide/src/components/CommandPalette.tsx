@@ -5,10 +5,36 @@ import { useNavigate } from 'react-router-dom';
 import { allSteps, initialPhases } from '../data/guideData';
 import { extractHeadings } from '../lib/headings';
 import { cn } from '../lib/utils';
+import type { HeadingItem } from '../types';
+
+export interface CommandPaletteProps {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface SearchableItem {
+  type: 'module' | 'section';
+  step_key: string;
+  headingId: string | null;
+  title: string;
+  parentTitle: string | null;
+  readTime: string;
+  phaseTitle: string;
+  phaseName: string;
+  contentPreview: string;
+}
+
+export interface PopularSuggestion {
+  step_key: string;
+  headingId: string;
+  label: string;
+  phase: string;
+  isDeep: boolean;
+}
 
 // Pre-index searchable topics AND granular section headings for deep-link navigation
-const searchableItems = (() => {
-  const items = [];
+const searchableItems: readonly SearchableItem[] = (() => {
+  const items: SearchableItem[] = [];
 
   allSteps.forEach((step) => {
     const phase = initialPhases.find((p) => p.steps.some((s) => s.step_key === step.step_key));
@@ -30,7 +56,7 @@ const searchableItems = (() => {
     });
 
     // 2. Granular Deep Section Headings
-    const headings = extractHeadings(step.content);
+    const headings: HeadingItem[] = extractHeadings(step.content);
     headings.forEach((h) => {
       items.push({
         type: 'section',
@@ -49,7 +75,7 @@ const searchableItems = (() => {
   return items;
 })();
 
-const POPULAR_SUGGESTIONS = [
+const POPULAR_SUGGESTIONS: readonly PopularSuggestion[] = [
   { step_key: 'qdrant-setup', headingId: '3-mathematical--algorithmic-foundations', label: 'HNSW Graph Indexing & Skip-Lists', phase: 'Phase 1', isDeep: true },
   { step_key: 'cross-encoder-reranking', headingId: '1-executive-mental-model--first-principles', label: 'Two-Stage Retrieval & Cross-Encoder Reranking', phase: 'Phase 2', isDeep: true },
   { step_key: 'ragas-evaluation', headingId: '3-mathematical--algorithmic-foundations', label: 'Golden Datasets & Ragas Faithfulness Harmonics', phase: 'Phase 2', isDeep: true },
@@ -58,16 +84,16 @@ const POPULAR_SUGGESTIONS = [
   { step_key: 'dspy-setup', headingId: '1-executive-mental-model--first-principles', label: 'DSPy Teleprompters & MIPROv2 Optimization', phase: 'Phase 3', isDeep: true },
 ];
 
-export function CommandPalette({ isOpen, setIsOpen }) {
-  const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = useRef(null);
-  const listRef = useRef(null);
+export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): React.JSX.Element {
+  const [query, setQuery] = useState<string>('');
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   // Global keyboard shortcut listener for Cmd+K / Ctrl+K
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsOpen((prev) => !prev);
@@ -92,7 +118,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
     const q = query.toLowerCase().trim();
     if (!q) return [];
 
-    const matches = [];
+    const matches: { item: SearchableItem; score: number }[] = [];
     for (const item of searchableItems) {
       const titleLower = item.title.toLowerCase();
       const parentLower = (item.parentTitle || '').toLowerCase();
@@ -120,7 +146,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
   }, [query]);
 
   // Handle item selection navigation with deep-link support
-  const handleSelect = useCallback((item) => {
+  const handleSelect = useCallback((item?: SearchableItem | PopularSuggestion) => {
     setIsOpen(false);
     if (!item) return;
 
@@ -132,7 +158,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
   }, [navigate, setIsOpen]);
 
   // Keyboard navigation inside list
-  const handleInputKeyDown = (e) => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const currentListLength = query ? filteredResults.length : POPULAR_SUGGESTIONS.length;
 
     if (e.key === 'ArrowDown') {
@@ -154,7 +180,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
   // Keep selected item scrolled into view
   useEffect(() => {
     if (listRef.current) {
-      const activeEl = listRef.current.querySelector('[data-selected="true"]');
+      const activeEl = listRef.current.querySelector<HTMLElement>('[data-selected="true"]');
       activeEl?.scrollIntoView({ block: 'nearest' });
     }
   }, [selectedIndex]);
@@ -181,7 +207,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
               aria-controls="command-palette-results"
               aria-label="Search curriculum modules, topics, and algorithms"
               value={query}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setQuery(e.target.value);
                 setSelectedIndex(0);
               }}
@@ -191,6 +217,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear search input"
                 className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-xs transition-colors cursor-pointer"
@@ -221,6 +248,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={itemKey}
+                      type="button"
                       role="option"
                       aria-selected={isSelected}
                       data-selected={isSelected}
@@ -272,7 +300,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                 })
               ) : (
                 <div role="status" aria-live="polite" className="py-12 text-center text-sm text-muted-foreground">
-                  <p>No topics found matching <span className="text-foreground font-semibold">"{query}"</span></p>
+                  <p>No topics found matching <span className="text-foreground font-semibold">&quot;{query}&quot;</span></p>
                   <p className="text-xs mt-1 text-muted-foreground/80">
                     Try searching for <span className="text-primary">chunking</span>, <span className="text-primary">hnsw</span>, <span className="text-primary">reranking</span>, or <span className="text-primary">dspy</span>.
                   </p>
@@ -289,6 +317,7 @@ export function CommandPalette({ isOpen, setIsOpen }) {
                   return (
                     <button
                       key={item.label}
+                      type="button"
                       role="option"
                       aria-selected={isSelected}
                       data-selected={isSelected}

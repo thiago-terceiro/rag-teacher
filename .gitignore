@@ -29,3 +29,6 @@ pnpm-debug.log*
 Thumbs.db
 
 .vercel
+
+# Local review working ledger
+.review/

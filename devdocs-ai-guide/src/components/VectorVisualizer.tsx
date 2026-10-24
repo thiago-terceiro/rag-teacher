@@ -1,23 +1,28 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Compass, RotateCcw, X, Info, Sparkles, Check, Move } from 'lucide-react';
+import { Compass, RotateCcw, X, Sparkles, Move } from 'lucide-react';
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
-export function VectorVisualizer({ isOpen, setIsOpen }) {
+export interface VectorVisualizerProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): React.JSX.Element {
   const { settings } = useReadingSettings();
   const isLightTheme = settings.theme === 'daylight-paper';
 
   // Vector A: angle in radians, magnitude
-  const [angleA, setAngleA] = useState(Math.PI / 6); // 30 deg
-  const [magA, setMagA] = useState(1.0);
+  const [angleA, setAngleA] = useState<number>(Math.PI / 6); // 30 deg
+  const [magA, setMagA] = useState<number>(1.0);
 
   // Vector B: angle in radians, magnitude
-  const [angleB, setAngleB] = useState(Math.PI / 2.5); // 72 deg
-  const [magB, setMagB] = useState(1.0);
+  const [angleB, setAngleB] = useState<number>(Math.PI / 2.5); // 72 deg
+  const [magB, setMagB] = useState<number>(1.0);
 
-  const [isNormalized, setIsNormalized] = useState(true);
-  const [draggingVector, setDraggingVector] = useState(null); // 'A' | 'B' | null
+  const [isNormalized, setIsNormalized] = useState<boolean>(true);
+  const [draggingVector, setDraggingVector] = useState<'A' | 'B' | null>(null);
 
   const axisStroke = isLightTheme ? 'rgba(15,23,42,0.16)' : 'rgba(255,255,255,0.1)';
   const innerCircleStroke = isLightTheme ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.06)';
@@ -29,8 +34,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const arcStroke = isLightTheme ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.4)';
   const originFill = isLightTheme ? '#0f172a' : '#ffffff';
 
-  const svgRef = useRef(null);
-  const rectRef = useRef(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const rectRef = useRef<DOMRect | null>(null);
 
   // Cartesian coordinates
   const effectiveMagA = isNormalized ? 1.0 : magA;
@@ -55,8 +60,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const CENTER = 180;
   const SCALE = 120;
 
-  const toSvgX = (x) => CENTER + x * SCALE;
-  const toSvgY = (y) => CENTER - y * SCALE; // inverted Y
+  const toSvgX = (x: number) => CENTER + x * SCALE;
+  const toSvgY = (y: number) => CENTER - y * SCALE; // inverted Y
 
   const svgAx = toSvgX(ax);
   const svgAy = toSvgY(ay);
@@ -64,7 +69,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
   const svgBy = toSvgY(by);
 
   // Handle drag to aim vectors (uses cached rect from onPointerDown to avoid layout reflows)
-  const handlePointerMove = useCallback((e) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!draggingVector || !svgRef.current) return;
     const rect = rectRef.current || svgRef.current.getBoundingClientRect();
     if (!rect || !rect.width || !rect.height) return;
@@ -141,6 +146,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setIsOpen(false)}
               aria-label="Close vector visualizer"
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
@@ -249,7 +255,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     aria-valuenow={Math.round((angleA * 180) / Math.PI)}
                     aria-valuemin={-180}
                     aria-valuemax={180}
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: React.KeyboardEvent<SVGGElement>) => {
                       const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
                       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                         e.preventDefault();
@@ -267,13 +273,13 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       cy={svgAy}
                       r="18"
                       fill="transparent"
-                      onPointerDown={(e) => {
+                      onPointerDown={(e: React.PointerEvent<SVGCircleElement>) => {
                         e.stopPropagation();
                         try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                         rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('A');
                       }}
-                      onPointerUp={(e) => {
+                      onPointerUp={(e: React.PointerEvent<SVGCircleElement>) => {
                         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                         rectRef.current = null;
                         setDraggingVector(null);
@@ -299,7 +305,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                     aria-valuenow={Math.round((angleB * 180) / Math.PI)}
                     aria-valuemin={-180}
                     aria-valuemax={180}
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: React.KeyboardEvent<SVGGElement>) => {
                       const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
                       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                         e.preventDefault();
@@ -317,13 +323,13 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       cy={svgBy}
                       r="18"
                       fill="transparent"
-                      onPointerDown={(e) => {
+                      onPointerDown={(e: React.PointerEvent<SVGCircleElement>) => {
                         e.stopPropagation();
                         try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
                         rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('B');
                       }}
-                      onPointerUp={(e) => {
+                      onPointerUp={(e: React.PointerEvent<SVGCircleElement>) => {
                         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
                         rectRef.current = null;
                         setDraggingVector(null);
@@ -455,7 +461,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                   <Sparkles className="w-4 h-4" />
                   <span>Systems Architect Insight:</span>
                 </div>
-                <p className="leading-relaxed text-[11.5px]">
+                <div className="leading-relaxed text-[11.5px]">
                   {isNormalized ? (
                     <>
                       When embeddings are <strong>unit-normalized</strong> (standard in leading models such as Cohere and BGE), <strong>Dot Product equals Cosine Similarity</strong>. Furthermore, maximizing cosine similarity is mathematically identical to minimizing Euclidean distance:
@@ -469,7 +475,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }) {
                       When embeddings are <strong>unnormalized</strong>, the Dot Product is dominated by document length and token frequency. Longer chunks produce larger magnitudes, biasing dot-product retrieval toward bloated documents regardless of semantic relevance.
                     </>
                   )}
-                </p>
+                </div>
               </div>
             </div>
           </div>

@@ -70,19 +70,19 @@ describe('React State Architecture & Performance Invariants', () => {
     });
 
     it('NotesJournal and InterviewQuestionCard must implement onBlur and unmount flush mechanisms', () => {
-      const notesContent = fs.readFileSync(path.join(srcDir, 'components/NotesJournal.jsx'), 'utf8');
+      const notesContent = fs.readFileSync(resolveComponentPath('components/NotesJournal.jsx'), 'utf8');
       expect(notesContent).toContain('onBlur=');
       expect(notesContent).toContain('beforeunload');
       expect(notesContent).toContain('flushNotes');
 
-      const interviewContent = fs.readFileSync(path.join(srcDir, 'components/InterviewQuestions.jsx'), 'utf8');
+      const interviewContent = fs.readFileSync(resolveComponentPath('components/InterviewQuestions.jsx'), 'utf8');
       expect(interviewContent).toContain('onBlur=');
       expect(interviewContent).toContain('beforeunload');
       expect(interviewContent).toContain('flushDraft');
     });
 
     it('VectorVisualizer must attach pointercancel listener to prevent stuck drag states', () => {
-      const vectorContent = fs.readFileSync(path.join(srcDir, 'components/VectorVisualizer.jsx'), 'utf8');
+      const vectorContent = fs.readFileSync(resolveComponentPath('components/VectorVisualizer.jsx'), 'utf8');
       expect(vectorContent).toContain("addEventListener('pointercancel'");
       expect(vectorContent).toContain("removeEventListener('pointercancel'");
     });

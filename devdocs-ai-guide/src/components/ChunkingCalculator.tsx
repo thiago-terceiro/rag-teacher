@@ -1,20 +1,45 @@
 import React, { useState, useMemo, memo } from 'react';
-import { Layers, Sparkles, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Layers, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-const PRESETS = [
+export interface ChunkPreset {
+  name: string;
+  length: number;
+  chunkSize: number;
+  overlapPct: number;
+  desc: string;
+}
+
+export interface ChunkMetrics {
+  overlapTokens: number;
+  stride: number;
+  numChunks: number;
+  totalStoredTokens: number;
+  redundancyRatio: string;
+  extraOverheadPct: number;
+}
+
+export interface VisualSegment {
+  id: number;
+  start: number;
+  end: number;
+  widthPct: number;
+  leftPct: number;
+}
+
+const PRESETS: readonly ChunkPreset[] = [
   { name: 'Sentence Window', length: 1200, chunkSize: 256, overlapPct: 15, desc: 'High granularity, low boundary loss' },
   { name: 'Standard RAG', length: 2400, chunkSize: 512, overlapPct: 20, desc: 'Balanced context & storage overhead' },
   { name: 'Long-Context', length: 4800, chunkSize: 1024, overlapPct: 12, desc: 'High retrieval coherence for papers' },
 ];
 
-function ChunkingCalculator() {
-  const [docLength, setDocLength] = useState(2000);
-  const [chunkSize, setChunkSize] = useState(512);
-  const [overlapPct, setOverlapPct] = useState(20);
+function ChunkingCalculator(): React.JSX.Element {
+  const [docLength, setDocLength] = useState<number>(2000);
+  const [chunkSize, setChunkSize] = useState<number>(512);
+  const [overlapPct, setOverlapPct] = useState<number>(20);
 
   // O(1) synchronous math - zero layout thrashing
-  const metrics = useMemo(() => {
+  const metrics: ChunkMetrics = useMemo(() => {
     const overlapTokens = Math.min(chunkSize - 1, Math.round((chunkSize * overlapPct) / 100));
     const stride = Math.max(1, chunkSize - overlapTokens);
     const numChunks = Math.max(1, Math.ceil((docLength - overlapTokens) / stride));
@@ -32,9 +57,9 @@ function ChunkingCalculator() {
     };
   }, [docLength, chunkSize, overlapPct]);
 
-  // Calculate visual chunk segments (limit to 12 for high-performance rendering)
-  const visualSegments = useMemo(() => {
-    const segments = [];
+  // Calculate visual chunk segments (limit to 10 for high-performance rendering)
+  const visualSegments: VisualSegment[] = useMemo(() => {
+    const segments: VisualSegment[] = [];
     const displayChunks = Math.min(metrics.numChunks, 10);
     const scale = 100 / docLength;
 
@@ -55,7 +80,7 @@ function ChunkingCalculator() {
     return segments;
   }, [metrics.numChunks, metrics.stride, docLength, chunkSize]);
 
-  const applyPreset = (preset) => {
+  const applyPreset = (preset: ChunkPreset) => {
     setDocLength(preset.length);
     setChunkSize(preset.chunkSize);
     setOverlapPct(preset.overlapPct);
@@ -114,10 +139,10 @@ function ChunkingCalculator() {
               max="6000"
               step="100"
               value={docLength}
-              onChange={(e) => setDocLength(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocLength(Number(e.target.value))}
               aria-label="Document Length in Tokens"
-              aria-valuemin="500"
-              aria-valuemax="6000"
+              aria-valuemin={500}
+              aria-valuemax={6000}
               aria-valuenow={docLength}
               aria-valuetext={`${docLength.toLocaleString()} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
@@ -137,10 +162,10 @@ function ChunkingCalculator() {
               max="2048"
               step="64"
               value={chunkSize}
-              onChange={(e) => setChunkSize(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChunkSize(Number(e.target.value))}
               aria-label="Chunk Window Size in Tokens"
-              aria-valuemin="128"
-              aria-valuemax="2048"
+              aria-valuemin={128}
+              aria-valuemax={2048}
               aria-valuenow={chunkSize}
               aria-valuetext={`${chunkSize} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
@@ -162,10 +187,10 @@ function ChunkingCalculator() {
               max="50"
               step="5"
               value={overlapPct}
-              onChange={(e) => setOverlapPct(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOverlapPct(Number(e.target.value))}
               aria-label="Overlap Percentage"
-              aria-valuemin="0"
-              aria-valuemax="50"
+              aria-valuemin={0}
+              aria-valuemax={50}
               aria-valuenow={overlapPct}
               aria-valuetext={`${overlapPct} percent, ${metrics.overlapTokens} tokens`}
               className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-indigo-500"
