@@ -1,7 +1,8 @@
-const { pool } = require('./db');
+import { pool } from './db';
+import type { PoolClient } from 'pg';
 
-const migrate = async () => {
-  const client = await pool.connect();
+export const migrate = async (): Promise<void> => {
+  const client: PoolClient = await pool.connect();
   try {
     await client.query('BEGIN');
 
@@ -40,7 +41,7 @@ const migrate = async () => {
       );
     `);
 
-    // Function to update `updated_at` timestamp
+    // Function to update \`updated_at\` timestamp
     await client.query(`
       CREATE OR REPLACE FUNCTION trigger_set_timestamp()
       RETURNS TRIGGER AS $$
@@ -57,12 +58,12 @@ const migrate = async () => {
     `);
 
     if (res.rowCount === 0) {
-        await client.query(`
-            CREATE TRIGGER set_timestamp
-            BEFORE UPDATE ON progress
-            FOR EACH ROW
-            EXECUTE PROCEDURE trigger_set_timestamp();
-        `);
+      await client.query(`
+          CREATE TRIGGER set_timestamp
+          BEFORE UPDATE ON progress
+          FOR EACH ROW
+          EXECUTE PROCEDURE trigger_set_timestamp();
+      `);
     }
     
     await client.query('COMMIT');
@@ -75,5 +76,3 @@ const migrate = async () => {
     client.release();
   }
 };
-
-module.exports = { migrate };

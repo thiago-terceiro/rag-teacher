@@ -1,4 +1,21 @@
-const guideContent = {
+export interface ServerStep {
+  step_key: string;
+  title: string;
+  sort_order: number;
+  content: string;
+}
+
+export interface ServerPhase {
+  phase_key: string;
+  title: string;
+  description: string;
+  sort_order: number;
+  steps: ServerStep[];
+}
+
+export type ServerGuideContent = Record<string, ServerPhase>;
+
+export const guideContent: ServerGuideContent = {
   "phase-1": {
     "phase_key": "foundation",
     "title": "Phase 1: Foundation & Data Pipeline",
@@ -61,7 +78,7 @@ const guideContent = {
   }
 };
 
-// Add full content for a few steps as an example
+// Add full content for the first step
 guideContent['phase-1'].steps[0].content = `
 ## Goal
 Set up a clean, modern Python project structure and environment for the **DevDocs AI** project itself (not this guide app).
@@ -136,5 +153,3 @@ When you run \`uv pip list\`, you should see a minimal set of packages.
 - Can you activate and deactivate your virtual environment?
 - Does your VSCode Python interpreter point to the one in \`.venv\`?
 `;
-
-module.exports = { guideContent };

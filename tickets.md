@@ -108,7 +108,7 @@
 
 ---
 
-### [ ] Ticket 9: Backend Server & Scripts Migration
+### [x] Ticket 9: Backend Server & Scripts Migration
 - **Scope**:
   - `server/db.js` -> `server/db.ts`
   - `server/content.js` -> `server/content.ts`

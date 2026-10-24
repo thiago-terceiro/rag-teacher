@@ -1,14 +1,15 @@
-const { pool } = require('./db');
-const { guideContent } = require('./content');
+import { pool } from './db';
+import { guideContent } from './content';
+import type { PoolClient, QueryResult } from 'pg';
 
-const seed = async () => {
-  const client = await pool.connect();
+export const seed = async (): Promise<void> => {
+  const client: PoolClient = await pool.connect();
   try {
     await client.query('BEGIN');
     console.log('Seeding phases and steps...');
 
     for (const phase of Object.values(guideContent)) {
-      const phaseRes = await client.query(
+      const phaseRes: QueryResult<{ id: number }> = await client.query(
         `INSERT INTO phases (phase_key, title, description, sort_order)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (phase_key) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, sort_order = EXCLUDED.sort_order
@@ -37,5 +38,3 @@ const seed = async () => {
     client.release();
   }
 };
-
-module.exports = { seed };

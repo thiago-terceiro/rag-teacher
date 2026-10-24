@@ -2,12 +2,12 @@
   "name": "devdocs-ai-guide",
   "version": "1.0.0",
   "description": "",
-  "main": "server/index.js",
+  "main": "server/index.ts",
   "scripts": {
-    "dev": "concurrently \"nodemon server/index.js\" \"vite\"",
+    "dev": "concurrently \"nodemon server/index.ts\" \"vite\"",
     "dev:ui": "vite",
     "build": "vite build",
-    "start": "node server/index.js",
+    "start": "node server/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
