@@ -1,14 +1,40 @@
 import * as Collapsible from '@radix-ui/react-collapsible';
-import { CheckCircle2, ChevronRight, Circle, Search, Sparkles, BookOpen, Layers, X, Menu, HelpCircle, Compass, Terminal, Award } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronRight,
+  Circle,
+  Search,
+  Layers,
+  X,
+  HelpCircle,
+  Compass,
+  Terminal,
+  Award,
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import React, { useState, useMemo } from 'react';
 import { useSteps } from '../hooks/useSteps';
 import { cn } from '../lib/utils';
+import type { Phase, Step } from '../types';
 
-const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSandbox, onOpenPythonSandbox }) => {
+export interface SidebarProps {
+  isMobileOpen?: boolean;
+  setIsMobileOpen?: (open: boolean) => void;
+  onOpenSearch?: () => void;
+  onOpenVectorSandbox?: () => void;
+  onOpenPythonSandbox?: () => void;
+}
+
+const Sidebar = ({
+  isMobileOpen,
+  setIsMobileOpen,
+  onOpenSearch,
+  onOpenVectorSandbox,
+  onOpenPythonSandbox,
+}: SidebarProps): React.JSX.Element => {
   const { phases, stats } = useSteps();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Extract current stepKey reliably from location.pathname (e.g., /steps/project-setup)
   const currentStepKey = location.pathname.startsWith('/steps/')
@@ -17,18 +43,18 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 
   // Filter steps if user typed a search query (memoized for instant keystroke rendering)
   const queryLower = searchQuery.toLowerCase().trim();
-  const filteredPhases = useMemo(() => {
-    return phases.map(phase => {
+  const filteredPhases: Phase[] = useMemo(() => {
+    return phases.map((phase: Phase) => {
       if (!queryLower) return phase;
-      const matchingSteps = phase.steps.filter(step =>
+      const matchingSteps = phase.steps.filter((step: Step) =>
         step.title.toLowerCase().includes(queryLower) ||
         step.step_key.toLowerCase().includes(queryLower)
       );
       return {
         ...phase,
-        steps: matchingSteps
+        steps: matchingSteps,
       };
-    }).filter(phase => !queryLower || phase.steps.length > 0);
+    }).filter((phase: Phase) => !queryLower || phase.steps.length > 0);
   }, [phases, queryLower]);
 
   return (
@@ -38,7 +64,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
         <div
           role="presentation"
           aria-hidden="true"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => setIsMobileOpen?.(false)}
           className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
         />
       )}
@@ -68,6 +94,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 
           {/* Close button for mobile */}
           <button
+            type="button"
             onClick={() => setIsMobileOpen?.(false)}
             aria-label="Close navigation"
             className="p-1 rounded-md text-muted-foreground hover:text-foreground lg:hidden"
@@ -83,13 +110,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               placeholder="Search 28 RAG topics..."
               aria-label="Search curriculum topics"
               className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
             {searchQuery ? (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search query"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs cursor-pointer"
@@ -98,6 +126,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
               </button>
             ) : (
               <button
+                type="button"
                 onClick={onOpenSearch}
                 title="Open Spotlight Search (⌘K)"
                 aria-label="Open Spotlight Search"
@@ -136,6 +165,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
           </Link>
 
           <button
+            type="button"
             onClick={() => {
               setIsMobileOpen?.(false);
               onOpenPythonSandbox?.();
@@ -152,6 +182,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
           </button>
 
           <button
+            type="button"
             onClick={() => {
               setIsMobileOpen?.(false);
               onOpenVectorSandbox?.();
@@ -170,9 +201,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 
         {/* Navigation Phase List */}
         <nav aria-label="Curriculum Modules" className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
-          {filteredPhases.map((phase) => {
-            const completedCount = phase.steps.filter(s => s.status === 'completed').length;
-            const isPhaseActive = phase.steps.some(s => s.step_key === currentStepKey);
+          {filteredPhases.map((phase: Phase) => {
+            const completedCount = phase.steps.filter((s: Step) => s.status === 'completed').length;
+            const isPhaseActive = phase.steps.some((s: Step) => s.step_key === currentStepKey);
 
             return (
               <Collapsible.Root key={phase.id} defaultOpen={isPhaseActive || !queryLower}>
@@ -190,7 +221,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 
                 <Collapsible.Content className="collapsible-animated-content">
                   <div className="pt-1.5 pb-1 ml-2 pl-2 border-l border-border/80 space-y-1">
-                    {phase.steps.map((step) => {
+                    {phase.steps.map((step: Step) => {
                       const isActive = step.step_key === currentStepKey;
                       const isCompleted = step.status === 'completed';
                       const isInProgress = step.status === 'in_progress';
@@ -275,4 +306,3 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenSearch, onOpenVectorSand
 };
 
 export default React.memo(Sidebar);
-

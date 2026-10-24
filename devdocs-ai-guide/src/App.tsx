@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
@@ -13,10 +13,10 @@ import { ReadingSettingsProvider } from './hooks/useReadingSettings';
 import { I18nProvider } from './hooks/useI18n';
 import { SandboxProvider, useSandbox } from './context/SandboxContext';
 
-function AppContent() {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [isReadingSettingsOpen, setIsReadingSettingsOpen] = useState(false);
+function AppContent(): React.JSX.Element {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [isReadingSettingsOpen, setIsReadingSettingsOpen] = useState<boolean>(false);
   const {
     openPythonSandbox,
     openVectorSandbox,
@@ -46,7 +46,7 @@ function AppContent() {
 
   // Accessibility: Close mobile sidebar when pressing Escape
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isMobileSidebarOpen) {
         setIsMobileSidebarOpen(false);
       }
@@ -117,7 +117,7 @@ function AppContent() {
   );
 }
 
-function App() {
+function App(): React.JSX.Element {
   return (
     <div className="bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
       <I18nProvider>

@@ -6,15 +6,17 @@ import '@fontsource/inter/800.css';
 import 'katex/dist/katex.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
+import App from './App';
 import './index.css';
-import { registerServiceWorker } from './lib/registerServiceWorker.js';
+import { registerServiceWorker } from './lib/registerServiceWorker';
 
 registerServiceWorker();
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
-
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
+}

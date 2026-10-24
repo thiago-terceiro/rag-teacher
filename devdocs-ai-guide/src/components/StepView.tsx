@@ -26,28 +26,38 @@ import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
 import ChunkingCalculator from './ChunkingCalculator';
 import RRFSimulator from './RRFSimulator';
+import type { StepStatus, Step, Phase, InterviewQuestion } from '../types';
 
-const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
-  const { stepKey } = useParams();
+export interface StepViewProps {
+  onOpenVectorSandbox?: () => void;
+  onOpenPythonSandbox?: () => void;
+}
+
+const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): React.JSX.Element => {
+  const { stepKey: routeStepKey } = useParams<{ stepKey?: string }>();
   const navigate = useNavigate();
   const { updateStepProgress, phases } = useSteps();
   const { settings } = useReadingSettings();
 
+  const stepKey = routeStepKey || 'project-setup';
+
   // Instant synchronous lookup (0ms latency, zero spinner flash)
-  const step = getStepByKey(stepKey) || allSteps[0];
-  const stepInterview = interviewQuestions.find(q => q.step_key === stepKey);
+  const step: Step = getStepByKey(stepKey) || allSteps[0];
+  const stepInterview: (InterviewQuestion & { track?: string }) | undefined = interviewQuestions.find(
+    (q) => q.step_key === stepKey
+  );
 
   // Find step in current phases state to get latest status and notes
-  const currentStepFromPhases = phases
-    .flatMap(p => p.steps)
-    .find(s => s.step_key === stepKey);
+  const currentStepFromPhases: Step | undefined = phases
+    .flatMap((p: Phase) => p.steps)
+    .find((s: Step) => s.step_key === stepKey);
 
-  const currentPhase = phases.find(p => p.steps.some(s => s.step_key === stepKey));
-  const stepIndex = allSteps.findIndex(s => s.step_key === stepKey) + 1;
+  const currentPhase: Phase | undefined = phases.find((p: Phase) => p.steps.some((s: Step) => s.step_key === stepKey));
+  const stepIndex = allSteps.findIndex((s: Step) => s.step_key === stepKey) + 1;
   const nextStep = getNextStep(stepKey);
   const prevStep = getPrevStep(stepKey);
 
-  const status = currentStepFromPhases?.status || 'not_started';
+  const status: StepStatus = currentStepFromPhases?.status || 'not_started';
   const { headings } = useTableOfContents(step.content);
   const [activeId, setActiveId] = useActiveHeading(headings);
   const isLightTheme = settings.theme === 'daylight-paper';
@@ -92,9 +102,10 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
 
   // Keyboard navigation: Left/Right arrows to flip through steps
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       // Don't intercept if user is typing in an input, textarea, or contentEditable
-      const target = e.target;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
       const isInput =
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
@@ -112,11 +123,11 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextStep, prevStep, navigate]);
 
-  const handleStatusChange = useCallback((newStatus) => {
+  const handleStatusChange = useCallback((newStatus: StepStatus) => {
     updateStepProgress(stepKey, newStatus);
   }, [stepKey, updateStepProgress]);
 
-  const handleSaveNotes = useCallback((key, newNotes) => {
+  const handleSaveNotes = useCallback((key: string, newNotes: string) => {
     updateStepProgress(key, undefined, newNotes);
   }, [updateStepProgress]);
 
@@ -275,6 +286,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
               </div>
             </div>
             <button
+              type="button"
               onClick={onOpenVectorSandbox}
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
             >
@@ -408,4 +420,3 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }) => {
 };
 
 export default React.memo(StepView);
-

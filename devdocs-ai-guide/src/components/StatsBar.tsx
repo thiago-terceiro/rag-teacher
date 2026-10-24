@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import {
   Menu,
   RotateCcw,
@@ -22,7 +22,16 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useI18n } from '../hooks/useI18n';
 import ProgressRing from './ProgressRing';
 
-const ScrollBadge = React.memo(function ScrollBadge() {
+export interface StatsBarProps {
+  isMobileOpen?: boolean;
+  onToggleMobileSidebar: () => void;
+  onOpenSearch: () => void;
+  onOpenReadingSettings: () => void;
+  onOpenVectorSandbox?: () => void;
+  onOpenPythonSandbox?: () => void;
+}
+
+const ScrollBadge = React.memo(function ScrollBadge(): React.JSX.Element | null {
   const scrollProgress = useScrollProgress('main-scroll-container');
   if (scrollProgress <= 0.02) return null;
   return (
@@ -33,7 +42,7 @@ const ScrollBadge = React.memo(function ScrollBadge() {
   );
 });
 
-const ScrollProgressBar = React.memo(function ScrollProgressBar() {
+const ScrollProgressBar = React.memo(function ScrollProgressBar(): React.JSX.Element {
   return (
     <div aria-hidden="true" className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
       <div
@@ -55,7 +64,7 @@ const StatsBar = ({
   onOpenReadingSettings,
   onOpenVectorSandbox,
   onOpenPythonSandbox,
-}) => {
+}: StatsBarProps): React.JSX.Element => {
   const isMobileOpen = isMobileOpenProp ?? false;
   const { stats, resetAllProgress, exportStudyGuide } = useSteps();
   const { isOnline, canInstall, promptInstall } = useNetworkStatus();
@@ -72,6 +81,7 @@ const StatsBar = ({
       <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
         {/* Mobile Hamburger Toggle */}
         <button
+          type="button"
           onClick={onToggleMobileSidebar}
           aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileOpen}
@@ -107,6 +117,7 @@ const StatsBar = ({
         {/* PWA Install Button */}
         {canInstall && (
           <button
+            type="button"
             onClick={promptInstall}
             title={t('nav.install', 'Install RAG Teacher as an offline Progressive Web App')}
             aria-label={t('nav.install', 'Install application offline')}
@@ -119,6 +130,7 @@ const StatsBar = ({
 
         {/* Quick Search / Command Palette Trigger */}
         <button
+          type="button"
           onClick={onOpenSearch}
           aria-label={t('nav.search', 'Search curriculum')}
           className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/70 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer group shadow-2xs"
@@ -146,6 +158,7 @@ const StatsBar = ({
 
         {/* In-Browser Python Sandbox (Pyodide Web Worker) */}
         <button
+          type="button"
           onClick={onOpenPythonSandbox}
           title="In-Browser Python RAG Sandbox (Isolated Pyodide Web Worker)"
           aria-label={t('nav.pythonLab', 'Open Python Sandbox Lab')}
@@ -157,6 +170,7 @@ const StatsBar = ({
 
         {/* Vector Distance Visualizer Sandbox */}
         <button
+          type="button"
           onClick={onOpenVectorSandbox}
           title="Interactive 2D Vector Distance Visualizer Sandbox"
           aria-label={t('nav.vectorSandbox', 'Open Vector Visualizer Sandbox')}
@@ -168,6 +182,7 @@ const StatsBar = ({
 
         {/* Reading Settings / Display */}
         <button
+          type="button"
           onClick={onOpenReadingSettings}
           title="Theme presets, reading comfort & typography settings"
           aria-label={t('settings.title', 'Display and language settings')}
@@ -179,6 +194,7 @@ const StatsBar = ({
 
         {/* Save as PDF / Print Handbook */}
         <button
+          type="button"
           onClick={() => window.print()}
           title="Save current module as a formatted PDF handbook chapter"
           aria-label={t('settings.savePdf', 'Save current chapter as PDF')}
@@ -190,6 +206,7 @@ const StatsBar = ({
 
         {/* Export Notes / Study Guide (hidden on small mobile to preserve space) */}
         <button
+          type="button"
           onClick={exportStudyGuide}
           title={t('nav.exportStudyGuide', 'Export your notes and study guide (.md)')}
           aria-label={t('nav.exportStudyGuide', 'Export study guide notes')}
@@ -202,6 +219,7 @@ const StatsBar = ({
         {/* Reset progress */}
         {(stats.completedSteps > 0 || stats.answeredQuizQuestions > 0) && (
           <button
+            type="button"
             onClick={handleReset}
             title={t('nav.resetProgress', 'Reset all progress & quiz scores')}
             aria-label={t('nav.resetProgress', 'Reset learning progress')}
@@ -256,4 +274,3 @@ const StatsBar = ({
 };
 
 export default React.memo(StatsBar);
-

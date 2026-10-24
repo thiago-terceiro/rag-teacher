@@ -96,7 +96,7 @@
 
 ---
 
-### [ ] Ticket 8: App Shell, Navigation & Entry Migration
+### [x] Ticket 8: App Shell, Navigation & Entry Migration
 - **Scope**:
   - `src/components/Sidebar.jsx` -> `src/components/Sidebar.tsx`
   - `src/components/StatsBar.jsx` -> `src/components/StatsBar.tsx`

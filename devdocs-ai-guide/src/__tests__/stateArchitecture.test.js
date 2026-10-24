@@ -62,7 +62,7 @@ describe('React State Architecture & Performance Invariants', () => {
     });
 
     it('AppContent must wrap modal triggers in useCallback to prevent breaking React.memo', () => {
-      const appContent = fs.readFileSync(path.join(srcDir, 'App.jsx'), 'utf8');
+      const appContent = fs.readFileSync(resolveComponentPath('App.jsx'), 'utf8');
       expect(appContent).toContain('handleOpenPythonSandbox = useCallback');
       expect(appContent).toContain('handleToggleMobileSidebar = useCallback');
       expect(appContent).toContain('handleOpenSearch = useCallback');
