@@ -31,18 +31,18 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
     it('should have semantic questions, non-empty options, and explanatory text for screen readers', () => {
       expect(Object.keys(moduleQuizzes).length).toBeGreaterThan(0);
 
-      Object.entries(moduleQuizzes).forEach(([moduleKey, questions]) => {
+      Object.entries(moduleQuizzes).forEach(([, questions]) => {
         expect(Array.isArray(questions)).toBe(true);
         expect(questions.length).toBeGreaterThan(0);
 
-        questions.forEach((q, idx) => {
+        questions.forEach((q) => {
           expect(q.id).toBeDefined();
           expect(typeof q.question).toBe('string');
           expect(q.question.trim().length).toBeGreaterThan(10);
 
           expect(Array.isArray(q.options)).toBe(true);
           expect(q.options.length).toBeGreaterThanOrEqual(2);
-          q.options.forEach((opt) => {
+          q.options.forEach((opt: string) => {
             expect(typeof opt).toBe('string');
             expect(opt.trim().length).toBeGreaterThan(0);
           });
@@ -60,7 +60,7 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
 
   describe('Vector Visualizer Keyboard Rotation & Slider Mechanics', () => {
     // Replicate rotation step logic tested in VectorVisualizer
-    const rotateAngle = (currentDeg, key, isShift) => {
+    const rotateAngle = (currentDeg: number, key: string, isShift: boolean): number => {
       const step = isShift ? 15 : 2;
       let newDeg = currentDeg;
       if (key === 'ArrowRight' || key === 'ArrowUp') {
@@ -91,7 +91,7 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
   });
 
   describe('Chunking Calculator ARIA Value Computations', () => {
-    const computeChunkMetrics = (docLength, chunkSize, overlapPct) => {
+    const computeChunkMetrics = (docLength: number, chunkSize: number, overlapPct: number) => {
       const overlapTokens = Math.min(chunkSize - 1, Math.round((chunkSize * overlapPct) / 100));
       const stride = Math.max(1, chunkSize - overlapTokens);
       const numChunks = Math.max(1, Math.ceil((docLength - overlapTokens) / stride));
@@ -111,7 +111,7 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
   });
 
   describe('RRF Simulator ARIA Clamping & Rank Adjustments', () => {
-    const clampRank = (currentRank, delta) => {
+    const clampRank = (currentRank: number, delta: number): number => {
       return Math.max(1, Math.min(20, currentRank + delta));
     };
 
@@ -123,7 +123,7 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
     });
 
     it('should validate kConstant within standard limits', () => {
-      const clampK = (k) => Math.max(10, Math.min(120, k));
+      const clampK = (k: number): number => Math.max(10, Math.min(120, k));
       expect(clampK(60)).toBe(60);
       expect(clampK(5)).toBe(10);
       expect(clampK(150)).toBe(120);
@@ -131,7 +131,7 @@ describe('Accessibility (A11y) & WCAG Compliance Standards', () => {
   });
 
   describe('Markdown Renderer Link Classification', () => {
-    const isExternalUrl = (href) => {
+    const isExternalUrl = (href?: string | null): boolean => {
       return Boolean(href && (href.startsWith('http://') || href.startsWith('https://')));
     };
 

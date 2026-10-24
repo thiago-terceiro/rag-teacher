@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { moduleQuizzes } from '../data/moduleQuizzesData.js';
-import { allSteps } from '../data/guideData.js';
+import { moduleQuizzes } from '../data/moduleQuizzesData';
+import { allSteps } from '../data/guideData';
 
 describe('Module Quizzes Data Integrity', () => {
   it('should have quiz questions for every curriculum step', () => {
@@ -22,7 +22,7 @@ describe('Module Quizzes Data Integrity', () => {
   });
 
   it('should enforce valid schema on every quiz question', () => {
-    const allQuestionIds = new Set();
+    const allQuestionIds = new Set<string>();
 
     Object.entries(moduleQuizzes).forEach(([stepKey, questions]) => {
       questions.forEach((q, idx) => {

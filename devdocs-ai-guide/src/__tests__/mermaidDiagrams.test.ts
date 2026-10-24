@@ -3,16 +3,23 @@ import DOMPurify from 'dompurify';
 import mermaid from 'mermaid';
 
 // Polyfill DOMPurify methods for Vitest node environment
-if (typeof DOMPurify.sanitize !== 'function') {
-  DOMPurify.sanitize = (s) => s;
+if (typeof (DOMPurify as any).sanitize !== 'function') {
+  (DOMPurify as any).sanitize = (s: string) => s;
 }
-if (typeof DOMPurify.addHook !== 'function') {
-  DOMPurify.addHook = () => {};
+if (typeof (DOMPurify as any).addHook !== 'function') {
+  (DOMPurify as any).addHook = () => {};
 }
 import { phase1Steps } from '../data/phase1Content';
 import { phase2Steps } from '../data/phase2Content';
 import { phase3Steps } from '../data/phase3Content';
 import { phase4Steps } from '../data/phase4Content';
+
+interface DiagramEntry {
+  step_key: string;
+  title: string;
+  index: number;
+  chart: string;
+}
 
 describe('Mermaid Diagrams Syntax & Parsing Verification', () => {
   mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
@@ -24,11 +31,11 @@ describe('Mermaid Diagrams Syntax & Parsing Verification', () => {
     ...phase4Steps,
   ];
 
-  const diagrams = [];
+  const diagrams: DiagramEntry[] = [];
   allSteps.forEach(step => {
     const content = step.content || '';
     const regex = /(?:\\?`){3}mermaid([\s\S]*?)(?:\\?`){3}/g;
-    let match;
+    let match: RegExpExecArray | null;
     let idx = 0;
     while ((match = regex.exec(content)) !== null) {
       idx++;
@@ -51,7 +58,7 @@ describe('Mermaid Diagrams Syntax & Parsing Verification', () => {
       try {
         const valid = await mermaid.parse(d.chart);
         expect(valid).toBeTruthy();
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(`Failed to parse diagram in "${d.title}" (${d.step_key}): ${err.message}`);
       }
     });

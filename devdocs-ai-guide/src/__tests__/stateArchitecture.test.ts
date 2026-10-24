@@ -9,11 +9,13 @@ describe('React State Architecture & Performance Invariants', () => {
   describe('AST & Compiler Compliance Checks', () => {
     const srcDir = path.resolve(__dirname, '..');
 
-    const resolveComponentPath = (relPath) => {
+    const resolveComponentPath = (relPath: string): string => {
       const p = path.join(srcDir, relPath);
       if (fs.existsSync(p)) return p;
       const tsx = p.replace(/\.jsx$/, '.tsx');
       if (fs.existsSync(tsx)) return tsx;
+      const ts = p.replace(/\.js$/, '.ts');
+      if (fs.existsSync(ts)) return ts;
       return p;
     };
 
@@ -34,7 +36,7 @@ describe('React State Architecture & Performance Invariants', () => {
       });
     });
 
-    const getUseStepsContent = () => {
+    const getUseStepsContent = (): string => {
       const tsPath = path.join(srcDir, 'hooks/useSteps.tsx');
       const jsPath = path.join(srcDir, 'hooks/useSteps.jsx');
       return fs.readFileSync(fs.existsSync(tsPath) ? tsPath : jsPath, 'utf8');
@@ -89,37 +91,37 @@ describe('React State Architecture & Performance Invariants', () => {
   });
 
   describe('Theme and Reading Settings Synchronous DOM Invariants', () => {
-    let mockRoot;
-    let mockBody;
-    let mockMeta;
+    let mockRoot: any;
+    let mockBody: any;
+    let mockMeta: any;
 
     beforeEach(() => {
-      const classListStore = (name) => {
-        const classes = new Set();
+      const classListStore = () => {
+        const classes = new Set<string>();
         return {
-          add: (...cls) => cls.forEach(c => classes.add(c)),
-          remove: (...cls) => cls.forEach(c => classes.delete(c)),
-          contains: (c) => classes.has(c),
+          add: (...cls: string[]) => cls.forEach(c => classes.add(c)),
+          remove: (...cls: string[]) => cls.forEach(c => classes.delete(c)),
+          contains: (c: string) => classes.has(c),
           classes,
         };
       };
 
-      mockRoot = { classList: classListStore('root') };
-      mockBody = { classList: classListStore('body') };
+      mockRoot = { classList: classListStore() };
+      mockBody = { classList: classListStore() };
       mockMeta = {
         content: '',
-        setAttribute: (k, v) => { mockMeta.content = v; },
+        setAttribute: (_k: string, v: string) => { mockMeta.content = v; },
       };
 
-      globalThis.document = {
+      (globalThis as any).document = {
         documentElement: mockRoot,
         body: mockBody,
-        querySelector: (sel) => sel === 'meta[name="theme-color"]' ? mockMeta : null,
+        querySelector: (sel: string) => sel === 'meta[name="theme-color"]' ? mockMeta : null,
       };
     });
 
     afterEach(() => {
-      delete globalThis.document;
+      delete (globalThis as any).document;
     });
 
     it('should synchronously apply oled-midnight theme and font classes without errors', () => {

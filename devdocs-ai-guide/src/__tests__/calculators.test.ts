@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('Micro-Calculators Mathematical Correctness', () => {
   describe('Vector Math (VectorVisualizer)', () => {
     // Dot product, cosine similarity, L2 distance
-    const calcMetrics = (vA, vB) => {
+    const calcMetrics = (vA: { x: number; y: number }, vB: { x: number; y: number }) => {
       const magA = Math.sqrt(vA.x * vA.x + vA.y * vA.y);
       const magB = Math.sqrt(vB.x * vB.x + vB.y * vB.y);
       const dot = vA.x * vB.x + vA.y * vB.y;
@@ -60,7 +60,7 @@ describe('Micro-Calculators Mathematical Correctness', () => {
   });
 
   describe('Chunking Calculator Math', () => {
-    const calcChunking = (docTokens, chunkSize, overlapPct, dim = 1536) => {
+    const calcChunking = (docTokens: number, chunkSize: number, overlapPct: number, dim = 1536) => {
       const overlapTokens = Math.round(chunkSize * (overlapPct / 100));
       const step = Math.max(1, chunkSize - overlapTokens);
       const totalChunks = docTokens <= chunkSize ? 1 : Math.ceil((docTokens - overlapTokens) / step);
@@ -98,7 +98,7 @@ describe('Micro-Calculators Mathematical Correctness', () => {
   });
 
   describe('Reciprocal Rank Fusion (RRF) Formula', () => {
-    const computeRRF = (rankDense, rankBm25, k = 60) => {
+    const computeRRF = (rankDense: number | null, rankBm25: number | null, k = 60) => {
       const scoreDense = rankDense !== null ? 1 / (k + rankDense) : 0;
       const scoreBm25 = rankBm25 !== null ? 1 / (k + rankBm25) : 0;
       return scoreDense + scoreBm25;

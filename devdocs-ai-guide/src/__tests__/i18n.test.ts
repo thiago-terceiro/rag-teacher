@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { translations, supportedLanguages } from '../i18n/translations.js';
+import { translations, supportedLanguages } from '../i18n/translations';
 
 describe('Internationalization (i18n) Completeness', () => {
   it('should support en, pt, and es', () => {
@@ -26,7 +26,7 @@ describe('Internationalization (i18n) Completeness', () => {
   });
 
   it('no duplicate translation keys should exist per language', () => {
-    Object.entries(translations).forEach(([code, dict]) => {
+    Object.entries(translations).forEach(([_code, dict]) => {
       const keys = Object.keys(dict);
       const uniqueKeys = new Set(keys);
       expect(uniqueKeys.size).toBe(keys.length);

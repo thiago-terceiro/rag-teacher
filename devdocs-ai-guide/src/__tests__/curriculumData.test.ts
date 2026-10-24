@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { initialPhases, allSteps, getStepByKey, getNextStep } from '../data/guideData.js';
+import { initialPhases, allSteps, getStepByKey, getNextStep } from '../data/guideData';
 
 describe('Curriculum Data Integrity', () => {
   it('should have exactly 4 phases', () => {
