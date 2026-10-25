@@ -58,7 +58,9 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
   const debouncedDraft = useDebounce<string>(draft, 400);
 
   const draftRef = useRef<string>(draft);
-  draftRef.current = draft;
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
   const lastSavedRef = useRef<string>(initialDraft || '');
 
   // Keep internal draft synced with external props (e.g. multi-tab sync)

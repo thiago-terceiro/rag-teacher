@@ -23,28 +23,35 @@ const TOTAL_QUIZ_QUESTIONS = Object.values(moduleQuizzes).reduce(
   0
 );
 
+const VALID_STATUSES: Set<StepStatus> = new Set(['not_started', 'in_progress', 'completed']);
+
 function loadStoredProgress(): Phase[] {
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      const progressMap: Record<string, { status?: StepStatus; notes?: string; completedAt?: string | null }> =
+      const progressMap: Record<string, { status?: unknown; notes?: unknown; completedAt?: unknown }> =
         parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
       return initialPhases.map(phase => ({
         ...phase,
         steps: phase.steps.map(step => {
           const userProg = progressMap[step.step_key] || {};
+          const status: StepStatus = typeof userProg.status === 'string' && VALID_STATUSES.has(userProg.status as StepStatus)
+            ? (userProg.status as StepStatus)
+            : 'not_started';
+          const notes = typeof userProg.notes === 'string' ? userProg.notes : '';
+          const completedAt = typeof userProg.completedAt === 'string' ? userProg.completedAt : null;
           return {
             ...step,
-            status: userProg.status || 'not_started',
-            notes: userProg.notes || '',
-            completedAt: userProg.completedAt || null,
+            status,
+            notes,
+            completedAt,
           };
         })
       }));
     }
   } catch (e) {
-    console.warn("Failed to read progress from localStorage", e);
+    if (import.meta.env.DEV) console.warn("Failed to read progress from localStorage", e);
   }
   return initialPhases.map(phase => ({
     ...phase,
@@ -236,14 +243,6 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
     if (isNewlyCompleted) {
       triggerConfetti();
     }
-
-    fetch(`/api/steps/${stepKey}/progress`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, notes }),
-    }).catch(() => {
-      // Silently ignore if running in static/Vercel mode without backend
-    });
   }, []);
 
   const getStepContent = useCallback((stepKey: string): Step => {
@@ -255,7 +254,10 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         localStorage.removeItem(QUIZ_STORAGE_KEY);
+        localStorage.removeItem('rag_interview_mastery_v1');
+        localStorage.removeItem('rag_interview_drafts_v1');
         setQuizAnswers({});
+        window.dispatchEvent(new Event('storage'));
         const freshPhases: Phase[] = initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => ({

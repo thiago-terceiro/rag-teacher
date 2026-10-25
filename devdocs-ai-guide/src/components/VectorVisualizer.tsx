@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Compass, RotateCcw, X, Sparkles, Move } from 'lucide-react';
+import { Compass, X } from 'lucide-react';
 import { useReadingSettings } from '../hooks/useReadingSettings';
-import { cn } from '../lib/utils';
+import { calculateVectorMetrics } from '../lib/vectorMath';
+import { useI18n } from '../hooks/useI18n';
 
 export interface VectorVisualizerProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ export interface VectorVisualizerProps {
 
 export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): React.JSX.Element {
   const { settings } = useReadingSettings();
+  const { t } = useI18n();
   const isLightTheme = settings.theme === 'daylight-paper';
 
   // Vector A: angle in radians, magnitude
@@ -47,14 +49,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
   const bx = effectiveMagB * Math.cos(angleB);
   const by = effectiveMagB * Math.sin(angleB);
 
-  // Math metrics
-  const dotProduct = ax * bx + ay * by;
-  const normA = Math.sqrt(ax * ax + ay * ay);
-  const normB = Math.sqrt(bx * bx + by * by);
-  const cosineSim = normA > 0 && normB > 0 ? Math.max(-1, Math.min(1, dotProduct / (normA * normB))) : 0;
-  const angleDiffRad = Math.acos(cosineSim);
-  const angleDiffDeg = (angleDiffRad * 180) / Math.PI;
-  const euclideanDist = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+  // Calculate metrics using pure vectorMath library
+  const metrics = calculateVectorMetrics({ x: ax, y: ay }, { x: bx, y: by });
 
   // Canvas conversion: center is (180, 180), scale: 1.0 = 120px
   const CENTER = 180;
@@ -68,7 +64,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
   const svgBx = toSvgX(bx);
   const svgBy = toSvgY(by);
 
-  // Handle drag to aim vectors (uses cached rect from onPointerDown to avoid layout reflows)
+  // Handle drag to aim vectors
   const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!draggingVector || !svgRef.current) return;
     const rect = rectRef.current || svgRef.current.getBoundingClientRect();
@@ -114,15 +110,14 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
     }
   }, [draggingVector, handlePointerMove, handlePointerUp]);
 
-  // Arc path between vectors
+  // Robust acute arc calculation across branch cut (-PI..PI)
   const arcRadius = 45;
-  const startAngle = Math.min(angleA, angleB);
-  const endAngle = Math.max(angleA, angleB);
-  const isLargeArc = endAngle - startAngle > Math.PI;
+  const deltaAngle = ((((angleB - angleA) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
   const arcStartX = CENTER + arcRadius * Math.cos(angleA);
   const arcStartY = CENTER - arcRadius * Math.sin(angleA);
   const arcEndX = CENTER + arcRadius * Math.cos(angleB);
   const arcEndY = CENTER - arcRadius * Math.sin(angleB);
+  const sweepFlag = deltaAngle > 0 ? 0 : 1;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -138,17 +133,17 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
               <Compass className="w-5 h-5 text-primary animate-pulse" />
               <div>
                 <Dialog.Title className="text-lg font-bold text-foreground">
-                  Interactive Vector Distance & Similarity Sandbox
+                  {t('vector.title', 'Interactive Vector Distance & Similarity Sandbox')}
                 </Dialog.Title>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Understand the geometric relationship between Cosine Similarity, Dot Product, and Euclidean ($L_2$) Distance
+                  {t('vector.subtitle', 'Understand the geometric relationship between Cosine Similarity, Dot Product, and Euclidean (L2) Distance')}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              aria-label="Close vector visualizer"
+              aria-label={t('common.close', 'Close')}
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -197,11 +192,11 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                   <line x1="0" y1={CENTER} x2="360" y2={CENTER} stroke={axisStroke} strokeWidth="1" />
                   <line x1={CENTER} y1="0" x2={CENTER} y2="360" stroke={axisStroke} strokeWidth="1" />
                   
-                  {/* Subtle Grid Circles */}
-                  <circle cx={CENTER} cy={CENTER} r={SCALE * 0.5} fill="none" stroke={innerCircleStroke} strokeDasharray="3 3" />
-                  <circle cx={CENTER} cy={CENTER} r={SCALE} fill="none" stroke={outerCircleStroke} strokeWidth={isNormalized ? "1.5" : "1"} />
+                  {/* Grid Circles */}
+                  <circle cx={CENTER} cy={CENTER} r="60" fill="none" stroke={innerCircleStroke} strokeWidth="1" strokeDasharray="3 3" />
+                  <circle cx={CENTER} cy={CENTER} r="120" fill="none" stroke={outerCircleStroke} strokeWidth={isNormalized ? "1.5" : "1"} />
 
-                  {/* Euclidean distance connection line between tips */}
+                  {/* Euclidean distance chord */}
                   <line
                     x1={svgAx}
                     y1={svgAy}
@@ -213,10 +208,10 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     opacity="0.8"
                   />
 
-                  {/* Angle Arc */}
-                  {Math.abs(angleDiffDeg) > 2 && (
+                  {/* Angle Arc - Exact acute angle path */}
+                  {Math.abs(metrics.angleDeg) > 2 && (
                     <path
-                      d={`M ${arcStartX} ${arcStartY} A ${arcRadius} ${arcRadius} 0 ${isLargeArc ? 1 : 0} ${angleA > angleB ? 0 : 1} ${arcEndX} ${arcEndY}`}
+                      d={`M ${arcStartX} ${arcStartY} A ${arcRadius} ${arcRadius} 0 0 ${sweepFlag} ${arcEndX} ${arcEndY}`}
                       fill="none"
                       stroke={arcStroke}
                       strokeWidth="1.5"
@@ -247,7 +242,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     markerEnd="url(#arrow-b)"
                   />
 
-                  {/* Vector A Draggable & Keyboard-Accessible Tip Handle */}
+                  {/* Vector A Draggable Tip Handle with Visible Focus Ring */}
                   <g
                     tabIndex={0}
                     role="slider"
@@ -265,9 +260,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                         setAngleA(prev => prev - step);
                       }
                     }}
-                    className="cursor-grab active:cursor-grabbing focus:outline-none"
+                    className="cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    {/* Wide transparent touch hit area */}
                     <circle
                       cx={svgAx}
                       cy={svgAy}
@@ -279,25 +273,19 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                         rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('A');
                       }}
-                      onPointerUp={(e: React.PointerEvent<SVGCircleElement>) => {
-                        try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
-                        rectRef.current = null;
-                        setDraggingVector(null);
-                      }}
                     />
-                    {/* Visible Handle Pin - strictly glued to (svgAx, svgAy) on the circle */}
                     <circle
                       cx={svgAx}
                       cy={svgAy}
-                      r={draggingVector === 'A' ? 10 : 8}
+                      r="7"
                       fill="#38bdf8"
-                      stroke="#ffffff"
+                      stroke="#0f172a"
                       strokeWidth="2.5"
-                      pointerEvents="none"
+                      className="transition-transform group-hover:scale-125"
                     />
                   </g>
 
-                  {/* Vector B Draggable & Keyboard-Accessible Tip Handle */}
+                  {/* Vector B Draggable Tip Handle with Visible Focus Ring */}
                   <g
                     tabIndex={0}
                     role="slider"
@@ -315,9 +303,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                         setAngleB(prev => prev - step);
                       }
                     }}
-                    className="cursor-grab active:cursor-grabbing focus:outline-none"
+                    className="cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    {/* Wide transparent touch hit area */}
                     <circle
                       cx={svgBx}
                       cy={svgBy}
@@ -329,152 +316,67 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                         rectRef.current = svgRef.current?.getBoundingClientRect() || null;
                         setDraggingVector('B');
                       }}
-                      onPointerUp={(e: React.PointerEvent<SVGCircleElement>) => {
-                        try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
-                        rectRef.current = null;
-                        setDraggingVector(null);
-                      }}
                     />
-                    {/* Visible Handle Pin - strictly glued to (svgBx, svgBy) on the circle */}
                     <circle
                       cx={svgBx}
                       cy={svgBy}
-                      r={draggingVector === 'B' ? 10 : 8}
+                      r="7"
                       fill="#34d399"
-                      stroke="#ffffff"
+                      stroke="#0f172a"
                       strokeWidth="2.5"
-                      pointerEvents="none"
+                      className="transition-transform group-hover:scale-125"
                     />
                   </g>
 
                   {/* Origin */}
                   <circle cx={CENTER} cy={CENTER} r="3" fill={originFill} />
                 </svg>
-
-                <div className="absolute bottom-3 left-4 text-[10px] text-muted-foreground flex items-center gap-1.5 pointer-events-none">
-                  <Move className="w-3 h-3 text-primary animate-pulse" aria-hidden="true" />
-                  <span>Drag vector tips or use Arrow keys when focused</span>
-                </div>
               </div>
 
-              {/* Controls */}
-              <div className="w-full mt-4 flex items-center justify-between gap-4">
+              {/* Normalization Mode Toggle */}
+              <div className="flex items-center space-x-3 mt-4 text-xs">
                 <button
                   type="button"
-                  onClick={() => setIsNormalized(!isNormalized)}
-                  aria-pressed={isNormalized}
-                  className={cn(
-                    'px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer',
-                    isNormalized
-                      ? 'bg-primary/20 text-primary border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                      : 'bg-secondary/50 text-muted-foreground border-border hover:text-foreground'
-                  )}
+                  onClick={() => setIsNormalized(prev => !prev)}
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/80 hover:bg-secondary border border-border text-foreground transition-colors cursor-pointer"
                 >
-                  <span className={cn('w-2 h-2 rounded-full', isNormalized ? 'bg-primary animate-pulse' : 'bg-muted-foreground')} aria-hidden="true" />
-                  <span>Lock Unit Norm (||A|| = ||B|| = 1.0)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAngleA(Math.PI / 6);
-                    setAngleB(Math.PI / 2.5);
-                    setMagA(1.0);
-                    setMagB(1.0);
-                    setIsNormalized(true);
-                  }}
-                  aria-label="Reset vectors to default angles"
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>Reset</span>
+                  <span className={`w-2 h-2 rounded-full ${isNormalized ? 'bg-primary' : 'bg-muted-foreground'}`} />
+                  <span>{isNormalized ? t('vector.unitVectors', 'Unit Vectors ||v||=1') : t('vector.arbitraryMag', 'Arbitrary Length')}</span>
                 </button>
               </div>
             </div>
 
-            {/* Live Metrics & Mathematical Proofs */}
-            <div aria-live="polite" className="lg:col-span-5 flex flex-col justify-between space-y-4">
+            {/* Metrics Panel */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Live Distance & Similarity Metrics
-                </div>
-
-                {/* Metric 1: Cosine Similarity */}
-                <div className="p-3 rounded-xl bg-secondary/40 border border-border/80">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                      Cosine Similarity (cos θ)
-                    </span>
-                    <span className="font-mono text-xs">[-1.0 to +1.0]</span>
+                <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
+                  <div className="text-xs font-semibold text-primary uppercase tracking-wider">{t('vector.cosineSim', 'Cosine Similarity')}</div>
+                  <div className="text-2xl font-mono font-bold text-foreground mt-1">
+                    {metrics.cosSim.toFixed(4)}
                   </div>
-                  <div className="text-2xl font-bold font-mono text-primary mt-1">
-                    {cosineSim.toFixed(4)}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">
-                    θ = {angleDiffDeg.toFixed(1)}° ({angleDiffRad.toFixed(3)} rad)
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('vector.angleTheta', 'Angle θ')}: <span className="font-mono font-semibold text-foreground">{metrics.angleDeg.toFixed(1)}°</span>
                   </div>
                 </div>
 
-                {/* Metric 2: Dot Product */}
-                <div className="p-3 rounded-xl bg-secondary/40 border border-border/80">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      Dot Product (A · B)
-                    </span>
-                    <span className="font-mono text-xs">AxBx + AyBy</span>
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25">
+                  <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider">{t('vector.euclideanL2', 'Euclidean (L2) Distance')}</div>
+                  <div className="text-2xl font-mono font-bold text-foreground mt-1">
+                    {metrics.l2.toFixed(4)}
                   </div>
-                  <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
-                    {dotProduct.toFixed(4)}
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {isNormalized ? '||a - b|| = √(2 - 2·cos(θ))' : '||a - b||'}
                   </div>
-                  {isNormalized && (
-                    <div className="text-[11px] text-emerald-400/80 font-medium mt-0.5">
-                      ✓ Strictly identical to Cosine Similarity when normalized!
-                    </div>
-                  )}
                 </div>
 
-                {/* Metric 3: Euclidean Distance (L2) */}
-                <div className="p-3 rounded-xl bg-secondary/40 border border-border/80">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                      Euclidean Distance (||A - B||)
-                    </span>
-                    <span className="font-mono text-xs">L2 Norm</span>
+                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/25">
+                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider">{t('vector.dotProduct', 'Dot Product (a · b)')}</div>
+                  <div className="text-2xl font-mono font-bold text-foreground mt-1">
+                    {metrics.dot.toFixed(4)}
                   </div>
-                  <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
-                    {euclideanDist.toFixed(4)}
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {isNormalized ? 'Identical to Cosine Similarity on unit sphere' : '||a|| · ||b|| · cos(θ)'}
                   </div>
-                  {isNormalized && (
-                    <div className="text-[11px] text-amber-400/80 font-mono mt-0.5">
-                      L2² = 2 - 2(cos θ) = {(2 - 2 * cosineSim).toFixed(4)}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Systems Design Takeaway */}
-              <div className="p-4 rounded-xl bg-primary/10 border border-primary/25 text-xs text-foreground/90 space-y-2">
-                <div className="font-bold text-primary flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Systems Architect Insight:</span>
-                </div>
-                <div className="leading-relaxed text-[11.5px]">
-                  {isNormalized ? (
-                    <>
-                      When embeddings are <strong>unit-normalized</strong> (standard in leading models such as Cohere and BGE), <strong>Dot Product equals Cosine Similarity</strong>. Furthermore, maximizing cosine similarity is mathematically identical to minimizing Euclidean distance:
-                      <code className="block mt-1 font-mono text-[10px] bg-secondary/80 p-1.5 rounded border border-border/50 text-foreground">
-                        L2² = ||A||² + ||B||² - 2(A · B) = 1 + 1 - 2(cos θ) = 2 - 2(cos θ)
-                      </code>
-                      This is why vector databases like Qdrant can use fast dot-product SIMD instructions ($O(D)$ multiply-accumulate) without computing expensive square roots.
-                    </>
-                  ) : (
-                    <>
-                      When embeddings are <strong>unnormalized</strong>, the Dot Product is dominated by document length and token frequency. Longer chunks produce larger magnitudes, biasing dot-product retrieval toward bloated documents regardless of semantic relevance.
-                    </>
-                  )}
                 </div>
               </div>
             </div>

@@ -1,8 +1,13 @@
 /**
  * Lazy loads and triggers celebratory canvas-confetti.
  * Isolated in a standalone module to prevent AST HIR compilation bailout in React compiler.
+ * Complies with WCAG AAA accessibility by honoring prefers-reduced-motion.
  */
 export async function triggerConfetti(): Promise<void> {
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
+
   try {
     const { default: confetti } = await import('canvas-confetti');
     confetti({

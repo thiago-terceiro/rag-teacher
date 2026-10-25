@@ -10,14 +10,6 @@ export default defineConfig({
     // the compiler runs through @rolldown/plugin-babel with the official preset.
     babel({ presets: [reactCompilerPreset()] }),
   ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-    },
-  },
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
@@ -44,6 +36,12 @@ export default defineConfig({
           }
           if (id.includes('node_modules/lucide-react')) {
             return 'vendor-icons';
+          }
+          if (id.includes('node_modules/mermaid')) {
+            return 'vendor-mermaid';
+          }
+          if (id.includes('node_modules/katex')) {
+            return 'vendor-katex';
           }
           if (
             id.includes('node_modules/react-markdown') ||

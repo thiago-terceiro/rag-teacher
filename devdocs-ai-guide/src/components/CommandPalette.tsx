@@ -32,10 +32,13 @@ export interface PopularSuggestion {
   isDeep: boolean;
 }
 
-// Pre-index searchable topics AND granular section headings for deep-link navigation
-const searchableItems: readonly SearchableItem[] = (() => {
-  const items: SearchableItem[] = [];
+// Lazy cache for searchable topics & headings so page load is not blocked
+let cachedSearchableItems: readonly SearchableItem[] | null = null;
 
+function getSearchableItems(): readonly SearchableItem[] {
+  if (cachedSearchableItems) return cachedSearchableItems;
+
+  const items: SearchableItem[] = [];
   allSteps.forEach((step) => {
     const phase = initialPhases.find((p) => p.steps.some((s) => s.step_key === step.step_key));
     const phaseTitle = phase ? phase.title.split(':')[0] : 'Curriculum';
@@ -72,8 +75,9 @@ const searchableItems: readonly SearchableItem[] = (() => {
     });
   });
 
+  cachedSearchableItems = items;
   return items;
-})();
+}
 
 const POPULAR_SUGGESTIONS: readonly PopularSuggestion[] = [
   { step_key: 'qdrant-setup', headingId: '3-mathematical--algorithmic-foundations', label: 'HNSW Graph Indexing & Skip-Lists', phase: 'Phase 1', isDeep: true },
@@ -118,8 +122,9 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
     const q = query.toLowerCase().trim();
     if (!q) return [];
 
+    const items = getSearchableItems();
     const matches: { item: SearchableItem; score: number }[] = [];
-    for (const item of searchableItems) {
+    for (const item of items) {
       const titleLower = item.title.toLowerCase();
       const parentLower = (item.parentTitle || '').toLowerCase();
       const previewLower = item.contentPreview.toLowerCase();
@@ -185,6 +190,14 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
     }
   }, [selectedIndex]);
 
+  const activeDescendantId = query
+    ? filteredResults[selectedIndex]
+      ? `cmd-opt-${selectedIndex}`
+      : undefined
+    : POPULAR_SUGGESTIONS[selectedIndex]
+    ? `cmd-sugg-${selectedIndex}`
+    : undefined;
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
@@ -205,6 +218,7 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
               aria-expanded={isOpen}
               aria-autocomplete="list"
               aria-controls="command-palette-results"
+              aria-activedescendant={activeDescendantId}
               aria-label="Search curriculum modules, topics, and algorithms"
               value={query}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,10 +258,12 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                   const isSelected = selectedIndex === idx;
                   const isSection = item.type === 'section';
                   const itemKey = isSection ? `${item.step_key}-${item.headingId}` : item.step_key;
+                  const optId = `cmd-opt-${idx}`;
 
                   return (
                     <button
                       key={itemKey}
+                      id={optId}
                       type="button"
                       role="option"
                       aria-selected={isSelected}
@@ -314,9 +330,12 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                 </div>
                 {POPULAR_SUGGESTIONS.map((item, idx) => {
                   const isSelected = selectedIndex === idx;
+                  const optId = `cmd-sugg-${idx}`;
+
                   return (
                     <button
                       key={item.label}
+                      id={optId}
                       type="button"
                       role="option"
                       aria-selected={isSelected}

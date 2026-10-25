@@ -12,8 +12,10 @@ import {
   Award,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSteps } from '../hooks/useSteps';
+import { useSandboxActions } from '../context/SandboxContext';
+import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 import type { Phase, Step } from '../types';
 
@@ -29,12 +31,28 @@ const Sidebar = ({
   isMobileOpen,
   setIsMobileOpen,
   onOpenSearch,
-  onOpenVectorSandbox,
-  onOpenPythonSandbox,
+  onOpenVectorSandbox: onOpenVectorProp,
+  onOpenPythonSandbox: onOpenPythonProp,
 }: SidebarProps): React.JSX.Element => {
   const { phases, stats } = useSteps();
+  const { openPythonSandbox, openVectorSandbox } = useSandboxActions();
+  const { t } = useI18n();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const handleOpenPython = onOpenPythonProp ?? (() => openPythonSandbox(null));
+  const handleOpenVector = onOpenVectorProp ?? openVectorSandbox;
+
+  // Body scroll lock on mobile drawer open
+  useEffect(() => {
+    if (isMobileOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileOpen]);
 
   // Extract current stepKey reliably from location.pathname (e.g., /steps/project-setup)
   const currentStepKey = location.pathname.startsWith('/steps/')
@@ -71,6 +89,9 @@ const Sidebar = ({
 
       <aside
         id="curriculum-sidebar"
+        role={isMobileOpen ? 'dialog' : undefined}
+        aria-modal={isMobileOpen ? 'true' : undefined}
+        aria-label="Navigation drawer"
         className={cn(
           'no-print w-80 bg-card/95 backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
@@ -96,8 +117,8 @@ const Sidebar = ({
           <button
             type="button"
             onClick={() => setIsMobileOpen?.(false)}
-            aria-label="Close navigation"
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground lg:hidden"
+            aria-label={t('common.close', 'Close')}
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground lg:hidden cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -111,7 +132,7 @@ const Sidebar = ({
               type="text"
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              placeholder="Search 28 RAG topics..."
+              placeholder={t('sidebar.searchPlaceholder', 'Search 28 RAG topics...')}
               aria-label="Search curriculum topics"
               className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
@@ -152,7 +173,7 @@ const Sidebar = ({
           >
             <div className="flex items-center space-x-2.5">
               <HelpCircle className={cn('w-4 h-4', location.pathname === '/interview-questions' ? 'text-primary-foreground' : 'text-primary')} />
-              <span>Interview Questions</span>
+              <span>{t('nav.interview', 'Interview Questions')}</span>
             </div>
             <span className={cn(
               'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
@@ -168,13 +189,13 @@ const Sidebar = ({
             type="button"
             onClick={() => {
               setIsMobileOpen?.(false);
-              onOpenPythonSandbox?.();
+              handleOpenPython();
             }}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
           >
             <div className="flex items-center space-x-2.5">
               <Terminal className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>Python RAG Sandbox</span>
+              <span>{t('nav.pythonLab', 'Python RAG Sandbox')}</span>
             </div>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono">
               Pyodide
@@ -185,13 +206,13 @@ const Sidebar = ({
             type="button"
             onClick={() => {
               setIsMobileOpen?.(false);
-              onOpenVectorSandbox?.();
+              handleOpenVector();
             }}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
           >
             <div className="flex items-center space-x-2.5">
               <Compass className="w-4 h-4 text-indigo-400 group-hover:rotate-45 transition-transform" />
-              <span>Vector Sandbox</span>
+              <span>{t('nav.vectorSandbox', 'Vector Sandbox')}</span>
             </div>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-secondary border border-border text-muted-foreground font-mono">
               2D Math
@@ -213,7 +234,7 @@ const Sidebar = ({
                       {phase.title}
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
-                      {completedCount} / {phase.steps.length} completed
+                      {completedCount} / {phase.steps.length} {t('sidebar.completed', 'completed')}
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground transform transition-transform duration-200 group-data-[state=open]:rotate-90 shrink-0" />
@@ -225,7 +246,11 @@ const Sidebar = ({
                       const isActive = step.step_key === currentStepKey;
                       const isCompleted = step.status === 'completed';
                       const isInProgress = step.status === 'in_progress';
-                      const statusLabel = isCompleted ? 'Completed' : isInProgress ? 'In Progress' : 'Not Started';
+                      const statusLabel = isCompleted
+                        ? t('stepView.completed', 'Completed')
+                        : isInProgress
+                        ? t('stepView.inProgress', 'In Progress')
+                        : t('stepView.notStarted', 'Not Started');
 
                       return (
                         <Link
@@ -260,7 +285,7 @@ const Sidebar = ({
 
           {filteredPhases.length === 0 && (
             <div className="text-center py-8 text-xs text-muted-foreground">
-              No topics matching &quot;{searchQuery}&quot;
+              {t('sidebar.noTopics', 'No topics matching "{query}"').replace('{query}', searchQuery)}
             </div>
           )}
         </nav>
@@ -269,7 +294,7 @@ const Sidebar = ({
         <div className="p-3 border-t border-border bg-card/60 text-xs text-muted-foreground space-y-2">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="font-medium text-foreground">Overall Mastery</span>
+              <span className="font-medium text-foreground">{t('sidebar.overallMastery', 'Overall Mastery')}</span>
               <span className="font-bold text-primary">{stats.completionPercentage}%</span>
             </div>
             <div
@@ -291,7 +316,7 @@ const Sidebar = ({
           <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[11px]">
             <span className="flex items-center gap-1 text-muted-foreground">
               <Award className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Comprehension Score</span>
+              <span>{t('sidebar.comprehensionScore', 'Comprehension Score')}</span>
             </span>
             <span className="font-mono font-bold text-emerald-400">
               {stats.comprehensionScore !== null

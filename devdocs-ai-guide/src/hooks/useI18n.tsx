@@ -7,16 +7,17 @@ const I18nContext = createContext<I18nContextType | null>(null);
 
 function getInitialLanguage(): SupportedLocale {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY) as SupportedLocale | null;
-    if (saved && translations[saved]) {
-      return saved;
+    const saved = localStorage.getItem(STORAGE_KEY) as string | null;
+    if (saved) {
+      if (saved === 'pt' || saved === 'pt-BR') return 'pt-BR';
+      if (saved === 'es') return 'es';
+      if (saved === 'en') return 'en';
     }
     // Check browser language preference
     if (typeof navigator !== 'undefined' && navigator.language) {
-      const browserCode = navigator.language.slice(0, 2).toLowerCase() as SupportedLocale;
-      if (translations[browserCode]) {
-        return browserCode;
-      }
+      const browserCode = navigator.language.toLowerCase();
+      if (browserCode.startsWith('pt')) return 'pt-BR';
+      if (browserCode.startsWith('es')) return 'es';
     }
   } catch {
     // Fallback
@@ -29,8 +30,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   // Pure updater
   const setLang = useCallback((newLang: SupportedLocale) => {
-    if (!translations[newLang]) return;
-    setLangState(newLang);
+    const target = newLang === ('pt' as any) ? 'pt-BR' : newLang;
+    if (!translations[target]) return;
+    setLangState(target);
   }, []);
 
   // Sync DOM lang attribute and persist in effect outside updaters
@@ -46,8 +48,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   // Real-time multi-tab synchronization
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue && translations[e.newValue as SupportedLocale]) {
-        setLangState(e.newValue as SupportedLocale);
+      if (e.key === STORAGE_KEY && e.newValue) {
+        const val = e.newValue === 'pt' ? 'pt-BR' : (e.newValue as SupportedLocale);
+        if (translations[val]) {
+          setLangState(val);
+        }
       }
     };
     window.addEventListener('storage', handleStorageChange);

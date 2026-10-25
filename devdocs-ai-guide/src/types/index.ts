@@ -111,13 +111,14 @@ export interface InterviewQuestion {
   tags: string[];
   question: string;
   answer: string;
+  track?: string;
 }
 
 // ==========================================
 // 5. INTERNATIONALIZATION (i18n)
 // ==========================================
 
-export type SupportedLocale = 'en' | 'pt' | 'es';
+export type SupportedLocale = 'en' | 'pt-BR' | 'es';
 
 export interface LanguageOption {
   code: SupportedLocale;

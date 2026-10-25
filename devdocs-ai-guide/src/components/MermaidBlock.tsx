@@ -24,7 +24,7 @@ function configureMermaidTheme(isLight: boolean) {
   mermaid.initialize({
     startOnLoad: false,
     theme: isLight ? 'default' : 'dark',
-    securityLevel: 'loose',
+    securityLevel: 'strict',
     fontFamily: 'Inter, system-ui, sans-serif',
     flowchart: {
       htmlLabels: true,

@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { useSandboxActions } from '../context/SandboxContext';
 import { useI18n } from '../hooks/useI18n';
 import ProgressRing from './ProgressRing';
 
@@ -33,11 +34,17 @@ export interface StatsBarProps {
 
 const ScrollBadge = React.memo(function ScrollBadge(): React.JSX.Element | null {
   const scrollProgress = useScrollProgress('main-scroll-container');
+  const { t } = useI18n();
   if (scrollProgress <= 0.02) return null;
+  const percentText = t('nav.readPercent', '{percent}% read').replace(
+    '{percent}',
+    String(Math.round(scrollProgress * 100))
+  );
+
   return (
     <div className="hidden md:flex items-center space-x-1.5 text-[11px] font-medium text-muted-foreground bg-secondary/60 px-2.5 py-1 rounded-full border border-border/70 animate-in fade-in duration-200">
       <Eye className="w-3.5 h-3.5 text-primary animate-pulse" />
-      <span>{Math.round(scrollProgress * 100)}% read</span>
+      <span>{percentText}</span>
     </div>
   );
 });
@@ -62,16 +69,24 @@ const StatsBar = ({
   onToggleMobileSidebar,
   onOpenSearch,
   onOpenReadingSettings,
-  onOpenVectorSandbox,
-  onOpenPythonSandbox,
+  onOpenVectorSandbox: onOpenVectorProp,
+  onOpenPythonSandbox: onOpenPythonProp,
 }: StatsBarProps): React.JSX.Element => {
   const isMobileOpen = isMobileOpenProp ?? false;
   const { stats, resetAllProgress, exportStudyGuide } = useSteps();
   const { isOnline, canInstall, promptInstall } = useNetworkStatus();
+  const { openPythonSandbox, openVectorSandbox } = useSandboxActions();
   const { t } = useI18n();
 
+  const handleOpenPython = onOpenPythonProp ?? (() => openPythonSandbox(null));
+  const handleOpenVector = onOpenVectorProp ?? openVectorSandbox;
+
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to reset your learning progress, quiz scores, and notes?")) {
+    const confirmMsg = t(
+      'nav.resetConfirm',
+      'Are you sure you want to reset your learning progress, quiz scores, and notes?'
+    );
+    if (window.confirm(confirmMsg)) {
       resetAllProgress();
     }
   };
@@ -110,7 +125,7 @@ const StatsBar = ({
             title="You are offline. All 28 modules, formulas, diagrams, and notes are available offline."
           >
             <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span className="text-[11px] font-semibold">Offline Mode</span>
+            <span className="text-[11px] font-semibold">{t('nav.offlineMode', 'Offline Mode')}</span>
           </div>
         )}
 
@@ -156,10 +171,10 @@ const StatsBar = ({
           <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded-full font-bold">28</span>
         </Link>
 
-        {/* In-Browser Python Sandbox (Pyodide Web Worker) */}
+        {/* In-Browser Python Sandbox */}
         <button
           type="button"
-          onClick={onOpenPythonSandbox}
+          onClick={handleOpenPython}
           title="In-Browser Python RAG Sandbox (Isolated Pyodide Web Worker)"
           aria-label={t('nav.pythonLab', 'Open Python Sandbox Lab')}
           className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-emerald-400/40 transition-colors cursor-pointer shadow-2xs"
@@ -171,7 +186,7 @@ const StatsBar = ({
         {/* Vector Distance Visualizer Sandbox */}
         <button
           type="button"
-          onClick={onOpenVectorSandbox}
+          onClick={handleOpenVector}
           title="Interactive 2D Vector Distance Visualizer Sandbox"
           aria-label={t('nav.vectorSandbox', 'Open Vector Visualizer Sandbox')}
           className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-indigo-400/40 transition-colors cursor-pointer shadow-2xs"
@@ -204,7 +219,7 @@ const StatsBar = ({
           <span className="hidden 2xl:inline font-medium">{t('nav.pdf', 'PDF')}</span>
         </button>
 
-        {/* Export Notes / Study Guide (hidden on small mobile to preserve space) */}
+        {/* Export Notes / Study Guide */}
         <button
           type="button"
           onClick={exportStudyGuide}
@@ -213,7 +228,7 @@ const StatsBar = ({
           className="hidden sm:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
-          <span className="hidden 2xl:inline font-medium">Export</span>
+          <span className="hidden 2xl:inline font-medium">{t('nav.export', 'Export')}</span>
         </button>
 
         {/* Reset progress */}
@@ -229,7 +244,7 @@ const StatsBar = ({
           </button>
         )}
 
-        {/* Comprehension Score Badge (when quizzes have been answered) */}
+        {/* Comprehension Score Badge */}
         {stats.comprehensionScore !== null && (
           <div
             title={`Comprehension Score: ${stats.correctQuizQuestions}/${stats.answeredQuizQuestions} quiz questions answered correctly`}
@@ -248,7 +263,7 @@ const StatsBar = ({
               {stats.completedSteps} / {stats.totalSteps}
             </div>
             <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-              Completed
+              {t('nav.completed', 'Completed')}
             </div>
           </div>
         </div>

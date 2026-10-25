@@ -551,15 +551,15 @@ self.onmessage = async (event: MessageEvent) => {
       return;
     }
 
+    let executeFn: any = null;
+    let pyResult: any = null;
     try {
       const pyodide = await ensurePyodideLoaded();
       self.postMessage({ type: 'READY' });
 
-      const executeFn = pyodide.globals.get('_execute_sandboxed');
-      const pyResult = executeFn(code);
+      executeFn = pyodide.globals.get('_execute_sandboxed');
+      pyResult = executeFn(code);
       const jsResult = pyResult.toJs({ dict_converter: Object.fromEntries });
-      pyResult.destroy();
-      executeFn.destroy();
 
       self.postMessage({
         type: 'RESULT',
@@ -576,6 +576,17 @@ self.onmessage = async (event: MessageEvent) => {
         error: err?.message || String(err),
         elapsedMs: 0,
       });
+    } finally {
+      if (pyResult && typeof pyResult.destroy === 'function') {
+        try {
+          pyResult.destroy();
+        } catch {}
+      }
+      if (executeFn && typeof executeFn.destroy === 'function') {
+        try {
+          executeFn.destroy();
+        } catch {}
+      }
     }
   }
 };

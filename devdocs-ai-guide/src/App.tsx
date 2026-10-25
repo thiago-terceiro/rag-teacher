@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
 import StepView from './components/StepView';
-import CommandPalette from './components/CommandPalette';
-import ReadingSettingsModal from './components/ReadingSettingsModal';
-import VectorVisualizer from './components/VectorVisualizer';
-import PythonSandbox from './components/PythonSandbox';
-import InterviewQuestions from './components/InterviewQuestions';
 import { StepsProvider } from './hooks/useSteps';
 import { ReadingSettingsProvider } from './hooks/useReadingSettings';
 import { I18nProvider } from './hooks/useI18n';
 import { SandboxProvider, useSandbox } from './context/SandboxContext';
+
+// Lazy loaded auxiliary dialogs & routes to keep critical bundle ultra-light
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
+const ReadingSettingsModal = lazy(() => import('./components/ReadingSettingsModal'));
+const VectorVisualizer = lazy(() => import('./components/VectorVisualizer'));
+const PythonSandbox = lazy(() => import('./components/PythonSandbox'));
+const InterviewQuestions = lazy(() => import('./components/InterviewQuestions'));
 
 function AppContent(): React.JSX.Element {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
@@ -57,7 +59,7 @@ function AppContent(): React.JSX.Element {
 
   return (
     <Router>
-      {/* Accessibility: Skip to Main Content Link for Keyboard & Screen Reader Users */}
+      {/* Accessibility: Skip to Main Content Link */}
       <a
         href="#main-scroll-container"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-white text-xs font-semibold"
@@ -65,14 +67,24 @@ function AppContent(): React.JSX.Element {
         Skip to main content
       </a>
 
-      <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
-      <ReadingSettingsModal isOpen={isReadingSettingsOpen} setIsOpen={setIsReadingSettingsOpen} />
-      <VectorVisualizer isOpen={isVectorVisualizerOpen} setIsOpen={setIsVectorVisualizerOpen} />
-      <PythonSandbox
-        isOpen={isPythonSandboxOpen}
-        setIsOpen={setIsPythonSandboxOpen}
-        initialCode={pythonSandboxCode}
-      />
+      <Suspense fallback={null}>
+        {isCommandPaletteOpen && (
+          <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
+        )}
+        {isReadingSettingsOpen && (
+          <ReadingSettingsModal isOpen={isReadingSettingsOpen} setIsOpen={setIsReadingSettingsOpen} />
+        )}
+        {isVectorVisualizerOpen && (
+          <VectorVisualizer isOpen={isVectorVisualizerOpen} setIsOpen={setIsVectorVisualizerOpen} />
+        )}
+        {isPythonSandboxOpen && (
+          <PythonSandbox
+            isOpen={isPythonSandboxOpen}
+            setIsOpen={setIsPythonSandboxOpen}
+            initialCode={pythonSandboxCode}
+          />
+        )}
+      </Suspense>
 
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}
@@ -108,7 +120,20 @@ function AppContent(): React.JSX.Element {
                 />
               }
             />
-            <Route path="/interview-questions" element={<InterviewQuestions />} />
+            <Route
+              path="/interview-questions"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
+                      Loading interview questions...
+                    </div>
+                  }
+                >
+                  <InterviewQuestions />
+                </Suspense>
+              }
+            />
             <Route path="*" element={<Navigate to="/steps/project-setup" replace />} />
           </Routes>
         </div>

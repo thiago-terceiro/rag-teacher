@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import RootErrorBoundary from './components/RootErrorBoundary';
 import './index.css';
 import { registerServiceWorker } from './lib/registerServiceWorker';
 
@@ -16,7 +17,9 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <App />
+      <RootErrorBoundary>
+        <App />
+      </RootErrorBoundary>
     </React.StrictMode>,
   );
 }

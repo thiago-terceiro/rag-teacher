@@ -15,6 +15,8 @@ import React, { useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
 import { useReadingSettings } from '../hooks/useReadingSettings';
+import { useSandboxActions } from '../context/SandboxContext';
+import { useI18n } from '../hooks/useI18n';
 import { interviewQuestions } from '../data/interviewQuestionsData';
 import MarkdownRenderer from './MarkdownRenderer';
 import NotesJournal from './NotesJournal';
@@ -33,11 +35,19 @@ export interface StepViewProps {
   onOpenPythonSandbox?: () => void;
 }
 
-const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): React.JSX.Element => {
+const StepView = ({
+  onOpenVectorSandbox: onOpenVectorProp,
+  onOpenPythonSandbox: onOpenPythonProp,
+}: StepViewProps): React.JSX.Element => {
   const { stepKey: routeStepKey } = useParams<{ stepKey?: string }>();
   const navigate = useNavigate();
   const { updateStepProgress, phases } = useSteps();
   const { settings } = useReadingSettings();
+  const { openPythonSandbox, openVectorSandbox } = useSandboxActions();
+  const { t } = useI18n();
+
+  const handleOpenPython = onOpenPythonProp ?? (() => openPythonSandbox(null));
+  const handleOpenVector = onOpenVectorProp ?? openVectorSandbox;
 
   const stepKey = routeStepKey || 'project-setup';
 
@@ -62,7 +72,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
   const [activeId, setActiveId] = useActiveHeading(headings);
   const isLightTheme = settings.theme === 'daylight-paper';
 
-  // On step change or hash change: honor #section deep link with smooth scroll and neon pulse highlight
+  // On step change or hash change: honor #section deep link with smooth scroll and pulse highlight
   useEffect(() => {
     const handleHashNavigation = (smooth = false) => {
       const hashId = decodeURIComponent(window.location.hash.slice(1));
@@ -71,11 +81,9 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           const el = document.getElementById(hashId);
           if (el) {
             scrollToHeading(hashId, { smooth });
-            // Clean up any existing pulse highlight
             document.querySelectorAll('.deep-link-target').forEach((node) => {
               node.classList.remove('deep-link-target');
             });
-            // Apply neon pulse highlight to target element
             el.classList.add('deep-link-target');
             setTimeout(() => {
               el.classList.remove('deep-link-target');
@@ -100,10 +108,10 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
     return () => window.removeEventListener('hashchange', onHashChange);
   }, [stepKey]);
 
-  // Keyboard navigation: Left/Right arrows to flip through steps
+  // Keyboard navigation: Left/Right arrows to flip through steps (disabled when dialog is open)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in an input, textarea, or contentEditable
+      if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
       const isInput =
@@ -131,6 +139,10 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
     updateStepProgress(key, undefined, newNotes);
   }, [updateStepProgress]);
 
+  const stepOfText = t('stepView.stepOf', 'Step {current} of {total}')
+    .replace('{current}', String(stepIndex))
+    .replace('{total}', String(allSteps.length));
+
   return (
     <div key={stepKey} className={cn("reading-container-outer mx-auto flex justify-center items-start gap-6 xl:gap-8 w-full max-w-full min-w-0 overflow-x-hidden", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
       <article className={cn("reading-container-inner relative w-full max-w-full min-w-0 pb-16", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
@@ -151,7 +163,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           </div>
         </div>
 
-        {/* Ambient Aura Background Glow (Linear/Vercel style) */}
+        {/* Ambient Aura Background Glow */}
         <div className={cn("no-print absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full transform-gpu will-change-transform", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
 
         {/* Breadcrumb / Phase Banner */}
@@ -159,10 +171,10 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           <div className="flex items-center space-x-2">
             <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary font-semibold tracking-wide shadow-[0_0_15px_rgba(59,130,246,0.15)] flex items-center space-x-1.5 transition-all">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span>{currentPhase?.title?.split(':')[0] || 'Curriculum'}</span>
+              <span>{currentPhase?.title?.split(':')[0] || t('stepView.curriculum', 'Curriculum')}</span>
             </span>
             <span>•</span>
-            <span>Step {stepIndex} of {allSteps.length}</span>
+            <span>{stepOfText}</span>
           </div>
           <div className="flex items-center gap-2">
             {step.readTime && (
@@ -188,14 +200,13 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           {step.title}
         </h1>
         
-        {/* Status Bar Card with Ambient Glassmorphism & Gradient Border */}
+        {/* Status Bar Card */}
         <div className="no-print p-4 mb-8 rounded-xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm hover:shadow-[0_0_25px_rgba(59,130,246,0.1)] hover:border-primary/40 transition-all duration-300 relative overflow-hidden group flex flex-wrap items-center justify-between gap-4">
-          {/* Iridescent top highlight line */}
           <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
 
           <div className="flex items-center space-x-2">
             <Bookmark className="w-4 h-4 text-primary" aria-hidden="true" />
-            <span id="learning-status-label" className="text-sm font-semibold">Your Learning Status:</span>
+            <span id="learning-status-label" className="text-sm font-semibold">{t('stepView.learningStatus', 'Your Learning Status:')}</span>
           </div>
           <div role="radiogroup" aria-labelledby="learning-status-label" className="flex flex-wrap items-center gap-2">
             <button
@@ -211,7 +222,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
               )}
             >
               <Circle className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Not Started</span>
+              <span>{t('stepView.notStarted', 'Not Started')}</span>
             </button>
             
             <button
@@ -227,7 +238,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
               )}
             >
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
-              <span>In Progress</span>
+              <span>{t('stepView.inProgress', 'In Progress')}</span>
             </button>
 
             <button
@@ -243,12 +254,12 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
               )}
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-              <span>Completed</span>
+              <span>{t('stepView.completed', 'Completed')}</span>
             </button>
 
             <button
               type="button"
-              onClick={onOpenPythonSandbox}
+              onClick={handleOpenPython}
               title="Launch In-Browser Pyodide Python Sandbox"
               aria-label="Launch In-Browser Python Sandbox"
               className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center space-x-1.5 cursor-pointer"
@@ -273,7 +284,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           </div>
         )}
 
-        {/* Interactive Vector Distance Sandbox Banner (for Vector/Dense retrieval steps) */}
+        {/* Interactive Vector Distance Sandbox Banner */}
         {(stepKey === 'dense-retrieval' || stepKey === 'vector-database-ann' || stepKey === 'qdrant-setup') && (
           <div className="no-print mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10 border border-indigo-500/30 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
             <div className="flex items-center space-x-3.5">
@@ -287,7 +298,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
             </div>
             <button
               type="button"
-              onClick={onOpenVectorSandbox}
+              onClick={handleOpenVector}
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
             >
               <span>Launch Sandbox</span>
@@ -296,7 +307,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           </div>
         )}
 
-        {/* On-this-page panel (below xl; desktop rail renders beside the article) */}
+        {/* On-this-page panel (below xl) */}
         <div className="no-print">
           <TableOfContentsMobile
             headings={headings}
@@ -305,7 +316,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           />
         </div>
 
-        {/* Main Content (Memoized against unnecessary re-renders) */}
+        {/* Main Content */}
         <div className={cn(
           "prose max-w-none",
           !isLightTheme && "prose-invert",
@@ -315,14 +326,14 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           <MarkdownRenderer markdown={step.content} />
         </div>
 
-        {/* Interactive Module Knowledge Check (2-3 Scenario Questions) */}
+        {/* Interactive Module Knowledge Check */}
         <ModuleQuiz
           stepKey={stepKey}
           status={status}
           onCompleteStep={handleStatusChange}
         />
 
-        {/* Isolated Notes Journal Component */}
+        {/* Notes Journal */}
         <div className="no-print">
           <NotesJournal
             key={stepKey}
@@ -365,7 +376,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
           </section>
         )}
 
-        {/* Next / Previous Navigation Controls with React Router v7 Native View Transitions */}
+        {/* Next / Previous Navigation Controls */}
         <nav aria-label="Step Navigation" className="no-print mt-12 pt-6 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
           {prevStep ? (
             <Link
@@ -377,7 +388,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
               <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" aria-hidden="true" />
               <div className="text-left">
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  <span>Previous Step</span>
+                  <span>{t('stepView.previous', 'Previous')}</span>
                   <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-secondary/80 rounded border border-border/60 text-[10px] text-muted-foreground font-mono">←</kbd>
                 </div>
                 <div className="text-sm font-medium line-clamp-1">{prevStep.title}</div>
@@ -394,7 +405,7 @@ const StepView = ({ onOpenVectorSandbox, onOpenPythonSandbox }: StepViewProps): 
             >
               <div className="text-right">
                 <div className="flex items-center justify-end space-x-1.5 text-xs text-primary-foreground/80 uppercase tracking-wider font-medium">
-                  <span>Next Step</span>
+                  <span>{t('stepView.next', 'Next')}</span>
                   <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-primary-foreground/20 rounded border border-primary-foreground/30 text-[10px] text-primary-foreground font-mono">→</kbd>
                 </div>
                 <div className="text-sm font-bold line-clamp-1">{nextStep.title}</div>

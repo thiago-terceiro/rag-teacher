@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { translations, supportedLanguages } from '../i18n/translations';
 
 describe('Internationalization (i18n) Completeness', () => {
-  it('should support en, pt, and es', () => {
+  it('should support en, pt-BR, and es according to Global Antigravity Rules', () => {
     const codes = supportedLanguages.map(l => l.code);
     expect(codes).toContain('en');
-    expect(codes).toContain('pt');
+    expect(codes).toContain('pt-BR');
     expect(codes).toContain('es');
   });
 
@@ -27,6 +27,7 @@ describe('Internationalization (i18n) Completeness', () => {
 
   it('no duplicate translation keys should exist per language', () => {
     Object.entries(translations).forEach(([_code, dict]) => {
+      if (!dict) return;
       const keys = Object.keys(dict);
       const uniqueKeys = new Set(keys);
       expect(uniqueKeys.size).toBe(keys.length);

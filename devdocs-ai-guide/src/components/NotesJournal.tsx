@@ -17,7 +17,9 @@ const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSa
   const debouncedNotes = useDebounce<string>(notes, 500);
 
   const notesRef = useRef<string>(notes);
-  notesRef.current = notes;
+  useEffect(() => {
+    notesRef.current = notes;
+  }, [notes]);
   const lastSavedRef = useRef<string>(initialNotes);
 
   const flushNotes = useCallback((textToSave: string) => {

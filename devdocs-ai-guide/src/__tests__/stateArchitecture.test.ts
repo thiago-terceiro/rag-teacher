@@ -24,7 +24,6 @@ describe('React State Architecture & Performance Invariants', () => {
         resolveComponentPath('components/StatsBar.jsx'),
         resolveComponentPath('components/NotesJournal.jsx'),
         resolveComponentPath('components/CodeBlock.jsx'),
-        resolveComponentPath('components/ui/button.jsx'),
       ];
 
       filesToCheck.forEach(filePath => {

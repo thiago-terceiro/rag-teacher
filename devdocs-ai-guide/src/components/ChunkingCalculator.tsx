@@ -1,6 +1,7 @@
-import React, { useState, useMemo, memo } from 'react';
-import { Layers, Sparkles } from 'lucide-react';
-import { cn } from '../lib/utils';
+import React, { useState, useMemo } from 'react';
+import { Layers } from 'lucide-react';
+import { calculateChunkMetrics, type ChunkMetrics } from '../lib/chunkingMath';
+import { useI18n } from '../hooks/useI18n';
 
 export interface ChunkPreset {
   name: string;
@@ -8,15 +9,6 @@ export interface ChunkPreset {
   chunkSize: number;
   overlapPct: number;
   desc: string;
-}
-
-export interface ChunkMetrics {
-  overlapTokens: number;
-  stride: number;
-  numChunks: number;
-  totalStoredTokens: number;
-  redundancyRatio: string;
-  extraOverheadPct: number;
 }
 
 export interface VisualSegment {
@@ -37,24 +29,11 @@ function ChunkingCalculator(): React.JSX.Element {
   const [docLength, setDocLength] = useState<number>(2000);
   const [chunkSize, setChunkSize] = useState<number>(512);
   const [overlapPct, setOverlapPct] = useState<number>(20);
+  const { t } = useI18n();
 
-  // O(1) synchronous math - zero layout thrashing
+  // O(1) synchronous math using pure library module
   const metrics: ChunkMetrics = useMemo(() => {
-    const overlapTokens = Math.min(chunkSize - 1, Math.round((chunkSize * overlapPct) / 100));
-    const stride = Math.max(1, chunkSize - overlapTokens);
-    const numChunks = Math.max(1, Math.ceil((docLength - overlapTokens) / stride));
-    const totalStoredTokens = numChunks * chunkSize;
-    const redundancyRatio = (totalStoredTokens / docLength).toFixed(2);
-    const extraOverheadPct = Math.round(((totalStoredTokens - docLength) / docLength) * 100);
-
-    return {
-      overlapTokens,
-      stride,
-      numChunks,
-      totalStoredTokens,
-      redundancyRatio,
-      extraOverheadPct: Math.max(0, extraOverheadPct),
-    };
+    return calculateChunkMetrics(docLength, chunkSize, overlapPct);
   }, [docLength, chunkSize, overlapPct]);
 
   // Calculate visual chunk segments (limit to 10 for high-performance rendering)
@@ -96,25 +75,25 @@ function ChunkingCalculator(): React.JSX.Element {
           </div>
           <div>
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              Chunking Overlap & Token Storage Simulator
+              {t('chunking.title', 'Chunking Overlap & Token Storage Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                Live 60 FPS
+                {t('common.interactive', 'Interactive')}
               </span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Simulate sliding window strides, token duplication, and vector DB indexing overhead.
+              {t('chunking.subtitle', 'Simulate sliding-window token indexing, overlap boundary stride, and vector database memory overhead.')}
             </p>
           </div>
         </div>
 
         {/* Presets */}
-        <div className="flex items-center gap-1.5 flex-wrap" role="toolbar" aria-label="Chunking presets">
+        <div className="flex flex-wrap gap-1.5 self-start sm:self-auto">
           {PRESETS.map((p) => (
             <button
               key={p.name}
+              type="button"
               onClick={() => applyPreset(p)}
-              aria-label={`Apply ${p.name} preset: length ${p.length}, chunk size ${p.chunkSize}, overlap ${p.overlapPct}%`}
-              className="px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 hover:border-blue-500/40 transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
             >
               {p.name}
             </button>
@@ -122,162 +101,138 @@ function ChunkingCalculator(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Interactive Controls & Metrics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
-        {/* Sliders Panel */}
-        <div className="space-y-4 lg:col-span-2">
-          {/* Document Length Slider */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label htmlFor="chunk-doc-length" className="text-muted-foreground font-medium">Document Length (Tokens)</label>
-              <span className="font-mono font-semibold text-foreground">{docLength.toLocaleString()} tokens</span>
-            </div>
-            <input
-              id="chunk-doc-length"
-              type="range"
-              min="500"
-              max="6000"
-              step="100"
-              value={docLength}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocLength(Number(e.target.value))}
-              aria-label="Document Length in Tokens"
-              aria-valuemin={500}
-              aria-valuemax={6000}
-              aria-valuenow={docLength}
-              aria-valuetext={`${docLength.toLocaleString()} tokens`}
-              className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
+      {/* Sliders Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 py-5 border-b border-border/50">
+        <div>
+          <div className="flex justify-between items-center text-xs mb-1.5">
+            <label htmlFor="doc-length-slider" className="text-muted-foreground font-medium">
+              {t('chunking.docLength', 'Document Length')}
+            </label>
+            <span className="font-mono font-bold text-foreground">{docLength.toLocaleString()} tokens</span>
           </div>
-
-          {/* Chunk Size Slider */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label htmlFor="chunk-size-slider" className="text-muted-foreground font-medium">Chunk Window Size ($C$)</label>
-              <span className="font-mono font-semibold text-blue-400">{chunkSize} tokens</span>
-            </div>
-            <input
-              id="chunk-size-slider"
-              type="range"
-              min="128"
-              max="2048"
-              step="64"
-              value={chunkSize}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChunkSize(Number(e.target.value))}
-              aria-label="Chunk Window Size in Tokens"
-              aria-valuemin={128}
-              aria-valuemax={2048}
-              aria-valuenow={chunkSize}
-              aria-valuetext={`${chunkSize} tokens`}
-              className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-          </div>
-
-          {/* Overlap Percentage Slider */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label htmlFor="chunk-overlap-slider" className="text-muted-foreground font-medium">Overlap Percentage ($O$)</label>
-              <span className="font-mono font-semibold text-indigo-400">
-                {overlapPct}% ({metrics.overlapTokens} tokens)
-              </span>
-            </div>
-            <input
-              id="chunk-overlap-slider"
-              type="range"
-              min="0"
-              max="50"
-              step="5"
-              value={overlapPct}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOverlapPct(Number(e.target.value))}
-              aria-label="Overlap Percentage"
-              aria-valuemin={0}
-              aria-valuemax={50}
-              aria-valuenow={overlapPct}
-              aria-valuetext={`${overlapPct} percent, ${metrics.overlapTokens} tokens`}
-              className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-indigo-500"
-            />
-          </div>
-
-          {/* Visual Chunk Bands Timeline */}
-          <div className="pt-2" aria-hidden="true">
-            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>Timeline Window Segmentation ({visualSegments.length}{metrics.numChunks > 10 ? '+' : ''} segments)</span>
-              <span className="text-[10px] font-mono text-muted-foreground">Stride: {metrics.stride}t</span>
-            </div>
-
-            <div className="relative h-14 bg-secondary/40 rounded-xl p-1.5 border border-border/60 overflow-hidden flex flex-col justify-center">
-              {/* Document Base Bar */}
-              <div className="absolute inset-x-2 h-1 bg-border/40 rounded-full top-1/2 -translate-y-1/2" />
-
-              {/* Overlapping Chunk Layers */}
-              <div className="relative h-9 w-full">
-                {visualSegments.map((seg, idx) => {
-                  const isEven = idx % 2 === 0;
-                  return (
-                    <div
-                      key={seg.id}
-                      style={{
-                        left: `${seg.leftPct}%`,
-                        width: `${seg.widthPct}%`,
-                        top: isEven ? '0px' : '14px',
-                      }}
-                      className={cn(
-                        'absolute h-5 rounded-md border text-[10px] font-mono flex items-center justify-center transition-all duration-150 shadow-xs px-1 select-none',
-                        isEven
-                          ? 'bg-blue-500/20 border-blue-500/40 text-blue-300'
-                          : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                      )}
-                    >
-                      <span className="truncate">C{idx + 1}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <input
+            id="doc-length-slider"
+            type="range"
+            min="500"
+            max="10000"
+            step="100"
+            value={docLength}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocLength(Number(e.target.value))}
+            aria-label="Document Length in tokens"
+            aria-valuemin={500}
+            aria-valuemax={10000}
+            aria-valuenow={docLength}
+            aria-valuetext={`${docLength} tokens`}
+            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+          />
         </div>
 
-        {/* Calculated Metrics KPI Cards */}
-        <div
-          role="region"
-          aria-label="Calculated Storage Metrics"
-          aria-live="polite"
-          className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 bg-secondary/20 p-3.5 rounded-xl border border-border/60"
-        >
-          <div className="p-2.5 rounded-lg bg-card/60 border border-border/50">
-            <div className="text-[11px] text-muted-foreground">Total Generated Chunks</div>
-            <div className="text-xl font-bold font-mono text-foreground mt-0.5">
-              {metrics.numChunks} <span className="text-xs font-normal text-muted-foreground">vectors</span>
-            </div>
+        <div>
+          <div className="flex justify-between items-center text-xs mb-1.5">
+            <label htmlFor="chunk-size-slider" className="text-muted-foreground font-medium">
+              {t('chunking.chunkSize', 'Chunk Size')}
+            </label>
+            <span className="font-mono font-bold text-blue-400">{chunkSize} tokens</span>
           </div>
+          <input
+            id="chunk-size-slider"
+            type="range"
+            min="128"
+            max="2048"
+            step="64"
+            value={chunkSize}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChunkSize(Number(e.target.value))}
+            aria-label="Chunk Size in tokens"
+            aria-valuemin={128}
+            aria-valuemax={2048}
+            aria-valuenow={chunkSize}
+            aria-valuetext={`${chunkSize} tokens`}
+            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
+          />
+        </div>
 
-          <div className="p-2.5 rounded-lg bg-card/60 border border-border/50">
-            <div className="text-[11px] text-muted-foreground">Storage Multiplication</div>
-            <div className="text-xl font-bold font-mono text-blue-400 mt-0.5">
-              {metrics.redundancyRatio}x <span className="text-xs font-normal text-muted-foreground">({metrics.extraOverheadPct}% dup)</span>
-            </div>
+        <div>
+          <div className="flex justify-between items-center text-xs mb-1.5">
+            <label htmlFor="overlap-slider" className="text-muted-foreground font-medium">
+              {t('chunking.overlap', 'Overlap Percentage')}
+            </label>
+            <span className="font-mono font-bold text-emerald-400">{overlapPct}% ({metrics.overlapTokens} tokens)</span>
           </div>
-
-          <div className="p-2.5 rounded-lg bg-card/60 border border-border/50 col-span-2 lg:col-span-1">
-            <div className="text-[11px] text-muted-foreground">Total Stored Tokens</div>
-            <div className="text-xl font-bold font-mono text-emerald-400 mt-0.5">
-              {metrics.totalStoredTokens.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">tokens</span>
-            </div>
-          </div>
+          <input
+            id="overlap-slider"
+            type="range"
+            min="0"
+            max="50"
+            step="5"
+            value={overlapPct}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOverlapPct(Number(e.target.value))}
+            aria-label="Overlap Percentage"
+            aria-valuemin={0}
+            aria-valuemax={50}
+            aria-valuenow={overlapPct}
+            aria-valuetext={`${overlapPct} percent`}
+            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-emerald-500"
+          />
         </div>
       </div>
 
-      {/* Architecture Trade-Off Tip */}
-      <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-start gap-2.5 text-xs text-muted-foreground">
-        <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-        <div className="leading-relaxed">
-          <span className="font-semibold text-blue-300">Architecture Invariant:</span> An overlap $O$ of{' '}
-          <strong className="text-foreground">15%–20%</strong> is the production sweet spot. Less than 10% risks splitting atomic
-          entities (e.g. JSON fields or equations) across boundaries; greater than 30% inflates vector database index memory and embedding
-          API costs by <strong className="text-foreground">&gt;40%</strong> without retrieval recall gains.
+      {/* Metrics Summary Strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4">
+        <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+          <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{t('chunking.stride', 'Window Stride')}</div>
+          <div className="text-lg font-mono font-bold text-foreground mt-0.5">{metrics.stride} tokens</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">chunkSize - overlap</div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+          <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{t('chunking.chunks', 'Total Chunks')}</div>
+          <div className="text-lg font-mono font-bold text-primary mt-0.5">{metrics.numChunks}</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">Vector points indexed</div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+          <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{t('chunking.storedTokens', 'Stored Tokens')}</div>
+          <div className="text-lg font-mono font-bold text-foreground mt-0.5">{metrics.totalStoredTokens.toLocaleString()}</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">{metrics.redundancyRatio}x redundancy ratio</div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+          <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{t('chunking.rawVectorStorage', 'Vector RAM (Float32)')}</div>
+          <div className="text-lg font-mono font-bold text-emerald-400 mt-0.5">{metrics.rawVectorMB.toFixed(2)} MB</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">1536-dim embeddings</div>
+        </div>
+      </div>
+
+      {/* Visual Chunk Stacking Timeline */}
+      <div className="pt-3">
+        <div className="text-xs font-semibold text-muted-foreground mb-2 flex items-center justify-between">
+          <span>{t('chunking.visualDistribution', 'Sliding Window Distribution (First 10 Chunks)')}</span>
+          <span className="font-mono text-[10px] text-muted-foreground">0 — {docLength} tokens</span>
+        </div>
+        <div
+          role="region"
+          aria-label="Visual chunk distribution timeline"
+          className="relative h-24 bg-secondary/30 rounded-xl p-2 border border-border/60 overflow-hidden flex flex-col justify-around"
+        >
+          {visualSegments.map((seg, idx) => {
+            const hue = 210 + (idx * 15) % 90;
+            return (
+              <div
+                key={seg.id}
+                className="h-1.5 rounded-full shadow-xs transition-all duration-200"
+                style={{
+                  width: `${Math.max(2, seg.widthPct)}%`,
+                  marginLeft: `${seg.leftPct}%`,
+                  backgroundColor: `hsl(${hue}, 85%, 60%)`,
+                }}
+                title={`Chunk #${seg.id + 1}: [${seg.start}..${seg.end}] (${seg.end - seg.start} tokens)`}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-export default memo(ChunkingCalculator);
+export default React.memo(ChunkingCalculator);

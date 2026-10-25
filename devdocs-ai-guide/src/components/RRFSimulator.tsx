@@ -1,21 +1,11 @@
-import React, { useState, useMemo, memo } from 'react';
-import { GitMerge, Sparkles, Sliders, Trophy } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { GitMerge, Trophy, Sliders } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { calculateRRF, type BaseRRFDoc, type ScoredRRFDoc } from '../lib/rrfMath';
+import { useI18n } from '../hooks/useI18n';
 
-export interface RRFDoc {
-  id: string;
-  title: string;
-  vectorRank: number;
-  bm25Rank: number;
+export interface RRFDoc extends BaseRRFDoc {
   tag: string;
-}
-
-export interface ScoredRRFDoc extends RRFDoc {
-  vectorScore: number;
-  bm25Score: number;
-  rrfScore: number;
-  fusedRank: number;
-  barWidthPct: number;
 }
 
 const INITIAL_DOCS: readonly RRFDoc[] = [
@@ -29,32 +19,11 @@ const INITIAL_DOCS: readonly RRFDoc[] = [
 function RRFSimulator(): React.JSX.Element {
   const [kConstant, setKConstant] = useState<number>(60);
   const [docs, setDocs] = useState<RRFDoc[]>([...INITIAL_DOCS]);
+  const { t } = useI18n();
 
-  // Compute RRF scores and fused rankings in O(N log N) with pure memoized arithmetic
-  const rankedDocs: ScoredRRFDoc[] = useMemo(() => {
-    const scored = docs.map((doc) => {
-      const vectorScore = 1 / (kConstant + doc.vectorRank);
-      const bm25Score = 1 / (kConstant + doc.bm25Rank);
-      const rrfScore = vectorScore + bm25Score;
-
-      return {
-        ...doc,
-        vectorScore,
-        bm25Score,
-        rrfScore,
-      };
-    });
-
-    // Sort descending by fused RRF score
-    scored.sort((a, b) => b.rrfScore - a.rrfScore);
-
-    // Normalize fused scores relative to the top document for sleek bar visualization
-    const maxScore = scored[0]?.rrfScore || 1;
-    return scored.map((item, idx) => ({
-      ...item,
-      fusedRank: idx + 1,
-      barWidthPct: Math.round((item.rrfScore / maxScore) * 100),
-    }));
+  // Compute RRF scores and fused rankings in O(N log N) using pure library function
+  const rankedDocs = useMemo<ScoredRRFDoc[]>(() => {
+    return calculateRRF(docs, kConstant);
   }, [docs, kConstant]);
 
   const updateDocRank = (docId: string, field: 'vectorRank' | 'bm25Rank', newRank: number) => {
@@ -78,13 +47,13 @@ function RRFSimulator(): React.JSX.Element {
           </div>
           <div>
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              Reciprocal Rank Fusion (RRF) Hybrid Search Simulator
+              {t('rrf.title', 'Reciprocal Rank Fusion (RRF) Hybrid Search Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
-                Interactive
+                {t('common.interactive', 'Interactive')}
               </span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {"Simulate multi-retriever rank merging using Cormack's algorithm: $\\text{RRF}(d) = \\sum \\frac{1}{k + r_m(d)}$."}
+              {"Simulate multi-retriever rank merging using Cormack's algorithm: RRF(d) = \\sum \\frac{1}{k + r_m(d)}."}
             </p>
           </div>
         </div>
@@ -92,10 +61,10 @@ function RRFSimulator(): React.JSX.Element {
         <button
           type="button"
           onClick={resetDefaults}
-          aria-label="Reset document ranks to default values"
+          aria-label={t('rrf.resetAria', 'Reset document ranks to default values')}
           className="self-start sm:self-auto px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
         >
-          Reset Ranks
+          {t('rrf.reset', 'Reset Ranks')}
         </button>
       </div>
 
@@ -104,10 +73,10 @@ function RRFSimulator(): React.JSX.Element {
         <div className="flex justify-between items-center text-xs mb-1.5">
           <label htmlFor="rrf-k-slider" className="text-muted-foreground font-medium flex items-center gap-1.5">
             <Sliders className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" />
-            RRF Smoothing Constant ($k$)
+            {t('rrf.constantLabel', 'RRF Smoothing Constant (k)')}
           </label>
           <span className="font-mono font-bold text-purple-400 text-sm">
-            k = {kConstant} {kConstant === 60 ? '(Cormack Standard)' : ''}
+            k = {kConstant} {kConstant === 60 ? `(${t('rrf.standardCormack', 'Cormack Standard')})` : ''}
           </span>
         </div>
         <input
@@ -118,7 +87,7 @@ function RRFSimulator(): React.JSX.Element {
           step="5"
           value={kConstant}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKConstant(Number(e.target.value))}
-          aria-label="RRF Smoothing Constant k"
+          aria-label={t('rrf.constantAria', 'RRF Smoothing Constant k')}
           aria-valuemin={10}
           aria-valuemax={120}
           aria-valuenow={kConstant}
@@ -134,14 +103,14 @@ function RRFSimulator(): React.JSX.Element {
 
       {/* Live Fused Ranking Table */}
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-xs text-left" aria-label="Reciprocal Rank Fusion rankings">
+        <table className="w-full text-xs text-left" aria-label={t('rrf.tableAria', 'Reciprocal Rank Fusion rankings')}>
           <thead>
             <tr className="border-b border-border/60 text-muted-foreground text-[11px] uppercase tracking-wider font-semibold">
-              <th scope="col" className="py-2.5 px-3">Fused Rank</th>
-              <th scope="col" className="py-2.5 px-3">Document</th>
-              <th scope="col" className="py-2.5 px-3 text-center">Dense Rank (Vector)</th>
-              <th scope="col" className="py-2.5 px-3 text-center">Sparse Rank (BM25)</th>
-              <th scope="col" className="py-2.5 px-3">Fused RRF Score & Relative Strength</th>
+              <th scope="col" className="py-2.5 px-3">{t('rrf.fusedRank', 'Fused Rank')}</th>
+              <th scope="col" className="py-2.5 px-3">{t('rrf.document', 'Document')}</th>
+              <th scope="col" className="py-2.5 px-3 text-center">{t('rrf.denseRank', 'Dense Rank (Vector)')}</th>
+              <th scope="col" className="py-2.5 px-3 text-center">{t('rrf.sparseRank', 'Sparse Rank (BM25)')}</th>
+              <th scope="col" className="py-2.5 px-3">{t('rrf.fusedScore', 'Fused RRF Score & Relative Strength')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40 font-mono" aria-live="polite">
@@ -155,13 +124,11 @@ function RRFSimulator(): React.JSX.Element {
                     isWinner ? 'bg-purple-500/10' : 'hover:bg-secondary/30'
                   )}
                 >
-                  {/* Fused Rank Column */}
+                  {/* Fused Rank Column - Fixed single rank label */}
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-1.5 font-bold">
-                      {isWinner ? (
+                      {isWinner && (
                         <Trophy className="w-4 h-4 text-amber-400 shrink-0" aria-label="Top ranked winner" />
-                      ) : (
-                        <span className="text-muted-foreground">#{doc.fusedRank}</span>
                       )}
                       <span className={isWinner ? 'text-purple-300 font-extrabold text-sm' : 'text-foreground'}>
                         #{doc.fusedRank}
@@ -172,9 +139,11 @@ function RRFSimulator(): React.JSX.Element {
                   {/* Document Title & Tag */}
                   <td className="py-3 px-3 font-sans">
                     <div className="font-medium text-foreground text-xs">{doc.title}</div>
-                    <span className="text-[10px] text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded border border-border/50">
-                      {doc.tag}
-                    </span>
+                    {doc.tag && (
+                      <span className="text-[10px] text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded border border-border/50">
+                        {doc.tag}
+                      </span>
+                    )}
                   </td>
 
                   {/* Vector Rank Stepper */}
@@ -182,18 +151,20 @@ function RRFSimulator(): React.JSX.Element {
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
                         type="button"
+                        disabled={doc.vectorRank <= 1}
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank - 1)}
                         aria-label={`Promote vector rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         -
                       </button>
                       <span className="w-6 text-center font-bold text-blue-400">#{doc.vectorRank}</span>
                       <button
                         type="button"
+                        disabled={doc.vectorRank >= 20}
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank + 1)}
                         aria-label={`Demote vector rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         +
                       </button>
@@ -205,18 +176,20 @@ function RRFSimulator(): React.JSX.Element {
                     <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
                       <button
                         type="button"
+                        disabled={doc.bm25Rank <= 1}
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank - 1)}
                         aria-label={`Promote BM25 rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         -
                       </button>
                       <span className="w-6 text-center font-bold text-emerald-400">#{doc.bm25Rank}</span>
                       <button
                         type="button"
+                        disabled={doc.bm25Rank >= 20}
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank + 1)}
                         aria-label={`Demote BM25 rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         +
                       </button>
@@ -224,30 +197,20 @@ function RRFSimulator(): React.JSX.Element {
                   </td>
 
                   {/* Fused Score Bar */}
-                  <td className="py-3 px-3 min-w-[180px]">
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-purple-300 font-bold">{doc.rrfScore.toFixed(5)}</span>
-                        <span className="text-muted-foreground">{doc.barWidthPct}%</span>
-                      </div>
-                      <div
-                        role="progressbar"
-                        aria-label={`Relative RRF strength for ${doc.title}`}
-                        aria-valuenow={doc.barWidthPct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        className="h-2 w-full bg-secondary rounded-full overflow-hidden"
-                      >
+                  <td className="py-3 px-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 bg-secondary/60 h-2 rounded-full overflow-hidden border border-border/40">
                         <div
-                          style={{ width: `${doc.barWidthPct}%` }}
                           className={cn(
                             'h-full rounded-full transition-all duration-300',
-                            isWinner
-                              ? 'bg-gradient-to-r from-purple-500 to-indigo-400 shadow-[0_0_8px_rgba(168,85,247,0.6)]'
-                              : 'bg-purple-500/60'
+                            isWinner ? 'bg-gradient-to-r from-purple-500 to-indigo-400' : 'bg-primary/70'
                           )}
+                          style={{ width: `${doc.barWidthPct}%` }}
                         />
                       </div>
+                      <span className="w-16 text-right font-bold text-foreground">
+                        {doc.rrfScore.toFixed(5)}
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -256,18 +219,8 @@ function RRFSimulator(): React.JSX.Element {
           </tbody>
         </table>
       </div>
-
-      {/* Architecture Takeaway */}
-      <div className="mt-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-start gap-2.5 text-xs text-muted-foreground">
-        <Sparkles className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
-        <div className="leading-relaxed">
-          <span className="font-semibold text-purple-300">Architecture Invariant:</span> Notice how Doc #5
-          (which placed 3rd in Vector and 3rd in BM25) often beats a document that was #1 in Vector but completely missed in BM25.
-          This proves why RRF eliminates blind spots in pure dense retrieval and eliminates the need to normalize raw Cosine vs BM25 logits!
-        </div>
-      </div>
     </div>
   );
 }
 
-export default memo(RRFSimulator);
+export default React.memo(RRFSimulator);

@@ -1,19 +1,28 @@
+import type { SupportedLocale } from '../types';
+
 export interface LanguageOption {
-  code: 'en' | 'pt' | 'es';
+  code: SupportedLocale;
   label: string;
   flag: string;
 }
 
 export const supportedLanguages: LanguageOption[] = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'pt', label: 'Português', flag: '🇧🇷' },
+  { code: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷' },
   { code: 'es', label: 'Español', flag: '🇪🇸' },
 ];
 
 export type TranslationDictionary = Record<string, string>;
 
-export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
+export const translations: Record<SupportedLocale, TranslationDictionary> & { pt?: TranslationDictionary } = {
   en: {
+    // Common
+    'common.interactive': 'Interactive',
+    'common.close': 'Close',
+    'common.save': 'Save',
+    'common.reset': 'Reset',
+    'common.loading': 'Loading...',
+
     // Navigation & Header
     'nav.skipToContent': 'Skip to main content',
     'nav.masterclass': 'Interactive Masterclass',
@@ -25,11 +34,15 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'nav.vectorSandbox': 'Vector Sandbox',
     'nav.display': 'Display',
     'nav.pdf': 'PDF',
+    'nav.export': 'Export',
+    'nav.completed': 'Completed',
     'nav.offlineMode': 'Offline Mode',
     'nav.install': 'Install',
     'nav.comprehensionScore': 'Comprehension',
     'nav.resetProgress': 'Reset learning progress',
+    'nav.resetConfirm': 'Are you sure you want to reset your learning progress, quiz scores, and notes?',
     'nav.exportStudyGuide': 'Export study guide notes',
+    'nav.readPercent': '{percent}% read',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Module Knowledge Check',
@@ -73,8 +86,68 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'sandbox.output': 'Execution Output',
     'sandbox.ready': 'Pyodide WASM Runtime Ready',
     'sandbox.selectTemplate': 'Select RAG Algorithm Template',
+
+    // RRF Simulator
+    'rrf.title': 'Reciprocal Rank Fusion (RRF) Hybrid Search Simulator',
+    'rrf.reset': 'Reset Ranks',
+    'rrf.resetAria': 'Reset document ranks to default values',
+    'rrf.constantLabel': 'RRF Smoothing Constant (k)',
+    'rrf.constantAria': 'RRF Smoothing Constant k',
+    'rrf.standardCormack': 'Cormack Standard',
+    'rrf.tableAria': 'Reciprocal Rank Fusion rankings',
+    'rrf.fusedRank': 'Fused Rank',
+    'rrf.document': 'Document',
+    'rrf.denseRank': 'Dense Rank (Vector)',
+    'rrf.sparseRank': 'Sparse Rank (BM25)',
+    'rrf.fusedScore': 'Fused RRF Score & Relative Strength',
+
+    // Chunking Calculator
+    'chunking.title': 'Chunking Overlap & Token Storage Simulator',
+    'chunking.subtitle': 'Simulate sliding-window token indexing, overlap boundary stride, and vector database memory overhead.',
+    'chunking.docLength': 'Document Length',
+    'chunking.chunkSize': 'Chunk Size',
+    'chunking.overlap': 'Overlap Percentage',
+    'chunking.stride': 'Window Stride',
+    'chunking.chunks': 'Total Chunks',
+    'chunking.storedTokens': 'Stored Tokens',
+    'chunking.rawVectorStorage': 'Vector RAM (Float32)',
+    'chunking.visualDistribution': 'Sliding Window Distribution (First 10 Chunks)',
+
+    // Vector Visualizer
+    'vector.title': 'Interactive Vector Distance & Similarity Sandbox',
+    'vector.subtitle': 'Understand the geometric relationship between Cosine Similarity, Dot Product, and Euclidean (L2) Distance',
+    'vector.unitVectors': 'Unit Vectors ||v||=1',
+    'vector.arbitraryMag': 'Arbitrary Length',
+    'vector.cosineSim': 'Cosine Similarity',
+    'vector.angleTheta': 'Angle θ',
+    'vector.euclideanL2': 'Euclidean (L2) Distance',
+    'vector.dotProduct': 'Dot Product (a · b)',
+
+    // Sidebar
+    'sidebar.searchPlaceholder': 'Search 28 RAG topics...',
+    'sidebar.completed': 'completed',
+    'sidebar.overallMastery': 'Overall Mastery',
+    'sidebar.comprehensionScore': 'Comprehension Score',
+    'sidebar.noTopics': 'No topics matching "{query}"',
+
+    // Step View
+    'stepView.curriculum': 'Curriculum',
+    'stepView.stepOf': 'Step {current} of {total}',
+    'stepView.learningStatus': 'Your Learning Status:',
+    'stepView.notStarted': 'Not Started',
+    'stepView.inProgress': 'In Progress',
+    'stepView.completed': 'Completed',
+    'stepView.previous': 'Previous',
+    'stepView.next': 'Next',
   },
-  pt: {
+  'pt-BR': {
+    // Common
+    'common.interactive': 'Interativo',
+    'common.close': 'Fechar',
+    'common.save': 'Salvar',
+    'common.reset': 'Redefinir',
+    'common.loading': 'Carregando...',
+
     // Navigation & Header
     'nav.skipToContent': 'Pular para o conteúdo principal',
     'nav.masterclass': 'Masterclass Interativo',
@@ -86,11 +159,15 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'nav.vectorSandbox': 'Sandbox Vetorial',
     'nav.display': 'Exibição',
     'nav.pdf': 'PDF',
+    'nav.export': 'Exportar',
+    'nav.completed': 'Concluído',
     'nav.offlineMode': 'Modo Offline',
     'nav.install': 'Instalar',
     'nav.comprehensionScore': 'Compreensão',
     'nav.resetProgress': 'Redefinir progresso de aprendizado',
+    'nav.resetConfirm': 'Tem certeza de que deseja redefinir todo o progresso, notas e pontuações de quiz?',
     'nav.exportStudyGuide': 'Exportar guia de estudos em markdown',
+    'nav.readPercent': '{percent}% lido',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Verificação de Conhecimento do Módulo',
@@ -134,8 +211,68 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'sandbox.output': 'Saída de Execução',
     'sandbox.ready': 'Ambiente Pyodide WASM Pronto',
     'sandbox.selectTemplate': 'Selecionar Modelo de Algoritmo RAG',
+
+    // RRF Simulator
+    'rrf.title': 'Simulador de Busca Híbrida Reciprocal Rank Fusion (RRF)',
+    'rrf.reset': 'Redefinir Ranks',
+    'rrf.resetAria': 'Redefinir classificações dos documentos aos valores padrão',
+    'rrf.constantLabel': 'Constante de Suavização RRF (k)',
+    'rrf.constantAria': 'Constante de Suavização RRF k',
+    'rrf.standardCormack': 'Padrão Cormack',
+    'rrf.tableAria': 'Classificações de Reciprocal Rank Fusion',
+    'rrf.fusedRank': 'Rank Fundido',
+    'rrf.document': 'Documento',
+    'rrf.denseRank': 'Rank Denso (Vetor)',
+    'rrf.sparseRank': 'Rank Esparso (BM25)',
+    'rrf.fusedScore': 'Pontuação RRF Fundida e Força Relativa',
+
+    // Chunking Calculator
+    'chunking.title': 'Simulador de Sobreposição de Chunks e Armazenamento',
+    'chunking.subtitle': 'Simule indexação com janela deslizante, stride de sobreposição e consumo de memória vetorial.',
+    'chunking.docLength': 'Tamanho do Documento',
+    'chunking.chunkSize': 'Tamanho do Chunk',
+    'chunking.overlap': 'Percentual de Sobreposição',
+    'chunking.stride': 'Passo da Janela (Stride)',
+    'chunking.chunks': 'Total de Chunks',
+    'chunking.storedTokens': 'Tokens Armazenados',
+    'chunking.rawVectorStorage': 'Memória Vetorial RAM (Float32)',
+    'chunking.visualDistribution': 'Distribuição da Janela Deslizante (Primeiros 10 Chunks)',
+
+    // Vector Visualizer
+    'vector.title': 'Sandbox Interativo de Distância e Similaridade Vetorial',
+    'vector.subtitle': 'Compreenda a relação geométrica entre Similaridade de Cosseno, Produto Escalar e Distância Euclidiana (L2)',
+    'vector.unitVectors': 'Vetores Unitários ||v||=1',
+    'vector.arbitraryMag': 'Comprimento Arbitrário',
+    'vector.cosineSim': 'Similaridade de Cosseno',
+    'vector.angleTheta': 'Ângulo θ',
+    'vector.euclideanL2': 'Distância Euclidiana (L2)',
+    'vector.dotProduct': 'Produto Escalar (a · b)',
+
+    // Sidebar
+    'sidebar.searchPlaceholder': 'Pesquisar 28 tópicos de RAG...',
+    'sidebar.completed': 'concluído',
+    'sidebar.overallMastery': 'Domínio Geral',
+    'sidebar.comprehensionScore': 'Pontuação de Compreensão',
+    'sidebar.noTopics': 'Nenhum tópico correspondente a "{query}"',
+
+    // Step View
+    'stepView.curriculum': 'Currículo',
+    'stepView.stepOf': 'Etapa {current} de {total}',
+    'stepView.learningStatus': 'Seu Status de Aprendizado:',
+    'stepView.notStarted': 'Não Iniciado',
+    'stepView.inProgress': 'Em Andamento',
+    'stepView.completed': 'Concluído',
+    'stepView.previous': 'Anterior',
+    'stepView.next': 'Próximo',
   },
   es: {
+    // Common
+    'common.interactive': 'Interactivo',
+    'common.close': 'Cerrar',
+    'common.save': 'Guardar',
+    'common.reset': 'Restablecer',
+    'common.loading': 'Cargando...',
+
     // Navigation & Header
     'nav.skipToContent': 'Saltar al contenido principal',
     'nav.masterclass': 'Clase Magistral Interactiva',
@@ -147,11 +284,15 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'nav.vectorSandbox': 'Sandbox Vectorial',
     'nav.display': 'Pantalla',
     'nav.pdf': 'PDF',
+    'nav.export': 'Exportar',
+    'nav.completed': 'Completado',
     'nav.offlineMode': 'Modo Desconectado',
     'nav.install': 'Instalar',
     'nav.comprehensionScore': 'Comprensión',
     'nav.resetProgress': 'Restablecer progreso de aprendizaje',
+    'nav.resetConfirm': '¿Está seguro de que desea restablecer todo su progreso, notas y puntuaciones de cuestionarios?',
     'nav.exportStudyGuide': 'Exportar guía de estudio en markdown',
+    'nav.readPercent': '{percent}% leído',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Comprobación de Conocimiento del Módulo',
@@ -195,5 +336,61 @@ export const translations: Record<'en' | 'pt' | 'es', TranslationDictionary> = {
     'sandbox.output': 'Salida de Execución',
     'sandbox.ready': 'Ambiente Pyodide WASM Listo',
     'sandbox.selectTemplate': 'Seleccionar Plantilla de Algoritmo RAG',
+
+    // RRF Simulator
+    'rrf.title': 'Simulador de Búsqueda Híbrida Reciprocal Rank Fusion (RRF)',
+    'rrf.reset': 'Restablecer Ranks',
+    'rrf.resetAria': 'Restablecer rangos de documentos a los valores predeterminados',
+    'rrf.constantLabel': 'Constante de Suavizado RRF (k)',
+    'rrf.constantAria': 'Constante de Suavizado RRF k',
+    'rrf.standardCormack': 'Estándar Cormack',
+    'rrf.tableAria': 'Clasificaciones de Reciprocal Rank Fusion',
+    'rrf.fusedRank': 'Rango Fusionado',
+    'rrf.document': 'Documento',
+    'rrf.denseRank': 'Rango Denso (Vector)',
+    'rrf.sparseRank': 'Rango Disperso (BM25)',
+    'rrf.fusedScore': 'Puntuación RRF Fusionada y Fuerza Relativa',
+
+    // Chunking Calculator
+    'chunking.title': 'Simulador de Superposición de Chunks y Almacenamiento',
+    'chunking.subtitle': 'Simule indexación por ventana deslizante, stride de superposición y sobrecarga de memoria vectorial.',
+    'chunking.docLength': 'Longitud del Documento',
+    'chunking.chunkSize': 'Tamaño del Chunk',
+    'chunking.overlap': 'Porcentaje de Superposición',
+    'chunking.stride': 'Paso de la Ventana (Stride)',
+    'chunking.chunks': 'Total de Chunks',
+    'chunking.storedTokens': 'Tokens Almacenados',
+    'chunking.rawVectorStorage': 'Memoria Vectorial RAM (Float32)',
+    'chunking.visualDistribution': 'Distribución de la Ventana Deslizante (Primeros 10 Chunks)',
+
+    // Vector Visualizer
+    'vector.title': 'Sandbox Interactivo de Distancia y Similitud Vectorial',
+    'vector.subtitle': 'Comprenda la relación geométrica entre Similitud del Coseno, Producto Escalar y Distancia Euclidiana (L2)',
+    'vector.unitVectors': 'Vectores Unitarios ||v||=1',
+    'vector.arbitraryMag': 'Longitud Arbitraria',
+    'vector.cosineSim': 'Similitud del Coseno',
+    'vector.angleTheta': 'Ángulo θ',
+    'vector.euclideanL2': 'Distancia Euclidiana (L2)',
+    'vector.dotProduct': 'Producto Escalar (a · b)',
+
+    // Sidebar
+    'sidebar.searchPlaceholder': 'Buscar 28 temas de RAG...',
+    'sidebar.completed': 'completado',
+    'sidebar.overallMastery': 'Dominio General',
+    'sidebar.comprehensionScore': 'Puntuación de Comprensión',
+    'sidebar.noTopics': 'No hay temas que coincidan con "{query}"',
+
+    // Step View
+    'stepView.curriculum': 'Plan de Estudios',
+    'stepView.stepOf': 'Paso {current} de {total}',
+    'stepView.learningStatus': 'Su Estado de Aprendizaje:',
+    'stepView.notStarted': 'No Iniciado',
+    'stepView.inProgress': 'En Progreso',
+    'stepView.completed': 'Completado',
+    'stepView.previous': 'Anterior',
+    'stepView.next': 'Siguiente',
   },
 };
+
+// Backward-compatible alias for any legacy reference to 'pt'
+translations.pt = translations['pt-BR'];
