@@ -170,7 +170,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
                       <div className="text-sm font-medium leading-tight">
                         {t(item.labelKey, item.fallbackLabel)}
                       </div>
-                      <div className="text-[11px] opacity-75 mt-0.5">{item.desc}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</div>
                     </button>
                   );
                 })}
@@ -204,7 +204,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
                       )}
                     >
                       <span className="text-sm font-medium">{item.label}</span>
-                      <span className="text-[11px] opacity-70 mt-0.5">{item.size}</span>
+                      <span className="text-[11px] text-muted-foreground mt-0.5">{item.size}</span>
                     </button>
                   );
                 })}
@@ -240,7 +240,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
                         <span>{item.label}</span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />}
                       </div>
-                      <div className="text-[11px] opacity-70 mt-0.5">{item.desc}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</div>
                     </button>
                   );
                 })}
@@ -276,7 +276,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
                         <span>{item.label}</span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />}
                       </div>
-                      <div className="text-[11px] opacity-70 mt-0.5">{item.desc}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</div>
                     </button>
                   );
                 })}

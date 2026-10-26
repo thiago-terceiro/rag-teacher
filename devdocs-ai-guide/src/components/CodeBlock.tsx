@@ -107,8 +107,11 @@ const CodeBlock = React.memo(({ language: languageProp, value: valueProp }: Code
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto text-sm">
+      <div className="text-sm">
         <SyntaxHighlighter
+          tabIndex={0}
+          role="region"
+          aria-label={`${cleanLang || 'Code'} snippet`}
           language={cleanLang || 'text'}
           style={vscDarkPlus}
           customStyle={{
@@ -118,7 +121,7 @@ const CodeBlock = React.memo(({ language: languageProp, value: valueProp }: Code
             fontSize: '0.875rem',
             lineHeight: '1.6',
             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-          }}
+                      }}
           wrapLines={true}
           PreTag="div"
         >

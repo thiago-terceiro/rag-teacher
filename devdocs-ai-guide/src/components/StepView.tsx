@@ -261,7 +261,7 @@ const StepView = ({
               type="button"
               onClick={handleOpenPython}
               title="Launch In-Browser Pyodide Python Sandbox"
-              aria-label="Launch In-Browser Python Sandbox"
+              aria-label="Launch Python Lab Sandbox"
               className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center space-x-1.5 cursor-pointer"
             >
               <Terminal className="w-3.5 h-3.5" aria-hidden="true" />

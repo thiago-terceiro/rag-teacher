@@ -22,3 +22,11 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vercel
+
+# Test Results & Reports
+/test-results
+/playwright-report
+/blob-report
+
+# Storybook build output
+/storybook-static

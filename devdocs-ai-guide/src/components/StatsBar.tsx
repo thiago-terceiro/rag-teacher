@@ -147,13 +147,12 @@ const StatsBar = ({
         <button
           type="button"
           onClick={onOpenSearch}
-          aria-label={t('nav.search', 'Search curriculum')}
           className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/70 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer group shadow-2xs"
         >
           <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
           <span className="hidden md:inline font-medium">{t('nav.search', 'Search topics...')}</span>
           <span className="md:hidden font-medium">{t('nav.searchShort', 'Search')}</span>
-          <kbd className="hidden sm:inline-block text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground ml-1.5 group-hover:border-primary/40">
+          <kbd aria-hidden="true" className="hidden sm:inline-block text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground ml-1.5 group-hover:border-primary/40">
             ⌘K
           </kbd>
         </button>
@@ -162,13 +161,12 @@ const StatsBar = ({
         <Link
           to="/interview-questions"
           title="System Design Interview Scenarios (28 Questions)"
-          aria-label={t('nav.interview', 'Interview Questions')}
           className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/70 hover:border-primary/40 transition-colors shadow-2xs"
         >
           <HelpCircle className="w-3.5 h-3.5 text-primary" />
           <span className="hidden xl:inline font-medium">{t('nav.interview', 'Interview Questions')}</span>
           <span className="xl:hidden font-medium">Interview</span>
-          <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded-full font-bold">28</span>
+          <span aria-hidden="true" className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.2 rounded-full font-bold">28</span>
         </Link>
 
         {/* In-Browser Python Sandbox */}

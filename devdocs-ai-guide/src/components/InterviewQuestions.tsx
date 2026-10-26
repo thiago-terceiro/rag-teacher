@@ -123,7 +123,6 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             type="button"
             onClick={() => onToggleMastery(q.id)}
             aria-pressed={isMastered}
-            aria-label={isMastered ? `Mark scenario ${q.step_title} as not mastered` : `Mark scenario ${q.step_title} as mastered`}
             className={cn(
               'flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
               isMastered

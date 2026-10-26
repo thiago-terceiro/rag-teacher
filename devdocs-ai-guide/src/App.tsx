@@ -46,9 +46,13 @@ function AppContent(): React.JSX.Element {
     setIsReadingSettingsOpen(true);
   }, []);
 
-  // Accessibility: Close mobile sidebar when pressing Escape
+  // Global shortcuts: Cmd/Ctrl+K for Command Palette, Escape for Mobile Sidebar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
       if (e.key === 'Escape' && isMobileSidebarOpen) {
         setIsMobileSidebarOpen(false);
       }

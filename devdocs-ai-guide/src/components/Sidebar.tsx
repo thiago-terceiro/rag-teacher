@@ -150,10 +150,10 @@ const Sidebar = ({
                 type="button"
                 onClick={onOpenSearch}
                 title="Open Spotlight Search (⌘K)"
-                aria-label="Open Spotlight Search"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-secondary/80 hover:bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
-                ⌘K
+                <span className="sr-only">Search curriculum</span>
+                <span aria-hidden="true">⌘K</span>
               </button>
             )}
           </div>
@@ -175,7 +175,7 @@ const Sidebar = ({
               <HelpCircle className={cn('w-4 h-4', location.pathname === '/interview-questions' ? 'text-primary-foreground' : 'text-primary')} />
               <span>{t('nav.interview', 'Interview Questions')}</span>
             </div>
-            <span className={cn(
+            <span aria-hidden="true" className={cn(
               'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
               location.pathname === '/interview-questions'
                 ? 'bg-primary-foreground/20 text-primary-foreground'
