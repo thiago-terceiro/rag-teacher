@@ -80,12 +80,12 @@ function getSearchableItems(): readonly SearchableItem[] {
 }
 
 const POPULAR_SUGGESTIONS: readonly PopularSuggestion[] = [
-  { step_key: 'qdrant-setup', headingId: '3-mathematical--algorithmic-foundations', label: 'HNSW Graph Indexing & Skip-Lists', phase: 'Phase 1', isDeep: true },
-  { step_key: 'cross-encoder-reranking', headingId: '1-executive-mental-model--first-principles', label: 'Two-Stage Retrieval & Cross-Encoder Reranking', phase: 'Phase 2', isDeep: true },
-  { step_key: 'ragas-evaluation', headingId: '3-mathematical--algorithmic-foundations', label: 'Golden Datasets & Ragas Faithfulness Harmonics', phase: 'Phase 2', isDeep: true },
-  { step_key: 'langgraph-agent-architecture', headingId: '3-mathematical--algorithmic-foundations', label: 'LangGraph & Lyapunov Convergence Proof', phase: 'Phase 3', isDeep: true },
-  { step_key: 'agent-tool-doc-search', headingId: '3-mathematical--algorithmic-foundations', label: 'Reciprocal Rank Fusion (RRF) Theorem', phase: 'Phase 3', isDeep: true },
-  { step_key: 'dspy-setup', headingId: '1-executive-mental-model--first-principles', label: 'DSPy Teleprompters & MIPROv2 Optimization', phase: 'Phase 3', isDeep: true },
+  { step_key: 'qdrant-setup', headingId: '3-mathematical-algorithmic-foundations', label: 'HNSW Graph Indexing & Skip-Lists', phase: 'Phase 1', isDeep: true },
+  { step_key: 'cross-encoder-reranking', headingId: '1-executive-mental-model-first-principles', label: 'Two-Stage Retrieval & Cross-Encoder Reranking', phase: 'Phase 2', isDeep: true },
+  { step_key: 'ragas-evaluation', headingId: '3-mathematical-algorithmic-foundations', label: 'Golden Datasets & Ragas Faithfulness Harmonics', phase: 'Phase 2', isDeep: true },
+  { step_key: 'langgraph-agent-architecture', headingId: '3-mathematical-algorithmic-foundations', label: 'LangGraph & Lyapunov Convergence Proof', phase: 'Phase 3', isDeep: true },
+  { step_key: 'agent-tool-doc-search', headingId: '3-mathematical-algorithmic-foundations', label: 'Reciprocal Rank Fusion (RRF) Theorem', phase: 'Phase 3', isDeep: true },
+  { step_key: 'dspy-setup', headingId: '1-executive-mental-model-first-principles', label: 'DSPy Teleprompters & MIPROv2 Optimization', phase: 'Phase 3', isDeep: true },
 ];
 
 export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): React.JSX.Element {
@@ -94,19 +94,6 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-
-  // Global keyboard shortcut listener for Cmd+K / Ctrl+K
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsOpen((prev) => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setIsOpen]);
 
   // Reset query and selection when dialog opens
   useEffect(() => {

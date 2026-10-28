@@ -82,4 +82,15 @@ describe('Python Sandbox Security & AST Analysis Regression', () => {
     expect(dangerousFmtRegex.test('{}: {}')).toBe(false);
     expect(dangerousFmtRegex.test('{name}: {score}')).toBe(false);
   });
+
+  it('should patch ForwardRef to audit type annotation strings against eval breakouts', () => {
+    expect(workerContent).toContain('_safe_forwardref_eval');
+    expect(workerContent).toContain('_audit_ast(self.__forward_arg__)');
+  });
+
+  it('should block pickle, _pickle, and shelve at module boundary', () => {
+    expect(workerContent).toContain("'pickle'");
+    expect(workerContent).toContain("'_pickle'");
+    expect(workerContent).toContain("'shelve'");
+  });
 });

@@ -75,7 +75,12 @@ const StepView = ({
   // On step change or hash change: honor #section deep link with smooth scroll and pulse highlight
   useEffect(() => {
     const handleHashNavigation = (smooth = false) => {
-      const hashId = decodeURIComponent(window.location.hash.slice(1));
+      let hashId = '';
+      try {
+        hashId = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        return false;
+      }
       if (hashId) {
         requestAnimationFrame(() => {
           const el = document.getElementById(hashId);
@@ -108,17 +113,19 @@ const StepView = ({
     return () => window.removeEventListener('hashchange', onHashChange);
   }, [stepKey]);
 
-  // Keyboard navigation: Left/Right arrows to flip through steps (disabled when dialog is open)
+  // Keyboard navigation: Left/Right arrows to flip through steps (disabled when dialog or controls are focused)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const isInput =
+      const isInteractive =
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
-        target.isContentEditable;
-      if (isInput) return;
+        target.tagName === 'SELECT' ||
+        target.isContentEditable ||
+        Boolean(target.closest('input, textarea, select, [role="slider"], [role="tab"], button'));
+      if (isInteractive) return;
 
       if (e.key === 'ArrowRight' && nextStep) {
         navigate(`/steps/${nextStep.step_key}`);

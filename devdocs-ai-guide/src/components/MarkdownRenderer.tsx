@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import CodeBlock from './CodeBlock';
+import WidgetErrorBoundary from './WidgetErrorBoundary';
 import { rehypeHeadingIds, scrollToHeading } from '../lib/headings';
 
 // Lazy load MermaidBlock to eliminate >2.2MB of Cytoscape/parser overhead from the critical path
@@ -42,15 +43,17 @@ const markdownComponents: Partial<Components> = {
     // Check for mermaid diagram blocks
     if (lang === 'mermaid') {
       return (
-        <React.Suspense
-          fallback={
-            <div className="my-6 p-8 border border-border/70 rounded-xl bg-card/60 flex items-center justify-center text-xs text-muted-foreground animate-pulse">
-              Loading architectural diagram...
-            </div>
-          }
-        >
-          <LazyMermaidBlock chart={codeString} />
-        </React.Suspense>
+        <WidgetErrorBoundary fallbackTitle="Architectural diagram render error">
+          <React.Suspense
+            fallback={
+              <div className="my-6 p-8 border border-border/70 rounded-xl bg-card/60 flex items-center justify-center text-xs text-muted-foreground animate-pulse">
+                Loading architectural diagram...
+              </div>
+            }
+          >
+            <LazyMermaidBlock chart={codeString} />
+          </React.Suspense>
+        </WidgetErrorBoundary>
       );
     }
 
@@ -141,10 +144,20 @@ const markdownComponents: Partial<Components> = {
     return <strong className="font-semibold text-foreground tracking-[0.01em]" {...props}>{children}</strong>;
   },
   a({ href, children, ...props }: React.ComponentPropsWithoutRef<'a'>) {
-    const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
+    const rawHref = String(href || '').trim();
+    // Protocol allowlist: only http, https, mailto, and relative/hash links are permitted
+    const isSafeProtocol =
+      rawHref.startsWith('/') ||
+      rawHref.startsWith('#') ||
+      rawHref.startsWith('http://') ||
+      rawHref.startsWith('https://') ||
+      rawHref.startsWith('mailto:');
+
+    const safeHref = isSafeProtocol ? rawHref : '#';
+    const isExternal = safeHref.startsWith('http://') || safeHref.startsWith('https://');
     return (
       <a
-        href={href}
+        href={safeHref}
         target={isExternal ? '_blank' : undefined}
         rel={isExternal ? 'noopener noreferrer' : undefined}
         className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors break-all [overflow-wrap:anywhere]"

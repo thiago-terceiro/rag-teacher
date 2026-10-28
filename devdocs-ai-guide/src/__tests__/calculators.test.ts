@@ -106,5 +106,49 @@ describe('Micro-Calculators Mathematical Correctness', () => {
 
       expect(scoreDiffK100).toBeLessThan(scoreDiffK60);
     });
+
+    it('should safely handle k <= 0 and empty docs array without singularity', () => {
+      expect(calculateRRF([], 60)).toEqual([]);
+      const docs = [{ id: '1', title: 'Doc 1', vectorRank: 1, bm25Rank: 1 }];
+      const scored = calculateRRF(docs, -10); // Protected against k + rank <= 0
+      expect(Number.isFinite(scored[0].rrfScore)).toBe(true);
+      expect(scored[0].barWidthPct).toBe(100);
+    });
+
+    it('should break ties deterministically by document ID', () => {
+      const docs = [
+        { id: 'b_doc', title: 'Doc B', vectorRank: 1, bm25Rank: 2 },
+        { id: 'a_doc', title: 'Doc A', vectorRank: 2, bm25Rank: 1 },
+      ];
+      const scored = calculateRRF(docs, 60);
+      expect(scored[0].id).toBe('a_doc');
+      expect(scored[1].id).toBe('b_doc');
+    });
+  });
+
+  describe('Adversarial Numerical Robustness (IEEE 754 & Singularities)', () => {
+    it('should calculate large vectors without overflowing to NaN', () => {
+      const vA = { x: 1e200, y: 1e200 };
+      const vB = { x: 1e200, y: 1e200 };
+      const metrics = calculateVectorMetrics(vA, vB);
+      expect(metrics.cosSim).toBeCloseTo(1, 5);
+      expect(metrics.angleDeg).toBeCloseTo(0, 5);
+    });
+
+    it('should handle zero vector coincident origin without NaN', () => {
+      const vA = { x: 0, y: 0 };
+      const vB = { x: 0, y: 0 };
+      const metrics = calculateVectorMetrics(vA, vB);
+      expect(metrics.cosSim).toBe(1);
+      expect(metrics.angleDeg).toBe(0);
+      expect(metrics.l2).toBe(0);
+    });
+
+    it('should return 0 chunks and 0 stored tokens for empty document (docLength = 0)', () => {
+      const result = calculateChunkMetrics(0, 512, 20);
+      expect(result.numChunks).toBe(0);
+      expect(result.totalStoredTokens).toBe(0);
+      expect(result.redundancyRatio).toBe('0.00');
+    });
   });
 });

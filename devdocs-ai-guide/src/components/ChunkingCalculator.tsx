@@ -40,7 +40,7 @@ function ChunkingCalculator(): React.JSX.Element {
   const visualSegments: VisualSegment[] = useMemo(() => {
     const segments: VisualSegment[] = [];
     const displayChunks = Math.min(metrics.numChunks, 10);
-    const scale = 100 / docLength;
+    const scale = docLength > 0 ? 100 / docLength : 0;
 
     for (let i = 0; i < displayChunks; i++) {
       const start = i * metrics.stride;

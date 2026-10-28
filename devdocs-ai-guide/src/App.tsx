@@ -3,6 +3,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
 import StepView from './components/StepView';
+import WidgetErrorBoundary from './components/WidgetErrorBoundary';
 import { StepsProvider } from './hooks/useSteps';
 import { ReadingSettingsProvider } from './hooks/useReadingSettings';
 import { I18nProvider } from './hooks/useI18n';
@@ -118,24 +119,28 @@ function AppContent(): React.JSX.Element {
             <Route
               path="/steps/:stepKey"
               element={
-                <StepView
-                  onOpenVectorSandbox={openVectorSandbox}
-                  onOpenPythonSandbox={handleOpenPythonSandbox}
-                />
+                <WidgetErrorBoundary fallbackTitle="Step module failed to render">
+                  <StepView
+                    onOpenVectorSandbox={openVectorSandbox}
+                    onOpenPythonSandbox={handleOpenPythonSandbox}
+                  />
+                </WidgetErrorBoundary>
               }
             />
             <Route
               path="/interview-questions"
               element={
-                <Suspense
-                  fallback={
-                    <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
-                      Loading interview questions...
-                    </div>
-                  }
-                >
-                  <InterviewQuestions />
-                </Suspense>
+                <WidgetErrorBoundary fallbackTitle="Interview questions failed to load">
+                  <Suspense
+                    fallback={
+                      <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
+                        Loading interview questions...
+                      </div>
+                    }
+                  >
+                    <InterviewQuestions />
+                  </Suspense>
+                </WidgetErrorBoundary>
               }
             />
             <Route path="*" element={<Navigate to="/steps/project-setup" replace />} />

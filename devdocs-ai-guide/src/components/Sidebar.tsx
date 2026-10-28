@@ -43,16 +43,23 @@ const Sidebar = ({
   const handleOpenPython = onOpenPythonProp ?? (() => openPythonSandbox(null));
   const handleOpenVector = onOpenVectorProp ?? openVectorSandbox;
 
-  // Body scroll lock on mobile drawer open
+  // Body scroll lock on mobile drawer open, with automatic reset on viewport resize
   useEffect(() => {
     if (isMobileOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      const handleResize = () => {
+        if (window.innerWidth >= 1024) {
+          setIsMobileOpen?.(false);
+        }
+      };
+      window.addEventListener('resize', handleResize);
       return () => {
         document.body.style.overflow = originalOverflow;
+        window.removeEventListener('resize', handleResize);
       };
     }
-  }, [isMobileOpen]);
+  }, [isMobileOpen, setIsMobileOpen]);
 
   // Extract current stepKey reliably from location.pathname (e.g., /steps/project-setup)
   const currentStepKey = location.pathname.startsWith('/steps/')

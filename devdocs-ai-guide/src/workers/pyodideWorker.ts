@@ -93,7 +93,7 @@ def _create_sandbox_executor():
     _GLOBAL_BLOCKED_MODULES = {
         'js', 'pyodide_js', 'pyodide', 'pyodide.ffi', 'pyodide.http',
         'urllib', 'urllib.request', 'http', 'http.client', 'socket',
-        'subprocess', 'ctypes', 'webbrowser'
+        'subprocess', 'ctypes', 'webbrowser', 'pickle', '_pickle', 'shelve'
     }
 
     _SERVER_ONLY_MODULES = {
@@ -122,8 +122,8 @@ def _create_sandbox_executor():
         'func_globals', 'func_code', 'func_closure', 'func_defaults',
         'im_func', 'im_self', 'im_class',
         'mro', 'format_map', 'Formatter',
-        'tofile', 'fromfile', 'dump', 'dumps', 'loads',
-        'load', 'save', 'savez', 'savez_compressed',
+        'tofile', 'fromfile',
+        'save', 'savez', 'savez_compressed',
         'loadtxt', 'savetxt', 'genfromtxt', 'fromregex', 'memmap', 'DataSource',
         'ctypes', 'ctypeslib', 'f2py', 'testing', '_pytesttester',
         'sys', 'os', 'io', 'builtins', 'importlib', 'inspect',
@@ -460,6 +460,11 @@ def _create_sandbox_executor():
             error_msg = f"{_orig_type(exc).__name__}: {exc}"
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
+            try:
+                import gc as _gc
+                _gc.collect()
+            except Exception:
+                pass
 
         elapsed_ms = round((time.perf_counter() - t0) * 1000, 2)
         return {
@@ -469,6 +474,20 @@ def _create_sandbox_executor():
             "error": error_msg,
             "elapsedMs": elapsed_ms,
         }
+
+    # Patch typing.ForwardRef to prevent eval() AST sandbox escapes
+    try:
+        import typing as _typing
+        _orig_evaluate = _typing.ForwardRef._evaluate
+        def _safe_forwardref_eval(self, globalns, localns, type_params=None, *, recursive_guard=frozenset()):
+            if isinstance(self.__forward_arg__, str):
+                _audit_ast(self.__forward_arg__)
+            if type_params is not None:
+                return _orig_evaluate(self, globalns, localns, type_params, recursive_guard=recursive_guard)
+            return _orig_evaluate(self, globalns, localns, recursive_guard=recursive_guard)
+        _typing.ForwardRef._evaluate = _safe_forwardref_eval
+    except Exception:
+        pass
 
     return _execute_sandboxed
 
@@ -567,6 +586,9 @@ self.onmessage = async (event: MessageEvent) => {
         ...jsResult,
       });
     } catch (err: any) {
+      if (!pyodideInstance) {
+        initPromise = null;
+      }
       self.postMessage({
         type: 'RESULT',
         runId,

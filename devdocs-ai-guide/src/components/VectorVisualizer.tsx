@@ -10,6 +10,13 @@ export interface VectorVisualizerProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
+function normalizeAngle(rad: number): number {
+  let a = rad % (2 * Math.PI);
+  if (a > Math.PI) a -= 2 * Math.PI;
+  if (a < -Math.PI) a += 2 * Math.PI;
+  return a;
+}
+
 export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): React.JSX.Element {
   const { settings } = useReadingSettings();
   const { t } = useI18n();
@@ -247,17 +254,17 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     tabIndex={0}
                     role="slider"
                     aria-label="Vector A angle in degrees (use Arrow keys to rotate, Shift+Arrow for 15° steps)"
-                    aria-valuenow={Math.round((angleA * 180) / Math.PI)}
+                    aria-valuenow={Math.round((normalizeAngle(angleA) * 180) / Math.PI)}
                     aria-valuemin={-180}
                     aria-valuemax={180}
                     onKeyDown={(e: React.KeyboardEvent<SVGGElement>) => {
                       const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
                       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                         e.preventDefault();
-                        setAngleA(prev => prev + step);
+                        setAngleA(prev => normalizeAngle(prev + step));
                       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                         e.preventDefault();
-                        setAngleA(prev => prev - step);
+                        setAngleA(prev => normalizeAngle(prev - step));
                       }
                     }}
                     className="cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -290,17 +297,17 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     tabIndex={0}
                     role="slider"
                     aria-label="Vector B angle in degrees (use Arrow keys to rotate, Shift+Arrow for 15° steps)"
-                    aria-valuenow={Math.round((angleB * 180) / Math.PI)}
+                    aria-valuenow={Math.round((normalizeAngle(angleB) * 180) / Math.PI)}
                     aria-valuemin={-180}
                     aria-valuemax={180}
                     onKeyDown={(e: React.KeyboardEvent<SVGGElement>) => {
                       const step = (e.shiftKey ? 15 : 5) * (Math.PI / 180);
                       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                         e.preventDefault();
-                        setAngleB(prev => prev + step);
+                        setAngleB(prev => normalizeAngle(prev + step));
                       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                         e.preventDefault();
-                        setAngleB(prev => prev - step);
+                        setAngleB(prev => normalizeAngle(prev - step));
                       }
                     }}
                     className="cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

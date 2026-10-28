@@ -5,18 +5,19 @@ export interface ProgressRingProps {
 }
 
 const ProgressRing: React.FC<ProgressRingProps> = ({ value }) => {
+  const safeValue = Math.max(0, Math.min(100, Number.isFinite(value) ? Math.round(value) : 0));
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
+  const offset = circumference - (safeValue / 100) * circumference;
 
   return (
     <svg
       role="progressbar"
       aria-label="Curriculum progress"
-      aria-valuenow={value}
+      aria-valuenow={safeValue}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuetext={`${value}% completed`}
+      aria-valuetext={`${safeValue}% completed`}
       className="w-12 h-12 transform -rotate-90"
       viewBox="0 0 120 120"
     >
@@ -48,7 +49,7 @@ const ProgressRing: React.FC<ProgressRingProps> = ({ value }) => {
         dy=".3em"
         className="text-lg font-semibold fill-current text-foreground transform rotate-90 origin-center"
       >
-        {`${value}%`}
+        {`${safeValue}%`}
       </text>
     </svg>
   );

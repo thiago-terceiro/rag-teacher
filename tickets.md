@@ -73,3 +73,31 @@
 - `tsc --noEmit` exits with 0 errors.
 - `vite build` succeeds in 3.84s with optimized code-splitting.
 - Synchronized hardened `vercel.json` with Content-Security-Policy (no `'unsafe-inline'` script-src).
+
+---
+
+### [x] Ticket 11: Google Principal Engineering Adversarial Overhaul
+- **Hybrid WASM Worker & Offline PWA**: Worker remains warm on modal close with 5-minute idle RAM eviction; `public/sw.js` caches `cdn.jsdelivr.net/pyodide/` for 100% offline capability.
+- **Python Sandbox Hardening**: Patched `typing.ForwardRef._evaluate` eval breakout; unblocked `json.dumps` and `.format()`; reset `initPromise` on load failures; added `gc.collect()`.
+- **State & Teardown Reliability**: Added `pagehide` sync flush in `NotesJournal`; guarded against null mastery crash in `InterviewQuestions`; implemented multi-tab sync via `BroadcastChannel`; preserved orphaned notes during schema evolution; sanitized Markdown export.
+- **DOM & Navigation Security**: Added protocol allowlist to `MarkdownRenderer` to neutralize stored XSS; added `WidgetErrorBoundary`; fixed double-hyphen popular suggestions and Unicode heading slugs; guarded ArrowLeft/Right against slider hijacking; cleaned up Mermaid staging nodes and capped cache.
+- **Numerical Robustness**: Prevented intermediate IEEE 754 overflow/underflow in `vectorMath`; guarded `docLength = 0` and CSS `NaN%` in `ChunkingCalculator`; enforced Cormack RRF $k \ge 1$ and deterministic tie-breaking.
+- **Verification**: 91/91 tests pass, 0 typecheck errors, production build compiles cleanly.
+
+---
+
+### [x] Ticket 12: Antigravity Customization Architecture (Agents, Skills & Rules)
+- **Root Developer Contract (`AGENTS.md`)**: Complete project guidelines covering architecture, sandbox security invariants, performance budgets, React 19 compiler idioms, numerical stability, a11y, and i18n standards.
+- **Dedicated Rules (`.agents/rules/`)**:
+  - `security-sandbox.md`: Pyodide AST analysis, dunder blocking, format-string regex defense, ForwardRef evaluation hook, network air-gap stubs, and DOM link sanitization.
+  - `performance-budgets.md`: Initial chunk budgets (<180kB index JS, <90kB CSS), dynamic import boundaries, SW Pyodide cache partition (`pyodide-cdn-v0.27.3`), and 5-minute worker RAM eviction.
+  - `numerical-robustness.md`: Pre-normalized vector math, IEEE 754 overflow defenses, $k \ge 1$ RRF rules, and zero-safe chunking geometry.
+- **Project-Specific Skills (`.agents/skills/`)**:
+  - `rag-sandbox-security`: Automated exploit and AST validation suite with executable script (`test-sandbox-exploits.mjs`, 40/40 tests passing).
+  - `rag-perf-audit`: Automated bundle budget auditor and SW cache inspector (`audit-bundle.mjs`, 10/10 tests passing).
+  - `curriculum-verifier`: Automated trilingual i18n parity verifier across `en`, `pt-BR`, and `es` with slug auditor (`check-i18n-keys.mjs`, 5/5 tests passing).
+  - `rag-math-engine`: Mathematical specifications and derivations with KaTeX references (`math-formulas.md`).
+- **Specialized Custom Subagents (`.agents/agents/` & Subagent Registry)**:
+  - `rag-security-auditor`: Browser sandbox containment, AST visitor auditing, and XSS defense.
+  - `rag-perf-engineer`: Bundle size optimization, WASM memory pooling, and Service Worker caching.
+  - `rag-curriculum-architect`: Mathematical accuracy, interactive pedagogy, and trilingual synchronization.

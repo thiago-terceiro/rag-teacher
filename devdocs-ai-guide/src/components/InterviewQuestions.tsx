@@ -23,7 +23,9 @@ const DRAFTS_STORAGE_KEY = 'rag_interview_drafts_v1';
 function loadStoredMastery(): Record<number, boolean> {
   try {
     const saved = localStorage.getItem(MASTERY_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {};
+    if (!saved) return {};
+    const parsed = JSON.parse(saved);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -32,7 +34,9 @@ function loadStoredMastery(): Record<number, boolean> {
 function loadStoredDrafts(): Record<string, string> {
   try {
     const saved = localStorage.getItem(DRAFTS_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {};
+    if (!saved) return {};
+    const parsed = JSON.parse(saved);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }

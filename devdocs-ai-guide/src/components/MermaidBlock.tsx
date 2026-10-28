@@ -17,8 +17,17 @@ import CodeBlock from './CodeBlock';
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
-// Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}`
+// Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}` with LRU size cap
+const MAX_MERMAID_CACHE_SIZE = 60;
 const mermaidSvgCache = new Map<string, string>();
+
+function setMermaidCache(key: string, value: string) {
+  if (mermaidSvgCache.size >= MAX_MERMAID_CACHE_SIZE) {
+    const oldestKey = mermaidSvgCache.keys().next().value;
+    if (oldestKey) mermaidSvgCache.delete(oldestKey);
+  }
+  mermaidSvgCache.set(key, value);
+}
 
 function configureMermaidTheme(isLight: boolean) {
   mermaid.initialize({
@@ -122,12 +131,16 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
         setHasError(false);
         configureMermaidTheme(isLightTheme);
         const { svg } = await mermaid.render(diagramId, cleanChart);
-        mermaidSvgCache.set(cacheKey, svg);
+        setMermaidCache(cacheKey, svg);
         if (isMounted) {
           setSvgContent(svg);
         }
       } catch (err) {
         console.warn('Mermaid rendering error:', err);
+        const stagingElem = document.getElementById(`d${diagramId}`);
+        if (stagingElem) stagingElem.remove();
+        const tempElement = document.getElementById(diagramId);
+        if (tempElement) tempElement.remove();
         if (isMounted) {
           setHasError(true);
         }
@@ -138,10 +151,10 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
 
     return () => {
       isMounted = false;
+      const stagingElem = document.getElementById(`d${diagramId}`);
+      if (stagingElem) stagingElem.remove();
       const tempElement = document.getElementById(diagramId);
-      if (tempElement) {
-        tempElement.remove();
-      }
+      if (tempElement) tempElement.remove();
     };
   }, [cleanChart, cacheKey, diagramId, isLightTheme]);
 

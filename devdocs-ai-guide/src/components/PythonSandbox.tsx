@@ -35,6 +35,11 @@ export interface PythonSandboxOutput {
 
 const EXECUTION_TIMEOUT_MS = 5000;
 const INIT_DOWNLOAD_TIMEOUT_MS = 35000;
+const WORKER_IDLE_EVICTION_MS = 5 * 60 * 1000; // 5-minute RAM eviction for hybrid lifecycle
+
+// Module-level worker reference & idle timer
+let globalPyodideWorker: Worker | null = null;
+let globalWorkerIdleTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const PYTHON_TEMPLATES: readonly PythonTemplate[] = [
   {
@@ -238,6 +243,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
   const workerRef = useRef<Worker | null>(null);
   const runIdRef = useRef<number>(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isExecutingRef = useRef<boolean>(false);
 
   // Sync external initialCode when opened from a Markdown CodeBlock
   useEffect(() => {
@@ -258,10 +264,16 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
   const terminateWorker = useCallback(
     (reason = 'Execution terminated by user.') => {
       clearWatchdog();
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
+      isExecutingRef.current = false;
+      if (globalWorkerIdleTimer) {
+        clearTimeout(globalWorkerIdleTimer);
+        globalWorkerIdleTimer = null;
       }
+      if (globalPyodideWorker) {
+        globalPyodideWorker.terminate();
+        globalPyodideWorker = null;
+      }
+      workerRef.current = null;
       setWorkerStatus('idle');
       setStatusMessage('Worker terminated & reset');
       if (reason) {
@@ -274,19 +286,36 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
     [clearWatchdog]
   );
 
-  // Clean up worker on unmount
+  // Hybrid Architecture: keep worker warm on modal close, terminate on 5-minute idle timeout
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
+    if (isOpen) {
+      if (globalWorkerIdleTimer) {
+        clearTimeout(globalWorkerIdleTimer);
+        globalWorkerIdleTimer = null;
       }
-    };
-  }, []);
+      if (globalPyodideWorker) {
+        workerRef.current = globalPyodideWorker;
+        setWorkerStatus('ready');
+        setStatusMessage('Air-Gapped Pyodide 3.12 Warm');
+      }
+    } else {
+      if (globalPyodideWorker && !globalWorkerIdleTimer) {
+        globalWorkerIdleTimer = setTimeout(() => {
+          if (globalPyodideWorker) {
+            globalPyodideWorker.terminate();
+            globalPyodideWorker = null;
+          }
+          globalWorkerIdleTimer = null;
+        }, WORKER_IDLE_EVICTION_MS);
+      }
+    }
+  }, [isOpen]);
 
   const getOrCreateWorker = useCallback(() => {
-    if (workerRef.current) return workerRef.current;
+    if (globalPyodideWorker) {
+      workerRef.current = globalPyodideWorker;
+      return globalPyodideWorker;
+    }
 
     const worker = new Worker(new URL('../workers/pyodideWorker.ts', import.meta.url), {
       type: 'module',
@@ -311,6 +340,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
         setStatusMessage('Executing in isolated WASM sandbox...');
       } else if (data.type === 'INIT_ERROR') {
         clearWatchdog();
+        isExecutingRef.current = false;
         setWorkerStatus('error');
         setStatusMessage('Runtime load failed');
         setOutput({
@@ -320,10 +350,16 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
           elapsedMs: null,
         });
       } else if (data.type === 'RESULT') {
+        isExecutingRef.current = false;
         if (data.runId !== runIdRef.current) return;
         clearWatchdog();
-        setWorkerStatus('ready');
-        setStatusMessage('Air-Gapped Pyodide 3.12 Ready');
+        if (data.status === 'error') {
+          setWorkerStatus('error');
+          setStatusMessage('Execution error');
+        } else {
+          setWorkerStatus('ready');
+          setStatusMessage('Air-Gapped Pyodide 3.12 Ready');
+        }
         setOutput({
           stdout: data.stdout || '',
           stderr: data.stderr || '',
@@ -335,6 +371,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
 
     worker.onerror = (err: ErrorEvent) => {
       clearWatchdog();
+      isExecutingRef.current = false;
       setWorkerStatus('error');
       setStatusMessage('Worker error');
       setOutput({
@@ -345,14 +382,17 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
       });
     };
 
+    globalPyodideWorker = worker;
     workerRef.current = worker;
     return worker;
   }, [clearWatchdog, terminateWorker]);
 
   const handleRunCode = useCallback(() => {
+    if (isExecutingRef.current) return;
     clearWatchdog();
+    isExecutingRef.current = true;
     const currentRunId = ++runIdRef.current;
-    const isAlreadyReady = workerStatus === 'ready' && workerRef.current;
+    const isAlreadyReady = (workerStatus === 'ready' || Boolean(globalPyodideWorker));
 
     setWorkerStatus(isAlreadyReady ? 'running' : 'loading');
     setStatusMessage(

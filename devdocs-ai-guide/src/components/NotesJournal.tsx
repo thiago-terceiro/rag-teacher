@@ -37,17 +37,19 @@ const NotesJournal = React.memo(({ stepKey, initialNotes: initialNotesProp, onSa
     flushNotes(debouncedNotes);
   }, [debouncedNotes, flushNotes]);
 
-  // Flush pending edits immediately on unmount or browser tab close
+  // Flush pending edits immediately on unmount, pagehide (mobile), or browser tab close
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleTeardown = () => {
       if (notesRef.current !== lastSavedRef.current) {
         lastSavedRef.current = notesRef.current;
         onSaveNotes(stepKey, notesRef.current);
       }
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('beforeunload', handleTeardown);
+    window.addEventListener('pagehide', handleTeardown);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('beforeunload', handleTeardown);
+      window.removeEventListener('pagehide', handleTeardown);
       if (notesRef.current !== lastSavedRef.current) {
         lastSavedRef.current = notesRef.current;
         onSaveNotes(stepKey, notesRef.current);

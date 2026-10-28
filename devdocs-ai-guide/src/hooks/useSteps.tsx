@@ -76,9 +76,21 @@ function loadStoredQuizAnswers(): QuizAnswerMap {
   }
 }
 
-function persistToLocalStorage(updatedPhases: Phase[]) {
+function persistToLocalStorage(updatedPhases: Phase[]): boolean {
   try {
     const progressMap: Record<string, { status?: StepStatus; notes?: string; completedAt?: string | null }> = {};
+    
+    // Non-destructive schema evolution: load existing stored keys first to retain orphaned/renamed steps
+    try {
+      const existingRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (existingRaw) {
+        const existingParsed = JSON.parse(existingRaw);
+        if (existingParsed && typeof existingParsed === 'object' && !Array.isArray(existingParsed)) {
+          Object.assign(progressMap, existingParsed);
+        }
+      }
+    } catch {}
+
     updatedPhases.flatMap(p => p.steps).forEach(s => {
       if (s.status !== 'not_started' || s.notes) {
         progressMap[s.step_key] = {
@@ -89,8 +101,10 @@ function persistToLocalStorage(updatedPhases: Phase[]) {
       }
     });
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progressMap));
+    return true;
   } catch (e) {
     console.error("Failed to save progress to localStorage", e);
+    return false;
   }
 }
 
@@ -128,8 +142,30 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [quizAnswers]);
 
-  // Real-time multi-tab synchronization
+  // Real-time multi-tab synchronization via BroadcastChannel with storage fallback
+  const syncChannelRef = useRef<BroadcastChannel | null>(null);
+
   useEffect(() => {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('rag_masterclass_sync_v2');
+      syncChannelRef.current = channel;
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (data?.type === 'SYNC_ALL' || data?.type === 'STEP_UPDATED') {
+          setPhases(loadStoredProgress());
+        } else if (data?.type === 'QUIZ_UPDATED') {
+          setQuizAnswers(loadStoredQuizAnswers());
+        } else if (data?.type === 'RESET_ALL') {
+          setQuizAnswers({});
+          setPhases(loadStoredProgress());
+        }
+      };
+      return () => {
+        channel.close();
+        syncChannelRef.current = null;
+      };
+    }
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === LOCAL_STORAGE_KEY) {
         setPhases(loadStoredProgress());
@@ -257,7 +293,7 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.removeItem('rag_interview_mastery_v1');
         localStorage.removeItem('rag_interview_drafts_v1');
         setQuizAnswers({});
-        window.dispatchEvent(new Event('storage'));
+        syncChannelRef.current?.postMessage({ type: 'RESET_ALL' });
         const freshPhases: Phase[] = initialPhases.map(phase => ({
           ...phase,
           steps: phase.steps.map(step => ({
@@ -276,6 +312,12 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Export all user notes and progress as a formatted Markdown study guide
   const exportStudyGuide = useCallback(() => {
+    const sanitizeNotes = (raw: string): string => {
+      return raw
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    };
+
     const lines = [
       `# 🎓 RAG Teacher Masterclass — Personal Study Guide & Notes`,
       `*Generated on: ${new Date().toLocaleDateString()}*`,
@@ -310,7 +352,7 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
         if (step.notes && step.notes.trim()) {
           lines.push('');
           lines.push('#### 📝 Your Study Notes:');
-          lines.push(step.notes.trim());
+          lines.push('> ' + sanitizeNotes(step.notes.trim()).replace(/\n/g, '\n> '));
         }
         lines.push('');
       });
@@ -328,7 +370,10 @@ export const StepsProvider = ({ children }: { children: React.ReactNode }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Defer revocation by 60s so Safari and background downloaders don't abort
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 60000);
   }, [phases, completedSteps, totalSteps, completionPercentage, comprehensionScore, correctQuizQuestions, answeredQuizQuestions, quizAnswers]);
 
   const value = useMemo<StepsContextType>(() => ({

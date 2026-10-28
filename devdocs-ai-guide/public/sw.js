@@ -1,5 +1,6 @@
 // RAG Teacher — High Performance Service Worker for Offline PWA Support
-const CACHE_NAME = 'rag-teacher-v2';
+const CACHE_NAME = 'rag-teacher-v3';
+const PYODIDE_CACHE_NAME = 'pyodide-cdn-v0.27.3';
 
 const STATIC_PRECACHE = [
   '/',
@@ -26,19 +27,43 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => name !== CACHE_NAME && name !== PYODIDE_CACHE_NAME)
           .map((name) => caches.delete(name))
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: Smart caching strategy optimized for instant offline reading
+// Fetch: Smart caching strategy optimized for instant offline reading & WASM execution
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests, cross-origin requests (e.g., Pyodide CDN), and non-HTTP schemes
+  // 0. Dedicated Cache-First for immutable, versioned Pyodide WebAssembly runtime
+  if (
+    request.method === 'GET' &&
+    url.origin === 'https://cdn.jsdelivr.net' &&
+    url.pathname.includes('/pyodide/')
+  ) {
+    event.respondWith(
+      caches.open(PYODIDE_CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          return cached || new Response('Offline - Pyodide WASM runtime not cached yet', { status: 503 });
+        }
+      })
+    );
+    return;
+  }
+
+  // Skip non-GET requests, other cross-origin requests, and non-HTTP schemes
   if (
     request.method !== 'GET' ||
     !url.protocol.startsWith('http') ||
