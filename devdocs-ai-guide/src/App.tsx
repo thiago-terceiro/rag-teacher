@@ -15,6 +15,7 @@ const ReadingSettingsModal = lazy(() => import('./components/ReadingSettingsModa
 const VectorVisualizer = lazy(() => import('./components/VectorVisualizer'));
 const PythonSandbox = lazy(() => import('./components/PythonSandbox'));
 const InterviewQuestions = lazy(() => import('./components/InterviewQuestions'));
+const ArchitectureExplorer = lazy(() => import('./components/ArchitectureExplorer'));
 
 function AppContent(): React.JSX.Element {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
@@ -139,6 +140,22 @@ function AppContent(): React.JSX.Element {
                     }
                   >
                     <InterviewQuestions />
+                  </Suspense>
+                </WidgetErrorBoundary>
+              }
+            />
+            <Route
+              path="/architecture"
+              element={
+                <WidgetErrorBoundary fallbackTitle="Architecture flow explorer failed to load">
+                  <Suspense
+                    fallback={
+                      <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
+                        Loading architecture flow explorer...
+                      </div>
+                    }
+                  >
+                    <ArchitectureExplorer />
                   </Suspense>
                 </WidgetErrorBoundary>
               }

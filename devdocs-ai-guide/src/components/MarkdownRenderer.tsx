@@ -145,9 +145,10 @@ const markdownComponents: Partial<Components> = {
   },
   a({ href, children, ...props }: React.ComponentPropsWithoutRef<'a'>) {
     const rawHref = String(href || '').trim();
-    // Protocol allowlist: only http, https, mailto, and relative/hash links are permitted
+    // Protocol allowlist: only http, https, mailto, and non-protocol-relative / or # links
+    const isProtocolRelative = rawHref.startsWith('//') || rawHref.startsWith('/\\') || rawHref.startsWith('\\\\');
     const isSafeProtocol =
-      rawHref.startsWith('/') ||
+      (rawHref.startsWith('/') && !isProtocolRelative) ||
       rawHref.startsWith('#') ||
       rawHref.startsWith('http://') ||
       rawHref.startsWith('https://') ||

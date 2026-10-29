@@ -21,6 +21,8 @@ export default defineConfig({
           if (id.includes('phase4Content')) return 'content-phase4';
           if (id.includes('interviewQuestionsData')) return 'content-interview';
           if (id.includes('moduleQuizzesData')) return 'content-quizzes';
+          if (id.includes('architectureFlowsData')) return 'content-architecture';
+          if (id.includes('translations')) return 'i18n-translations';
           if (
             id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||

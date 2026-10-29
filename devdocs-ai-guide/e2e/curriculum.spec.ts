@@ -88,4 +88,39 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
     // Expect to navigate to qdrant-setup
     await expect(page).toHaveURL(/qdrant-setup/);
   });
+
+  test('should navigate to Architecture Explorer, simulate action, and switch flows', async ({ page }) => {
+    await page.goto('/architecture');
+    await page.waitForSelector('h1');
+
+    await expect(page.locator('h1')).toContainText('Architecture & Code Flow Explorer');
+
+    // Verify initial stage is Step 1
+    await expect(page.getByText(/Step 1 \/ 5/i)).toBeVisible();
+    await expect(page.getByText('handleRunClick()')).toBeVisible();
+
+    // Click Simulate Action button
+    const simulateBtn = page.getByRole('button', { name: /simulate/i });
+    await expect(simulateBtn).toBeVisible();
+    await simulateBtn.click();
+
+    // Pause autoplay so we can inspect deterministically
+    const pauseBtn = page.getByRole('button', { name: /pause/i });
+    if (await pauseBtn.isVisible()) {
+      await pauseBtn.click();
+    }
+
+    // Step forward using button
+    const nextBtn = page.getByRole('button', { name: /next step/i });
+    await nextBtn.click();
+    await expect(page.getByText(/Step 2 \/ 5/i)).toBeVisible();
+
+    // Switch flow to RRF
+    const flowSelector = page.getByLabel(/select flow/i);
+    await flowSelector.selectOption({ label: 'Reciprocal Rank Fusion (RRF) Hybrid Search' });
+
+    // Verify new flow loaded
+    await expect(page.getByText('handleCalculateRRF()')).toBeVisible();
+    await expect(page.getByText(/Step 1 \/ 4/i)).toBeVisible();
+  });
 });

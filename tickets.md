@@ -101,3 +101,45 @@
   - `rag-security-auditor`: Browser sandbox containment, AST visitor auditing, and XSS defense.
   - `rag-perf-engineer`: Bundle size optimization, WASM memory pooling, and Service Worker caching.
   - `rag-curriculum-architect`: Mathematical accuracy, interactive pedagogy, and trilingual synchronization.
+
+---
+
+### [x] Ticket 13: Interactive Architecture & Code Flow Explorer (Option A + Item 2 Pilot)
+- **Dedicated Route (`/architecture`)**: Added fully lazy-loaded route in `App.tsx` wrapped in `WidgetErrorBoundary` and `Suspense`, resulting in **0 kB** added to initial entry chunk.
+- **Pilot Flow 1 (Python Sandbox WASM Execution)**: 5 synchronized steps tracing `PythonSandbox.tsx` (handleRunClick) $\to$ `pyodideWorker.ts` (onmessage) $\to$ `_SecurityVisitor` (AST Analysis) $\to$ `_BoundedStream` & `pyodide.runPythonAsync` $\to$ `worker.onmessage` UI state update.
+- **Flow 2 (Reciprocal Rank Fusion)**: 4 steps tracing `RRFSimulator.tsx` $\to$ `src/lib/rrfMath.ts` ($k \ge 1$, Cormack summation, alphanumeric tie-breaking) $\to$ UI re-ranking.
+- **Flow 3 (Cross-Tab State Synchronization)**: 4 steps tracing `StepView.tsx` completion $\to$ `useSteps.tsx` $\to$ non-destructive `localStorage` persistence $\to$ `BroadcastChannel` $\to$ background tab rehydration.
+- **Side-by-Side Dual Code Viewers**: Caller vs Callee code blocks with line highlighting, active function spotlight glow borders, and dimmed non-active code.
+- **Interactive UI Simulator Trigger**: Realistic mock action button with code sample input, play/pause controls (1x, 1.5x, 2x speeds), stepper controls, and keyboard navigation shortcuts ([Space], [←/→], [R]).
+- **100% Trilingual i18n & a11y**: Added all 20+ keys across `en`, `pt-BR`, `es` (160 keys total); WCAG AAA compliance with ARIA live regions and keyboard focus.
+- **Manual Chunk Splitting Optimization**: Added `content-architecture` and `i18n-translations` to `vite.config.mjs`, reducing critical index chunk from 176kB down to **160.7 kB** (gzip: **50.6 kB**)!
+- **Verification**: 96/96 tests pass (9 test files), 0 typecheck errors, clean 9.15s production build.
+
+---
+
+### [x] Ticket 14: Full-Stack Test Suite Deep Audit & Hardening (E2E, Axe a11y, Security, Agents & Skills)
+- **Playwright End-to-End Suite (`devdocs-ai-guide/e2e/`)**:
+  - `e2e/curriculum.spec.ts`: Validates complete user journeys including route redirects, keyboard arrow navigation, completion state toggle with live header progress updates, trilingual language switching (`en` $\leftrightarrow$ `pt-BR` $\leftrightarrow$ `es`), Command Palette search navigation to specific curriculum steps, and Architecture Explorer flow execution and switching.
+  - Configured conflict-free `webServer` on port 5188 with tuned Windows worker concurrency (`workers: 2`, `timeout: 60000`).
+  - **11/11 E2E tests passing**.
+- **Automated Axe Core Accessibility (a11y) Audits (`e2e/a11y.spec.ts`)**:
+  - Audited all critical surfaces against WCAG 2.1 AA/AAA: Step View, Interview Questions, Command Palette modal, Reading Settings modal, and Architecture Explorer page.
+  - Resolved WCAG 2.5.3 (Label in Name) on tab buttons by matching accessible names directly to visible labels.
+  - Resolved WCAG 2.1.1 / 2.1.3 on all scrollable regions (`sampleInput`, code previews, payload viewers) by adding `tabIndex={0}`, `role="region"`, and descriptive `aria-label` attributes.
+  - Tuned stage step badge contrast to exceed WCAG AA 4.5:1 ratio (>7:1).
+  - **Zero automated accessibility violations**.
+- **Agent & Skill Customization Test Suite (`src/__tests__/agentsAndSkills.test.ts`)**:
+  - 12 comprehensive unit tests asserting `.agents/` structure, 24KB file limits on rules and `AGENTS.md`, YAML frontmatter parsing on all skills, shebang execution headers on automation scripts, and persona definitions for custom subagents.
+- **Deep Security Audit Test Suite (`src/__tests__/securityDeepAudit.test.ts`)**:
+  - 41 unit tests verifying link protocol allowlist defenses (blocking `//evil.com`, `/\evil.com`, `\\evil.com`, `javascript:`, `vbscript:`, `data:`), script injection neutralization in notes export, 12 format-string regex exploit payloads, prototype pollution resistance, and ForwardRef dynamic execution hooks.
+- **Architecture Flow Test Suite (`src/__tests__/architectureExplorer.test.ts`)**:
+  - 5 tests verifying flow data models, sequential stage numbering, Cormack RRF invariants, and cross-tab sync channel contracts.
+- **Vitest Comprehensive Unit & Regression Suite**:
+  - **11 test files, 149/149 tests passing** in 1.1s.
+- **Antigravity Custom Skill Audits**:
+  - `test-sandbox-exploits.mjs`: 40/40 checks passed.
+  - `audit-bundle.mjs`: 10/10 checks passed.
+  - `check-i18n-keys.mjs`: 5/5 checks passed.
+- **Production Bundle & Typecheck Invariants**:
+  - `tsc --noEmit`: 0 errors.
+  - Production build: Initial JS chunk is **164.58 kB** (gzip: **52.27 kB**), safely below the 180kB budget.

@@ -10,6 +10,7 @@ import {
   Compass,
   Terminal,
   Award,
+  Workflow,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -189,6 +190,30 @@ const Sidebar = ({
                 : 'bg-primary/10 text-primary'
             )}>
               28
+            </span>
+          </Link>
+
+          <Link
+            to="/architecture"
+            onClick={() => setIsMobileOpen?.(false)}
+            className={cn(
+              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group',
+              location.pathname === '/architecture'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+            )}
+          >
+            <div className="flex items-center space-x-2.5">
+              <Workflow className={cn('w-4 h-4', location.pathname === '/architecture' ? 'text-primary-foreground' : 'text-amber-400')} />
+              <span>{t('nav.architecture', 'Architecture Flow')}</span>
+            </div>
+            <span aria-hidden="true" className={cn(
+              'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold',
+              location.pathname === '/architecture'
+                ? 'bg-primary-foreground/20 text-primary-foreground'
+                : 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
+            )}>
+              Live Map
             </span>
           </Link>
 

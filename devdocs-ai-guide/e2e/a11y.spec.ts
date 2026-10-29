@@ -51,4 +51,15 @@ test.describe('Automated Axe Accessibility Audits (WCAG 2.1 AA/AAA)', () => {
 
     expect(accessibilityScanResults.violations).toEqual([]);
   });
+
+  test('architecture explorer page should pass axe scan', async ({ page }) => {
+    await page.goto('/architecture');
+    await page.waitForSelector('h1');
+
+    const accessibilityScanResults = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    expect(accessibilityScanResults.violations).toEqual([]);
+  });
 });
