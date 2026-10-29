@@ -443,7 +443,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-border/90 rounded-2xl shadow-2xl z-50 p-5 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar text-slate-100"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] sm:w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-border/90 rounded-2xl shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar text-slate-100"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-border/70">
@@ -452,7 +452,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
                 <Terminal className="w-5 h-5" />
               </div>
               <div>
-                <Dialog.Title className="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
+                <Dialog.Title className="text-base sm:text-lg font-bold text-slate-100 flex flex-wrap items-center gap-2">
                   Air-Gapped Python Sandbox (Pyodide WASM)
                   <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                     Client-Side

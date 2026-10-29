@@ -80,8 +80,13 @@ const markdownComponents: Partial<Components> = {
   },
   table({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) {
     return (
-      <div className="my-6 w-full max-w-full overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm text-left border-collapse" {...props}>
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Data table"
+        className="my-6 w-full max-w-full overflow-x-auto rounded-xl border border-border custom-scrollbar focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+      >
+        <table className="w-full min-w-[540px] text-sm text-left border-collapse" {...props}>
           {children}
         </table>
       </div>
@@ -120,7 +125,7 @@ const markdownComponents: Partial<Components> = {
   },
   h2({ id, children, ...props }: React.ComponentPropsWithoutRef<'h2'>) {
     return (
-      <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6" {...props}>
+      <h2 id={id} className="group text-2xl font-bold mt-10 mb-4 pb-2 border-b border-border/70 text-foreground tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-20" {...props}>
         {children}
         {id && <HeadingAnchor id={id} />}
       </h2>
@@ -128,7 +133,7 @@ const markdownComponents: Partial<Components> = {
   },
   h3({ id, children, ...props }: React.ComponentPropsWithoutRef<'h3'>) {
     return (
-      <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-6" {...props}>
+      <h3 id={id} className="group text-xl font-semibold mt-7 mb-3 text-primary tracking-[0.01em] break-words [overflow-wrap:break-word] scroll-mt-20" {...props}>
         {children}
         {id && <HeadingAnchor id={id} />}
       </h3>

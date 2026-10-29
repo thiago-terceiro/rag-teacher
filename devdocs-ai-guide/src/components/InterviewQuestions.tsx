@@ -419,9 +419,10 @@ export function InterviewQuestions(): React.JSX.Element {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8 sm:mb-10">
         {/* Phase Filter Tabs */}
         <div
+          tabIndex={0}
           role="tablist"
           aria-label="Filter interview scenarios by phase"
-          className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar"
+          className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
         >
           {[
             { key: 'all', label: `All (${totalQuestions})` },

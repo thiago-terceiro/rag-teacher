@@ -132,7 +132,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
         <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-card/95 border border-border/90 rounded-2xl shadow-2xl z-50 p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] sm:w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-card/95 border border-border/90 rounded-2xl shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-border/80">

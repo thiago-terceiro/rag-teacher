@@ -123,4 +123,20 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
     await expect(page.getByText('handleCalculateRRF()')).toBeVisible();
     await expect(page.getByText(/Step 1 \/ 4/i)).toBeVisible();
   });
+
+  test('should render cleanly on mobile viewport without horizontal page overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/steps/project-setup');
+    await page.waitForSelector('h1');
+
+    // Verify learning status grid buttons and Python Lab are visible with labels
+    await expect(page.getByRole('radio', { name: /not started/i })).toBeVisible();
+    await expect(page.getByRole('radio', { name: /completed/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Launch Python Lab Sandbox/i })).toBeVisible();
+
+    // Verify main scroll container does not create horizontal document scroll
+    const bodyScrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const windowInnerWidth = await page.evaluate(() => window.innerWidth);
+    expect(bodyScrollWidth).toBeLessThanOrEqual(windowInnerWidth + 1);
+  });
 });

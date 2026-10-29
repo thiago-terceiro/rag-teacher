@@ -231,7 +231,12 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                 {currentStep.stageName}
               </span>
             </div>
-            <div className="grid grid-cols-5 gap-1.5" role="tablist" aria-label="Pipeline Stages">
+            <div
+              tabIndex={0}
+              role="tablist"
+              aria-label="Pipeline Stages"
+              className="flex sm:grid sm:grid-cols-5 gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+            >
               {activeFlow.steps.map((s, idx) => {
                 const isActive = idx === currentStepIndex;
                 const isPassed = idx < currentStepIndex;
@@ -247,7 +252,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                       setIsPlaying(false);
                     }}
                     className={cn(
-                      'flex items-center justify-center p-2 rounded-lg text-xs font-mono transition-all cursor-pointer border',
+                      'flex items-center justify-center p-2 rounded-lg text-xs font-mono transition-all cursor-pointer border shrink-0 sm:shrink min-w-[130px] sm:min-w-0',
                       isActive
                         ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold ring-2 ring-primary/30'
                         : isPassed
@@ -412,7 +417,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           <Sparkles className="w-4 h-4" aria-hidden="true" />
         </div>
         <div className="space-y-0.5">
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-bold text-foreground">
               {t(currentStep.titleKey, currentStep.titleDefault)}
             </h3>

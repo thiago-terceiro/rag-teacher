@@ -46,7 +46,7 @@ function RRFSimulator(): React.JSX.Element {
             <GitMerge className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <h3 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
               {t('rrf.title', 'Reciprocal Rank Fusion (RRF) Hybrid Search Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
                 {t('common.interactive', 'Interactive')}
@@ -102,8 +102,13 @@ function RRFSimulator(): React.JSX.Element {
       </div>
 
       {/* Live Fused Ranking Table */}
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-xs text-left" aria-label={t('rrf.tableAria', 'Reciprocal Rank Fusion rankings')}>
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Reciprocal Rank Fusion rankings table"
+        className="mt-4 overflow-x-auto rounded-xl border border-border/80 custom-scrollbar focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+      >
+        <table className="w-full min-w-[560px] text-xs text-left" aria-label={t('rrf.tableAria', 'Reciprocal Rank Fusion rankings')}>
           <thead>
             <tr className="border-b border-border/60 text-muted-foreground text-[11px] uppercase tracking-wider font-semibold">
               <th scope="col" className="py-2.5 px-3">{t('rrf.fusedRank', 'Fused Rank')}</th>

@@ -143,3 +143,27 @@
 - **Production Bundle & Typecheck Invariants**:
   - `tsc --noEmit`: 0 errors.
   - Production build: Initial JS chunk is **164.58 kB** (gzip: **52.27 kB**), safely below the 180kB budget.
+
+---
+
+### [x] Ticket 15: Mobile UI Responsiveness, Touch Targets & Scrollable Tables Overhaul
+- **Markdown Tables (`MarkdownRenderer.tsx`)**:
+  - Wrapped `<table>` in a keyboard-accessible scroll container with `tabIndex={0}`, `role="region"`, `aria-label="Data table"`, and `custom-scrollbar`.
+  - Added `min-w-[540px]` on the table element to prevent column squishing and text stacking on mobile viewports (<640px).
+  - Adjusted heading anchor offset to `scroll-mt-20` for comfortable sticky header clearance.
+- **RRF Simulator Table (`RRFSimulator.tsx`)**:
+  - Wrapped ranking table in `tabIndex={0}`, `role="region"`, `aria-label="Reciprocal Rank Fusion rankings table"` with `min-w-[560px]`, allowing document titles, vector steppers, and BM25 rank steppers to remain comfortable and legible on small screens.
+  - Added `flex-wrap` to simulator header badge.
+- **Architecture Explorer Mobile Optimization (`ArchitectureExplorer.tsx`)**:
+  - Switched pipeline stage tabs from rigid `grid-cols-5` to `flex sm:grid sm:grid-cols-5 gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar` with `min-w-[130px] sm:min-w-0 shrink-0 sm:shrink`. Allows full stage names (e.g. `#1 UI Trigger & Watchdog`) to be read clearly on mobile without awkward truncation.
+  - Added `flex-wrap` to step narrative banner and elevated touch target sizing.
+- **Step View Touch Controls (`StepView.tsx`)**:
+  - Re-architected learning status radiogroup into a clean `grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto` with min-height $\ge 40$px, eliminating awkward 1.5-line wrapping.
+  - Displayed label `Python Lab` on all screen sizes to prevent mystery icon syndrome.
+  - Enhanced interview challenge card action button to full-width touch-friendly target on mobile.
+- **Header & Modals Mobile Ergonomics (`StatsBar.tsx`, `VectorVisualizer.tsx`, `PythonSandbox.tsx`)**:
+  - Increased button touch targets in `StatsBar.tsx` (Menu, Search, Display, Reset, GitHub) to $\ge 38\times 38$px.
+  - Sized modals to `w-[calc(100%-1.5rem)] sm:w-full` with `p-4 sm:p-6` to avoid bleeding into device edges on mobile viewports.
+- **Automated Mobile Viewport Test (`e2e/curriculum.spec.ts`)**:
+  - Added spec validating 375x667 iPhone SE viewport: verifies zero document-level horizontal scrollbar leakage, status grid buttons visibility, and table scroll regions.
+  - **12/12 Playwright tests passing**.

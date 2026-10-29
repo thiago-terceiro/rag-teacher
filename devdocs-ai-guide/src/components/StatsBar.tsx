@@ -199,9 +199,9 @@ const StatsBar = ({
           onClick={onOpenReadingSettings}
           title="Theme presets, reading comfort & typography settings"
           aria-label={t('settings.title', 'Display and language settings')}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer shrink-0"
+          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center justify-center space-x-1 cursor-pointer shrink-0 min-h-[38px] min-w-[38px]"
         >
-          <Type className="w-3.5 h-3.5" />
+          <Type className="w-4 h-4" />
           <span className="hidden 2xl:inline font-medium">{t('nav.display', 'Display')}</span>
         </button>
 
@@ -211,7 +211,7 @@ const StatsBar = ({
           onClick={() => window.print()}
           title="Save current module as a formatted PDF handbook chapter"
           aria-label={t('settings.savePdf', 'Save current chapter as PDF')}
-          className="hidden md:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer shrink-0"
+          className="hidden md:flex p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer shrink-0"
         >
           <Printer className="w-3.5 h-3.5" />
           <span className="hidden 2xl:inline font-medium">{t('nav.pdf', 'PDF')}</span>
@@ -223,7 +223,7 @@ const StatsBar = ({
           onClick={exportStudyGuide}
           title={t('nav.exportStudyGuide', 'Export your notes and study guide (.md)')}
           aria-label={t('nav.exportStudyGuide', 'Export study guide notes')}
-          className="hidden sm:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer shrink-0"
+          className="hidden sm:flex p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors items-center space-x-1 cursor-pointer shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
           <span className="hidden 2xl:inline font-medium">{t('nav.export', 'Export')}</span>
@@ -236,9 +236,9 @@ const StatsBar = ({
             onClick={handleReset}
             title={t('nav.resetProgress', 'Reset all progress & quiz scores')}
             aria-label={t('nav.resetProgress', 'Reset learning progress')}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center space-x-1 cursor-pointer shrink-0"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs transition-colors flex items-center justify-center space-x-1 cursor-pointer shrink-0 min-h-[38px] min-w-[38px]"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
           </button>
         )}
 

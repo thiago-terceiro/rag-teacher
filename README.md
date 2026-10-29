@@ -2,7 +2,8 @@
 
 > **The ultimate interactive masterclass for building production-grade Retrieval-Augmented Generation (RAG) and Agentic systems from scratch.**
 
-[![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)](https://rag-teacher.vercel.app)
+[![Vercel](https://img.shields.io/badge/Production-rag--teacher--seven.vercel.app-black?logo=vercel)](https://rag-teacher-seven.vercel.app)
+[![Vercel Mirror](https://img.shields.io/badge/Mirror-rag--teacher.vercel.app-gray?logo=vercel)](https://rag-teacher.vercel.app)
 [![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?logo=vite)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)

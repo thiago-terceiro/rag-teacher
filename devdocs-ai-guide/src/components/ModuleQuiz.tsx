@@ -58,7 +58,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <h3 className="text-base sm:text-lg font-bold text-foreground">
                 {t('quiz.knowledgeCheck', 'Module Knowledge Check')}
               </h3>

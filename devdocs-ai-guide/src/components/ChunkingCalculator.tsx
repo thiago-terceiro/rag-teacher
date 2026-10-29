@@ -74,7 +74,7 @@ function ChunkingCalculator(): React.JSX.Element {
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <h3 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
               {t('chunking.title', 'Chunking Overlap & Token Storage Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30">
                 {t('common.interactive', 'Interactive')}
