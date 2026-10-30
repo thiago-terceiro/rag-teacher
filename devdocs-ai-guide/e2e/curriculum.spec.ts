@@ -39,7 +39,7 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
     await expect(completedBtn).toHaveAttribute('aria-checked', 'true');
 
     // Progress counter should increment
-    const statsCounter = page.locator('header').getByText(/1 \/ 28/);
+    const statsCounter = page.locator('#curriculum-sidebar').getByText(/1\/28 steps/);
     await expect(statsCounter).toBeVisible();
   });
 
@@ -58,16 +58,16 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
 
     // Verify document lang attribute and header translation
     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
-    await expect(page.getByText('Masterclass Interativo')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Currículo' })).toBeVisible();
 
     // Reopen and switch to Spanish
-    await page.getByRole('button', { name: /display|configurações|exibição/i }).click();
+    await page.getByRole('button', { name: /display|configurações|exibição|acessibilidade/i }).click();
     await page.waitForSelector('[role="dialog"]');
     await page.getByRole('radio', { name: /español/i }).click();
     await page.keyboard.press('Escape');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await expect(page.getByText('Clase Magistral Interactiva')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Plan de Estudios' })).toBeVisible();
   });
 
   test('should search topics in Command Palette and navigate to result', async ({ page }) => {

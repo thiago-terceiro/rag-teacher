@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Sparkles,
   Printer,
+  Download,
   Terminal,
 } from 'lucide-react';
 import React, { useEffect, useCallback } from 'react';
@@ -41,7 +42,7 @@ const StepView = ({
 }: StepViewProps): React.JSX.Element => {
   const { stepKey: routeStepKey } = useParams<{ stepKey?: string }>();
   const navigate = useNavigate();
-  const { updateStepProgress, phases } = useSteps();
+  const { updateStepProgress, phases, exportStudyGuide } = useSteps();
   const { settings } = useReadingSettings();
   const { openPythonSandbox, openVectorSandbox } = useSandboxActions();
   const { t } = useI18n();
@@ -173,39 +174,59 @@ const StepView = ({
         {/* Ambient Aura Background Glow */}
         <div className={cn("no-print absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full transform-gpu will-change-transform", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
 
-        {/* Breadcrumb / Phase Banner */}
-        <div className="no-print flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-muted-foreground mb-4">
-          <div className="flex items-center space-x-2">
-            <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary font-semibold tracking-wide shadow-[0_0_15px_rgba(59,130,246,0.15)] flex items-center space-x-1.5 transition-all">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span>{currentPhase?.title?.split(':')[0] || t('stepView.curriculum', 'Curriculum')}</span>
-            </span>
-            <span>•</span>
-            <span>{stepOfText}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {step.readTime && (
-              <div className="flex items-center space-x-1.5 text-muted-foreground bg-secondary/30 px-2.5 py-1 rounded-full border border-border/50">
-                <Clock className="w-3.5 h-3.5 text-primary" />
-                <span>{step.readTime} read</span>
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => window.print()}
-              title="Export this module as a clean PDF chapter"
-              className="flex items-center space-x-1.5 text-muted-foreground hover:text-foreground bg-secondary/40 hover:bg-secondary px-2.5 py-1 rounded-full border border-border/60 transition-colors cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5 text-primary" />
-              <span>Save as PDF</span>
-            </button>
-          </div>
-        </div>
+        {/* Chapter Header Card with Breathing Room & Actions */}
+        <header className="no-print p-6 sm:p-8 mb-8 rounded-2xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm relative overflow-hidden space-y-4">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          
+          {/* Metadata Row & Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary font-semibold tracking-wide shadow-[0_0_15px_rgba(59,130,246,0.15)] flex items-center space-x-1.5 transition-all">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span>{currentPhase?.title?.split(':')[0] || t('stepView.curriculum', 'Curriculum')}</span>
+              </span>
+              <span>•</span>
+              <span className="font-mono text-muted-foreground">{stepOfText}</span>
+              {step.readTime && (
+                <>
+                  <span className="hidden sm:inline">•</span>
+                  <div className="flex items-center space-x-1.5 text-muted-foreground bg-secondary/30 px-2.5 py-1 rounded-full border border-border/50">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    <span>{step.readTime} read</span>
+                  </div>
+                </>
+              )}
+            </div>
 
-        {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-[0.01em] leading-snug break-words">
-          {step.title}
-        </h1>
+            {/* Header Action Buttons: Save as PDF & Export guide notes */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                title="Export this module as a clean PDF chapter"
+                className="flex items-center space-x-1.5 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-xl border border-border/70 hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Printer className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                <span>{t('stepView.savePdf', 'Save as PDF')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={exportStudyGuide}
+                title="Export complete study notes and curriculum progress as Markdown"
+                className="flex items-center space-x-1.5 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-xl border border-border/70 hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Download className="w-3.5 h-3.5 text-indigo-400" aria-hidden="true" />
+                <span>{t('stepView.exportNotes', 'Export guide notes')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Chapter Title */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-[0.01em] leading-snug break-words pt-1">
+            {step.title}
+          </h1>
+        </header>
         
         {/* Status Bar Card */}
         <div className="no-print p-4 mb-8 rounded-xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm hover:shadow-[0_0_25px_rgba(59,130,246,0.1)] hover:border-primary/40 transition-all duration-300 relative overflow-hidden group flex flex-wrap items-center justify-between gap-4">

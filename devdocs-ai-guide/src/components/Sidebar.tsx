@@ -105,8 +105,8 @@ const Sidebar = ({
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Header Branding */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
+        {/* Header Branding (Height h-16 aligned with Top Navbar) */}
+        <div className="h-16 shrink-0 px-4 border-b border-border flex items-center justify-between">
           <Link
             to="/"
             onClick={() => setIsMobileOpen?.(false)}
@@ -167,8 +167,8 @@ const Sidebar = ({
           </div>
         </div>
 
-        {/* Quick Hub Links */}
-        <div className="p-2.5 border-b border-border/70 space-y-1">
+        {/* Quick Hub Links (Hidden on viewports >= 1000px, available in top navbar) */}
+        <div className="p-2.5 border-b border-border/70 space-y-1 min-[1000px]:hidden">
           <Link
             to="/interview-questions"
             onClick={() => setIsMobileOpen?.(false)}
@@ -327,7 +327,12 @@ const Sidebar = ({
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className="font-medium text-foreground">{t('sidebar.overallMastery', 'Overall Mastery')}</span>
-              <span className="font-bold text-primary">{stats.completionPercentage}%</span>
+              <div className="flex items-center space-x-1.5 font-mono text-xs">
+                <span className="text-muted-foreground font-normal">
+                  {stats.completedSteps}/{stats.totalSteps} {t('sidebar.steps', 'steps')}
+                </span>
+                <span className="font-bold text-primary">{stats.completionPercentage}%</span>
+              </div>
             </div>
             <div
               role="progressbar"

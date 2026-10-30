@@ -29,10 +29,12 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.modules': '28 Production Modules',
     'nav.search': 'Search topics...',
     'nav.searchShort': 'Search',
+    'nav.curriculum': 'Curriculum',
     'nav.interview': 'Interview Questions',
     'nav.pythonLab': 'Python Lab',
     'nav.vectorSandbox': 'Vector Sandbox',
     'nav.display': 'Display',
+    'nav.displayA11y': 'Display & Accessibility',
     'nav.pdf': 'PDF',
     'nav.export': 'Export',
     'nav.completed': 'Completed',
@@ -126,6 +128,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     // Sidebar
     'sidebar.searchPlaceholder': 'Search 28 RAG topics...',
     'sidebar.completed': 'completed',
+    'sidebar.steps': 'steps',
     'sidebar.overallMastery': 'Overall Mastery',
     'sidebar.comprehensionScore': 'Comprehension Score',
     'sidebar.noTopics': 'No topics matching "{query}"',
@@ -139,6 +142,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'stepView.completed': 'Completed',
     'stepView.previous': 'Previous',
     'stepView.next': 'Next',
+    'stepView.savePdf': 'Save as PDF',
+    'stepView.exportNotes': 'Export guide notes',
 
     // Architecture Flow Explorer
     'nav.architecture': 'Architecture Flow',
@@ -212,10 +217,12 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.modules': '28 Módulos de Produção',
     'nav.search': 'Pesquisar tópicos...',
     'nav.searchShort': 'Buscar',
+    'nav.curriculum': 'Currículo',
     'nav.interview': 'Perguntas de Entrevista',
     'nav.pythonLab': 'Lab Python',
     'nav.vectorSandbox': 'Sandbox Vetorial',
     'nav.display': 'Exibição',
+    'nav.displayA11y': 'Exibição e Acessibilidade',
     'nav.pdf': 'PDF',
     'nav.export': 'Exportar',
     'nav.completed': 'Concluído',
@@ -309,6 +316,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     // Sidebar
     'sidebar.searchPlaceholder': 'Pesquisar 28 tópicos de RAG...',
     'sidebar.completed': 'concluído',
+    'sidebar.steps': 'etapas',
     'sidebar.overallMastery': 'Domínio Geral',
     'sidebar.comprehensionScore': 'Pontuação de Compreensão',
     'sidebar.noTopics': 'Nenhum tópico correspondente a "{query}"',
@@ -322,6 +330,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'stepView.completed': 'Concluído',
     'stepView.previous': 'Anterior',
     'stepView.next': 'Próximo',
+    'stepView.savePdf': 'Salvar como PDF',
+    'stepView.exportNotes': 'Exportar notas do guia',
 
     // Architecture Flow Explorer
     'nav.architecture': 'Fluxo Arquitetural',
@@ -395,10 +405,12 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.modules': '28 Módulos de Producción',
     'nav.search': 'Buscar temas...',
     'nav.searchShort': 'Buscar',
+    'nav.curriculum': 'Plan de Estudios',
     'nav.interview': 'Preguntas de Entrevista',
     'nav.pythonLab': 'Laboratorio Python',
     'nav.vectorSandbox': 'Sandbox Vectorial',
     'nav.display': 'Pantalla',
+    'nav.displayA11y': 'Visualización y Accesibilidad',
     'nav.pdf': 'PDF',
     'nav.export': 'Exportar',
     'nav.completed': 'Completado',
@@ -492,6 +504,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     // Sidebar
     'sidebar.searchPlaceholder': 'Buscar 28 temas de RAG...',
     'sidebar.completed': 'completado',
+    'sidebar.steps': 'pasos',
     'sidebar.overallMastery': 'Dominio General',
     'sidebar.comprehensionScore': 'Puntuación de Comprensión',
     'sidebar.noTopics': 'No hay temas que coincidan con "{query}"',
@@ -505,6 +518,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'stepView.completed': 'Completado',
     'stepView.previous': 'Anterior',
     'stepView.next': 'Siguiente',
+    'stepView.savePdf': 'Guardar como PDF',
+    'stepView.exportNotes': 'Exportar notas de la guía',
 
     // Architecture Flow Explorer
     'nav.architecture': 'Flujo Arquitectónico',
