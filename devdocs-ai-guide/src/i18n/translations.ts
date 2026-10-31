@@ -31,8 +31,10 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.searchShort': 'Search',
     'nav.curriculum': 'Curriculum',
     'nav.interview': 'Interview Questions',
+    'nav.interviewShort': 'Interviews',
     'nav.pythonLab': 'Python Lab',
     'nav.vectorSandbox': 'Vector Sandbox',
+    'nav.vectorShort': 'Vectors',
     'nav.display': 'Display',
     'nav.displayA11y': 'Display & Accessibility',
     'nav.pdf': 'PDF',
@@ -147,6 +149,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Architecture Flow Explorer
     'nav.architecture': 'Architecture Flow',
+    'nav.architectureShort': 'Architecture',
     'arch.pageTitle': 'Architecture & Code Flow Explorer',
     'arch.pageSubtitle': 'Simulate application interactions to trace function calls, thread boundaries, and data payloads side-by-side.',
     'arch.selectFlow': 'Select Flow',
@@ -219,8 +222,10 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.searchShort': 'Buscar',
     'nav.curriculum': 'Currículo',
     'nav.interview': 'Perguntas de Entrevista',
+    'nav.interviewShort': 'Entrevistas',
     'nav.pythonLab': 'Lab Python',
     'nav.vectorSandbox': 'Sandbox Vetorial',
+    'nav.vectorShort': 'Vetores',
     'nav.display': 'Exibição',
     'nav.displayA11y': 'Exibição e Acessibilidade',
     'nav.pdf': 'PDF',
@@ -335,6 +340,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Architecture Flow Explorer
     'nav.architecture': 'Fluxo Arquitetural',
+    'nav.architectureShort': 'Arquitetura',
     'arch.pageTitle': 'Explorador de Arquitetura e Fluxo de Código',
     'arch.pageSubtitle': 'Simule interações do aplicativo para rastrear chamadas de função, limites de thread e dados lado a lado.',
     'arch.selectFlow': 'Selecionar Fluxo',
@@ -407,8 +413,10 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.searchShort': 'Buscar',
     'nav.curriculum': 'Plan de Estudios',
     'nav.interview': 'Preguntas de Entrevista',
+    'nav.interviewShort': 'Entrevistas',
     'nav.pythonLab': 'Laboratorio Python',
     'nav.vectorSandbox': 'Sandbox Vectorial',
+    'nav.vectorShort': 'Vectores',
     'nav.display': 'Pantalla',
     'nav.displayA11y': 'Visualización y Accesibilidad',
     'nav.pdf': 'PDF',
@@ -523,6 +531,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Architecture Flow Explorer
     'nav.architecture': 'Flujo Arquitectónico',
+    'nav.architectureShort': 'Arquitectura',
     'arch.pageTitle': 'Explorador de Arquitectura y Flujo de Código',
     'arch.pageSubtitle': 'Simule interacciones de la aplicación para rastrear llamadas a funciones, límites de subprocesos y datos lado a lado.',
     'arch.selectFlow': 'Seleccionar Flujo',
