@@ -52,32 +52,39 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 opacity-80" />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border/70">
+      <div className="pb-4 border-b border-border/70">
         <div className="flex items-center space-x-2.5">
-          <div className="p-2 rounded-xl bg-primary/10 border border-primary/25 text-primary">
+          <div className="p-2 rounded-xl bg-primary/10 border border-primary/25 text-primary shrink-0">
             <Award className="w-5 h-5" />
           </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <h3 className="text-base sm:text-lg font-bold text-foreground">
-                {t('quiz.knowledgeCheck', 'Module Knowledge Check')}
-              </h3>
-              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
-                {answeredCount}/{questions.length} {t('quiz.answered', 'Answered')}
-              </span>
-            </div>
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">
+              {t('quiz.knowledgeCheck', 'Module Knowledge Check')}
+            </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t('quiz.subtitle', 'Verify your production architecture intuition before marking this module completed.')}
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="flex items-center gap-2.5">
-          {answeredCount > 0 && (
+      {/* Persistent Status & Progress Bar directly above Question 1 - eliminates layout shift */}
+      <div className="mt-4 px-3.5 py-2.5 rounded-xl bg-secondary/35 border border-border/60 flex flex-wrap items-center justify-between gap-2.5 min-h-[44px]">
+        <div className="flex items-center space-x-2 min-w-0">
+          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 shrink-0">
+            {answeredCount}/{questions.length}
+          </span>
+          <span className="text-xs text-muted-foreground font-medium truncate">
+            {t('quiz.answered', 'Answered')}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {answeredCount > 0 ? (
             <>
               <span
                 className={cn(
-                  'px-2.5 py-1 rounded-full text-xs font-bold font-mono border',
+                  'px-2.5 py-0.5 rounded-full text-xs font-bold font-mono border',
                   scorePct === 100
                     ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
                     : scorePct >= 50
@@ -92,18 +99,22 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                 onClick={() => resetModuleQuiz(stepKey)}
                 title={t('quiz.retry', "Reset this module's quiz answers")}
                 aria-label={t('quiz.retry', 'Retry Knowledge Check')}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{t('quiz.retry', 'Retry')}</span>
               </button>
             </>
+          ) : (
+            <span className="text-[11px] text-muted-foreground/70 italic">
+              {t('quiz.promptSelect', 'Select an option below to test intuition')}
+            </span>
           )}
         </div>
       </div>
 
       {/* Questions List */}
-      <div className="space-y-6 mt-5">
+      <div className="space-y-6 mt-4">
         {questions.map((q, qIdx) => {
           const selectedIdx = stepAnswers[q.id];
           const isAnswered = typeof selectedIdx === 'number';
@@ -112,18 +123,20 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
           return (
             <fieldset
               key={q.id}
-              className="p-4 rounded-xl bg-secondary/25 border border-border/70 space-y-3"
+              className="p-4 rounded-xl bg-secondary/25 border border-border/70 space-y-3 min-w-0 max-w-full w-full overflow-hidden"
             >
-              <legend className="flex items-start gap-2.5 mb-2 float-none w-auto">
-                <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-mono text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">
-                  Q{qIdx + 1}
-                </span>
-                <span className="text-sm sm:text-[15px] font-semibold text-foreground leading-relaxed">
-                  Question {qIdx + 1}: {q.question}
-                </span>
+              <legend className="w-full max-w-full mb-2 float-none block">
+                <div className="flex items-start gap-2.5 w-full min-w-0">
+                  <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-mono text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">
+                    Q{qIdx + 1}
+                  </span>
+                  <span className="flex-1 min-w-0 text-sm sm:text-[15px] font-semibold text-foreground leading-relaxed break-words [overflow-wrap:anywhere]">
+                    Question {qIdx + 1}: {q.question}
+                  </span>
+                </div>
               </legend>
 
-              <div role="radiogroup" aria-label={`Question ${qIdx + 1} options`} className="grid grid-cols-1 gap-2 pt-1">
+              <div role="radiogroup" aria-label={`Question ${qIdx + 1} options`} className="grid grid-cols-1 gap-2 pt-1 min-w-0 max-w-full">
                 {q.options.map((optText, optIdx) => {
                   const isThisSelected = selectedIdx === optIdx;
                   const isThisCorrect = optIdx === q.correctIndex;
@@ -151,7 +164,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                       disabled={isAnswered}
                       onClick={() => handleSelectOption(q.id, optIdx)}
                       className={cn(
-                        'w-full p-3 rounded-xl border text-left text-xs sm:text-sm transition-all duration-150 flex items-start gap-3',
+                        'w-full max-w-full p-3 rounded-xl border text-left text-xs sm:text-sm transition-all duration-150 flex items-start gap-3 min-w-0 overflow-hidden',
                         isAnswered ? 'cursor-default' : 'cursor-pointer',
                         optionStyle
                       )}
@@ -169,7 +182,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                       >
                         {OPTION_LABELS[optIdx]}
                       </span>
-                      <span className="flex-1 leading-relaxed">{optText}</span>
+                      <span className="flex-1 min-w-0 leading-relaxed break-words [overflow-wrap:anywhere]">{optText}</span>
                       {isAnswered && isThisCorrect && (
                         <>
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" aria-hidden="true" />
@@ -194,7 +207,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                   aria-live="polite"
                   aria-atomic="true"
                   className={cn(
-                    'mt-3 p-3.5 rounded-xl border text-xs sm:text-[13px] leading-relaxed flex items-start gap-2.5 animate-in fade-in duration-150',
+                    'mt-3 p-3.5 rounded-xl border text-xs sm:text-[13px] leading-relaxed flex items-start gap-2.5 animate-in fade-in duration-150 min-w-0 max-w-full overflow-hidden',
                     isCorrect
                       ? 'bg-emerald-500/10 border-emerald-500/30 text-foreground/95'
                       : 'bg-amber-500/10 border-amber-500/30 text-foreground/95'
@@ -206,7 +219,7 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                       isCorrect ? 'text-emerald-400' : 'text-amber-400'
                     )}
                   />
-                  <div>
+                  <div className="flex-1 min-w-0 break-words [overflow-wrap:anywhere]">
                     <span
                       className={cn(
                         'font-bold mr-1.5',

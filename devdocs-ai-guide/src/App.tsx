@@ -4,6 +4,7 @@ import { Search, WifiOff } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
 import StepView from './components/StepView';
+import ScrollToTopButton from './components/ScrollToTopButton';
 import WidgetErrorBoundary from './components/WidgetErrorBoundary';
 import { StepsProvider } from './hooks/useSteps';
 import { ReadingSettingsProvider } from './hooks/useReadingSettings';
@@ -67,6 +68,17 @@ function AppContent(): React.JSX.Element {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMobileSidebarOpen]);
 
+  // Enforce zero window scroll displacement so top navbar is never lost on mobile touch/scroll
+  useEffect(() => {
+    const clampWindowScroll = () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', clampWindowScroll, { passive: true });
+    return () => window.removeEventListener('scroll', clampWindowScroll);
+  }, []);
+
   return (
     <Router>
       {/* Accessibility: Skip to Main Content Link */}
@@ -103,7 +115,7 @@ function AppContent(): React.JSX.Element {
         onOpenVectorSandbox={openVectorSandbox}
         onOpenPythonSandbox={handleOpenPythonSandbox}
       />
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 h-full max-h-screen overflow-hidden relative">
         <StatsBar
           isMobileOpen={isMobileSidebarOpen}
           onToggleMobileSidebar={handleToggleMobileSidebar}
@@ -138,7 +150,7 @@ function AppContent(): React.JSX.Element {
           tabIndex={-1}
           role="region"
           aria-label="Main Content"
-          className="flex-1 p-4 sm:p-8 md:p-10 overflow-y-auto overflow-x-hidden custom-scrollbar max-w-full focus:outline-none"
+          className="flex-1 p-4 sm:p-8 md:p-10 overflow-y-auto overscroll-y-contain overflow-x-hidden custom-scrollbar max-w-full focus:outline-none"
         >
           <Routes>
             <Route path="/" element={<Navigate to="/steps/project-setup" replace />} />
@@ -188,6 +200,7 @@ function AppContent(): React.JSX.Element {
             <Route path="*" element={<Navigate to="/steps/project-setup" replace />} />
           </Routes>
         </div>
+        <ScrollToTopButton />
       </main>
     </Router>
   );
@@ -195,7 +208,7 @@ function AppContent(): React.JSX.Element {
 
 function App(): React.JSX.Element {
   return (
-    <div className="bg-background text-foreground min-h-screen flex selection:bg-primary/20 selection:text-primary">
+    <div className="bg-background text-foreground h-full h-[100dvh] max-h-screen flex overflow-hidden selection:bg-primary/20 selection:text-primary">
       <I18nProvider>
         <ReadingSettingsProvider>
           <StepsProvider>

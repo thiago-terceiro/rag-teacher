@@ -379,7 +379,7 @@ const StepView = ({
               </span>
             </div>
 
-            <p className="text-sm text-foreground/90 font-medium mb-4 leading-relaxed">
+            <p className="text-sm text-foreground/90 font-medium mb-4 leading-relaxed break-words [overflow-wrap:anywhere]">
               {stepInterview.question}
             </p>
 

@@ -47,6 +47,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.resetConfirm': 'Are you sure you want to reset your learning progress, quiz scores, and notes?',
     'nav.exportStudyGuide': 'Export study guide notes',
     'nav.readPercent': '{percent}% read',
+    'nav.scrollToTop': 'Scroll to top',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Module Knowledge Check',
@@ -54,6 +55,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'quiz.scoreBadge': 'Module Score',
     'quiz.answered': 'Answered',
     'quiz.of': 'of',
+    'quiz.promptSelect': 'Select an option below to test intuition',
     'quiz.retry': 'Retry Knowledge Check',
     'quiz.completeModule': 'Complete Module & Continue',
     'quiz.moduleCompleted': 'Module Completed!',
@@ -238,6 +240,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.resetConfirm': 'Tem certeza de que deseja redefinir todo o progresso, notas e pontuações de quiz?',
     'nav.exportStudyGuide': 'Exportar guia de estudos em markdown',
     'nav.readPercent': '{percent}% lido',
+    'nav.scrollToTop': 'Voltar ao topo',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Verificação de Conhecimento do Módulo',
@@ -245,6 +248,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'quiz.scoreBadge': 'Pontuação',
     'quiz.answered': 'Respondidas',
     'quiz.of': 'de',
+    'quiz.promptSelect': 'Selecione uma opção abaixo para testar sua intuição',
     'quiz.retry': 'Refazer Verificação',
     'quiz.completeModule': 'Concluir Módulo e Continuar',
     'quiz.moduleCompleted': 'Módulo Concluído!',
@@ -429,6 +433,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'nav.resetConfirm': '¿Está seguro de que desea restablecer todo su progreso, notas y puntuaciones de cuestionarios?',
     'nav.exportStudyGuide': 'Exportar guía de estudio en markdown',
     'nav.readPercent': '{percent}% leído',
+    'nav.scrollToTop': 'Volver arriba',
 
     // Knowledge Check / Quizzes
     'quiz.knowledgeCheck': 'Comprobación de Conocimiento del Módulo',
@@ -436,6 +441,7 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'quiz.scoreBadge': 'Puntuación',
     'quiz.answered': 'Respondidas',
     'quiz.of': 'de',
+    'quiz.promptSelect': 'Seleccione una opción a continuación para probar su intuición',
     'quiz.retry': 'Reintentar Comprobación',
     'quiz.completeModule': 'Completar Módulo y Continuar',
     'quiz.moduleCompleted': '¡Módulo Completado!',

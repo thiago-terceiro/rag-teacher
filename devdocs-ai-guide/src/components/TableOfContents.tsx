@@ -92,8 +92,10 @@ export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop
   if (!headings || headings.length < MIN_HEADINGS) return null;
 
   const scrollTop = () => {
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: reduceMotion ? 'instant' : 'smooth' });
+    document.getElementById('main-scroll-container')?.scrollTo({ top: 0, behavior: 'instant' });
+    if (window.scrollY !== 0 || window.scrollX !== 0) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
     window.history.replaceState(window.history.state, '', window.location.pathname);
   };
 

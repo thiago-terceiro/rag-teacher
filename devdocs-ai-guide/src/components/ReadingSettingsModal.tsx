@@ -74,7 +74,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
         <Dialog.Overlay className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-150" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="no-print fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-card/95 border border-border rounded-2xl shadow-2xl z-50 p-6 focus:outline-none animate-in zoom-in-95 duration-150 custom-scrollbar"
+          className="no-print max-sm:fixed max-sm:inset-y-0 max-sm:right-0 max-sm:left-auto max-sm:top-0 max-sm:bottom-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-[92vw] max-sm:max-w-md max-sm:h-full max-sm:max-h-screen max-sm:rounded-l-2xl max-sm:rounded-r-none max-sm:border-r-0 max-sm:border-y-0 max-sm:shadow-2xl max-sm:animate-sheet-right sm:fixed sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl sm:animate-in sm:zoom-in-95 sm:fade-in-0 sm:duration-150 overflow-y-auto bg-card/95 border border-border z-50 p-5 sm:p-6 focus:outline-none custom-scrollbar"
         >
           <div className="flex items-center justify-between pb-4 border-b border-border/80">
             <div className="flex items-center space-x-2">
