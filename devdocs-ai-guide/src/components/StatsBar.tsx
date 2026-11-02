@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Menu,
   BookOpen,
@@ -21,6 +21,33 @@ export interface StatsBarProps {
 }
 
 const ScrollProgressBar = React.memo(function ScrollProgressBar(): React.JSX.Element {
+  useEffect(() => {
+    const container = document.getElementById('main-scroll-container');
+    const barEl = document.getElementById('header-scroll-progress-bar');
+    if (!container || !barEl) return;
+
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const { scrollTop, scrollHeight, clientHeight } = container;
+          const maxScroll = scrollHeight - clientHeight;
+          const currentProgress = maxScroll > 0 ? Math.min(Math.max(scrollTop / maxScroll, 0), 1) : 0;
+          barEl.style.transform = `scaleX(${currentProgress})`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <div aria-hidden="true" className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-border/40 overflow-hidden pointer-events-none">
       <div

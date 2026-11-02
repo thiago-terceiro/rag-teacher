@@ -61,7 +61,7 @@ function RRFSimulator(): React.JSX.Element {
         <button
           type="button"
           onClick={resetDefaults}
-          aria-label={t('rrf.resetAria', 'Reset document ranks to default values')}
+          title={t('rrf.resetAria', 'Reset document ranks to default values')}
           className="self-start sm:self-auto px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
         >
           {t('rrf.reset', 'Reset Ranks')}

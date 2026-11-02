@@ -136,14 +136,13 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
           setSvgContent(svg);
         }
       } catch (err) {
+        if (!isMounted) return;
         console.warn('Mermaid rendering error:', err);
         const stagingElem = document.getElementById(`d${diagramId}`);
         if (stagingElem) stagingElem.remove();
         const tempElement = document.getElementById(diagramId);
         if (tempElement) tempElement.remove();
-        if (isMounted) {
-          setHasError(true);
-        }
+        setHasError(true);
       }
     };
 
@@ -151,10 +150,6 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
 
     return () => {
       isMounted = false;
-      const stagingElem = document.getElementById(`d${diagramId}`);
-      if (stagingElem) stagingElem.remove();
-      const tempElement = document.getElementById(diagramId);
-      if (tempElement) tempElement.remove();
     };
   }, [cleanChart, cacheKey, diagramId, isLightTheme]);
 
@@ -404,7 +399,10 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
           role="dialog"
           aria-modal="true"
           aria-label="Fullscreen Architecture Diagram"
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-150"
+          className={cn(
+            "fixed inset-0 z-50 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-150",
+            isLightTheme ? "bg-background/98 text-foreground" : "bg-black/95 text-slate-100"
+          )}
         >
           <div className="flex items-center justify-between pb-3 border-b border-border/80 text-foreground">
             <div className="flex items-center space-x-2">
@@ -413,12 +411,15 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <div className="flex items-center bg-card rounded-lg border border-border p-1">
+              <div className={cn(
+                "flex items-center rounded-lg border p-1",
+                isLightTheme ? "bg-card border-border" : "bg-card/40 border-white/10"
+              )}>
                 <button
                   type="button"
                   onClick={handleZoomOut}
                   aria-label="Zoom out"
-                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
@@ -426,7 +427,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
                   type="button"
                   onClick={handleZoomReset}
                   aria-label="Reset zoom to 100%"
-                  className="px-2 py-0.5 text-xs font-mono font-semibold hover:bg-secondary text-primary"
+                  className="px-2 py-0.5 text-xs font-mono font-semibold hover:bg-secondary text-primary cursor-pointer"
                 >
                   {Math.round(zoom * 100)}%
                 </button>
@@ -434,7 +435,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
                   type="button"
                   onClick={handleZoomIn}
                   aria-label="Zoom in"
-                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
@@ -448,7 +449,12 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
                   triggerBtnRef.current?.focus();
                 }}
                 aria-label="Exit fullscreen view"
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold cursor-pointer border border-border/70"
+                className={cn(
+                  "flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer border",
+                  isLightTheme
+                    ? "bg-secondary hover:bg-secondary/80 text-foreground border-border/70"
+                    : "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                )}
               >
                 <Minimize2 className="w-4 h-4" />
                 <span>Close (Esc)</span>

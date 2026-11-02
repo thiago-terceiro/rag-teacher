@@ -18,7 +18,7 @@ import { useSteps } from '../hooks/useSteps';
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { useSandboxActions } from '../context/SandboxContext';
 import { useI18n } from '../hooks/useI18n';
-import { interviewQuestions } from '../data/interviewQuestionsData';
+import { interviewTeasersMap, type InterviewTeaser } from '../data/interviewTeasersData';
 import MarkdownRenderer from './MarkdownRenderer';
 import NotesJournal from './NotesJournal';
 import ModuleQuiz from './ModuleQuiz';
@@ -26,10 +26,10 @@ import { TableOfContentsDesktop, TableOfContentsMobile } from './TableOfContents
 import { useTableOfContents, useActiveHeading } from '../hooks/useTableOfContents';
 import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
-import { getNextStep, getPrevStep, allSteps, getStepByKey } from '../data/guideData';
+import { getNextStep, getPrevStep, allSteps, getStepByKey, getStepIndex } from '../data/guideData';
 import ChunkingCalculator from './ChunkingCalculator';
 import RRFSimulator from './RRFSimulator';
-import type { StepStatus, Step, Phase, InterviewQuestion } from '../types';
+import type { StepStatus, Step, Phase } from '../types';
 
 export interface StepViewProps {
   onOpenVectorSandbox?: () => void;
@@ -54,17 +54,12 @@ const StepView = ({
 
   // Instant synchronous lookup (0ms latency, zero spinner flash)
   const step: Step = getStepByKey(stepKey) || allSteps[0];
-  const stepInterview: (InterviewQuestion & { track?: string }) | undefined = interviewQuestions.find(
-    (q) => q.step_key === stepKey
-  );
+  const stepInterview: InterviewTeaser | undefined = interviewTeasersMap.get(stepKey);
 
-  // Find step in current phases state to get latest status and notes
-  const currentStepFromPhases: Step | undefined = phases
-    .flatMap((p: Phase) => p.steps)
-    .find((s: Step) => s.step_key === stepKey);
-
+  // Find current phase and step in current phases state to get latest status and notes (O(1) without flatMap)
   const currentPhase: Phase | undefined = phases.find((p: Phase) => p.steps.some((s: Step) => s.step_key === stepKey));
-  const stepIndex = allSteps.findIndex((s: Step) => s.step_key === stepKey) + 1;
+  const currentStepFromPhases: Step | undefined = currentPhase?.steps.find((s: Step) => s.step_key === stepKey);
+  const stepIndex = getStepIndex(stepKey);
   const nextStep = getNextStep(stepKey);
   const prevStep = getPrevStep(stepKey);
 

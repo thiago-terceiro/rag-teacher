@@ -161,9 +161,9 @@ const ModuleQuiz = memo(({ stepKey, status, onCompleteStep }: ModuleQuizProps): 
                         className={cn(
                           'w-6 h-6 rounded-lg font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 border transition-colors',
                           isAnswered && isThisCorrect
-                            ? 'bg-emerald-500 text-white border-emerald-500'
+                            ? 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500'
                             : isAnswered && isThisSelected && !isThisCorrect
-                            ? 'bg-rose-500 text-white border-rose-500'
+                            ? 'bg-rose-600 dark:bg-rose-500 text-white border-rose-600 dark:border-rose-500'
                             : 'bg-secondary/80 text-muted-foreground border-border/70'
                         )}
                       >

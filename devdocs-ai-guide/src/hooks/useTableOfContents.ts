@@ -22,11 +22,9 @@ export function useActiveHeading(headings: HeadingItem[]): [string, React.Dispat
       .filter((el): el is HTMLElement => Boolean(el));
     if (elements.length === 0) return undefined;
 
-    // Set initial active heading
-    if (!lastActiveRef.current) {
-      lastActiveRef.current = headings[0]?.id || '';
-      setActiveId(lastActiveRef.current);
-    }
+    // Set initial active heading on mount or when module headings change
+    lastActiveRef.current = headings[0]?.id || '';
+    setActiveId(lastActiveRef.current);
 
     // High performance IntersectionObserver
     // Active reading area: between top header (-60px) and middle of screen (-65% from bottom)

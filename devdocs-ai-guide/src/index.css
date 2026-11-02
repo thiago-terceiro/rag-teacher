@@ -176,12 +176,14 @@
   background-color: #000000 !important;
 }
 
-/* Daylight Paper high-legibility overrides for semantic accent text */
-.theme-daylight-paper .text-emerald-400 {
+/* Daylight Paper high-legibility overrides for semantic accent text (WCAG AAA >= 7:1) */
+.theme-daylight-paper .text-emerald-400,
+.theme-daylight-paper .text-emerald-300 {
   color: #047857 !important;
 }
-.theme-daylight-paper .text-amber-400 {
-  color: #b45309 !important;
+.theme-daylight-paper .text-amber-400,
+.theme-daylight-paper .text-amber-300 {
+  color: #92400e !important;
 }
 .theme-daylight-paper .text-blue-400,
 .theme-daylight-paper .text-blue-300 {
@@ -191,11 +193,87 @@
 .theme-daylight-paper .text-indigo-300 {
   color: #4338ca !important;
 }
-.theme-daylight-paper .text-cyan-400 {
-  color: #0e7490 !important;
+.theme-daylight-paper .text-cyan-400,
+.theme-daylight-paper .text-cyan-300 {
+  color: #164e63 !important;
 }
-.theme-daylight-paper .text-rose-400 {
-  color: #be123c !important;
+.theme-daylight-paper .text-rose-400,
+.theme-daylight-paper .text-rose-300 {
+  color: #9f1239 !important;
+}
+.theme-daylight-paper .text-purple-400,
+.theme-daylight-paper .text-purple-300 {
+  color: #6b21a8 !important;
+}
+.theme-daylight-paper .text-red-400,
+.theme-daylight-paper .text-red-300 {
+  color: #991b1b !important;
+}
+
+/* Ensure dedicated dark surfaces (code blocks, terminal sandbox) preserve high-contrast light colors in daylight paper mode */
+.theme-daylight-paper .print-code-block .text-emerald-400,
+.theme-daylight-paper .print-code-block .text-emerald-300,
+.theme-daylight-paper .dark-terminal .text-emerald-400,
+.theme-daylight-paper .dark-terminal .text-emerald-300,
+.theme-daylight-paper [data-surface="dark"] .text-emerald-400,
+.theme-daylight-paper [data-surface="dark"] .text-emerald-300 {
+  color: #34d399 !important;
+}
+.theme-daylight-paper .print-code-block .text-amber-400,
+.theme-daylight-paper .print-code-block .text-amber-300,
+.theme-daylight-paper .dark-terminal .text-amber-400,
+.theme-daylight-paper .dark-terminal .text-amber-300,
+.theme-daylight-paper [data-surface="dark"] .text-amber-400,
+.theme-daylight-paper [data-surface="dark"] .text-amber-300 {
+  color: #fbbf24 !important;
+}
+.theme-daylight-paper .print-code-block .text-blue-400,
+.theme-daylight-paper .print-code-block .text-blue-300,
+.theme-daylight-paper .dark-terminal .text-blue-400,
+.theme-daylight-paper .dark-terminal .text-blue-300,
+.theme-daylight-paper [data-surface="dark"] .text-blue-400,
+.theme-daylight-paper [data-surface="dark"] .text-blue-300 {
+  color: #60a5fa !important;
+}
+.theme-daylight-paper .print-code-block .text-indigo-400,
+.theme-daylight-paper .print-code-block .text-indigo-300,
+.theme-daylight-paper .dark-terminal .text-indigo-400,
+.theme-daylight-paper .dark-terminal .text-indigo-300,
+.theme-daylight-paper [data-surface="dark"] .text-indigo-400,
+.theme-daylight-paper [data-surface="dark"] .text-indigo-300 {
+  color: #818cf8 !important;
+}
+.theme-daylight-paper .print-code-block .text-cyan-400,
+.theme-daylight-paper .print-code-block .text-cyan-300,
+.theme-daylight-paper .dark-terminal .text-cyan-400,
+.theme-daylight-paper .dark-terminal .text-cyan-300,
+.theme-daylight-paper [data-surface="dark"] .text-cyan-400,
+.theme-daylight-paper [data-surface="dark"] .text-cyan-300 {
+  color: #22d3ee !important;
+}
+.theme-daylight-paper .print-code-block .text-purple-400,
+.theme-daylight-paper .print-code-block .text-purple-300,
+.theme-daylight-paper .dark-terminal .text-purple-400,
+.theme-daylight-paper .dark-terminal .text-purple-300,
+.theme-daylight-paper [data-surface="dark"] .text-purple-400,
+.theme-daylight-paper [data-surface="dark"] .text-purple-300 {
+  color: #c084fc !important;
+}
+.theme-daylight-paper .print-code-block .text-rose-400,
+.theme-daylight-paper .print-code-block .text-rose-300,
+.theme-daylight-paper .dark-terminal .text-rose-400,
+.theme-daylight-paper .dark-terminal .text-rose-300,
+.theme-daylight-paper [data-surface="dark"] .text-rose-400,
+.theme-daylight-paper [data-surface="dark"] .text-rose-300 {
+  color: #fb7185 !important;
+}
+.theme-daylight-paper .print-code-block .text-red-400,
+.theme-daylight-paper .print-code-block .text-red-300,
+.theme-daylight-paper .dark-terminal .text-red-400,
+.theme-daylight-paper .dark-terminal .text-red-300,
+.theme-daylight-paper [data-surface="dark"] .text-red-400,
+.theme-daylight-paper [data-surface="dark"] .text-red-300 {
+  color: #f87171 !important;
 }
 
 /* Ensure main scroll container has hardware-accelerated compositor scrolling */

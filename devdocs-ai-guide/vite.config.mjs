@@ -39,9 +39,9 @@ export default defineConfig({
           if (id.includes('node_modules/lucide-react')) {
             return 'vendor-icons';
           }
-          if (id.includes('node_modules/mermaid')) {
-            return 'vendor-mermaid';
-          }
+          // Note: Mermaid is imported exclusively via React.lazy in MermaidBlock.tsx.
+          // Leaving mermaid unassigned in manualChunks allows Rolldown to cleanly isolate
+          // it within dynamic async chunks without pulling Vite's modulepreload helper into index.
           if (id.includes('node_modules/katex')) {
             return 'vendor-katex';
           }

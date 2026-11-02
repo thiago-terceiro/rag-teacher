@@ -70,8 +70,8 @@ const Sidebar = ({
   // Filter steps if user typed a search query (memoized for instant keystroke rendering)
   const queryLower = searchQuery.toLowerCase().trim();
   const filteredPhases: Phase[] = useMemo(() => {
+    if (!queryLower) return phases;
     return phases.map((phase: Phase) => {
-      if (!queryLower) return phase;
       const matchingSteps = phase.steps.filter((step: Step) =>
         step.title.toLowerCase().includes(queryLower) ||
         step.step_key.toLowerCase().includes(queryLower)
@@ -80,7 +80,7 @@ const Sidebar = ({
         ...phase,
         steps: matchingSteps,
       };
-    }).filter((phase: Phase) => !queryLower || phase.steps.length > 0);
+    }).filter((phase: Phase) => phase.steps.length > 0);
   }, [phases, queryLower]);
 
   return (

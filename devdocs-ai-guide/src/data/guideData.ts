@@ -47,22 +47,28 @@ export const allSteps: Step[] = [
 ];
 
 export const stepMap: Map<string, Step> = new Map(allSteps.map(step => [step.step_key, step]));
+export const stepIndexMap: Map<string, number> = new Map(allSteps.map((step, idx) => [step.step_key, idx]));
 
 export const getStepByKey = (key: string): Step => {
   return stepMap.get(key) || allSteps[0];
 };
 
+export const getStepIndex = (key: string): number => {
+  const idx = stepIndexMap.get(key);
+  return idx !== undefined ? idx + 1 : 1;
+};
+
 export const getNextStep = (currentKey: string): Step | null => {
-  const index = allSteps.findIndex(s => s.step_key === currentKey);
-  if (index >= 0 && index < allSteps.length - 1) {
+  const index = stepIndexMap.get(currentKey);
+  if (index !== undefined && index >= 0 && index < allSteps.length - 1) {
     return allSteps[index + 1];
   }
   return null;
 };
 
 export const getPrevStep = (currentKey: string): Step | null => {
-  const index = allSteps.findIndex(s => s.step_key === currentKey);
-  if (index > 0) {
+  const index = stepIndexMap.get(currentKey);
+  if (index !== undefined && index > 0) {
     return allSteps[index - 1];
   }
   return null;

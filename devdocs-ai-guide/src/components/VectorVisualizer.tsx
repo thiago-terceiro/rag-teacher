@@ -43,6 +43,10 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
   const arcStroke = isLightTheme ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.4)';
   const originFill = isLightTheme ? '#0f172a' : '#ffffff';
 
+  const vectorAColor = isLightTheme ? '#0284c7' : '#38bdf8';
+  const vectorBColor = isLightTheme ? '#047857' : '#34d399';
+  const l2Color = isLightTheme ? '#b45309' : '#f59e0b';
+
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rectRef = useRef<DOMRect | null>(null);
 
@@ -180,7 +184,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                       markerHeight="6"
                       orient="auto-start-reverse"
                     >
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill={vectorAColor} />
                     </marker>
                     <marker
                       id="arrow-b"
@@ -191,7 +195,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                       markerHeight="6"
                       orient="auto-start-reverse"
                     >
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill={vectorBColor} />
                     </marker>
                   </defs>
 
@@ -209,7 +213,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     y1={svgAy}
                     x2={svgBx}
                     y2={svgBy}
-                    stroke="#f59e0b"
+                    stroke={l2Color}
                     strokeWidth="1.5"
                     strokeDasharray="4 4"
                     opacity="0.8"
@@ -225,25 +229,25 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     />
                   )}
 
-                  {/* Vector A (Cyan) */}
+                  {/* Vector A */}
                   <line
                     x1={CENTER}
                     y1={CENTER}
                     x2={svgAx}
                     y2={svgAy}
-                    stroke="#38bdf8"
+                    stroke={vectorAColor}
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     markerEnd="url(#arrow-a)"
                   />
 
-                  {/* Vector B (Emerald) */}
+                  {/* Vector B */}
                   <line
                     x1={CENTER}
                     y1={CENTER}
                     x2={svgBx}
                     y2={svgBy}
-                    stroke="#34d399"
+                    stroke={vectorBColor}
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     markerEnd="url(#arrow-b)"
@@ -285,7 +289,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                       cx={svgAx}
                       cy={svgAy}
                       r="7"
-                      fill="#38bdf8"
+                      fill={vectorAColor}
                       stroke="#0f172a"
                       strokeWidth="2.5"
                       className="transition-transform group-hover:scale-125"
@@ -328,7 +332,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                       cx={svgBx}
                       cy={svgBy}
                       r="7"
-                      fill="#34d399"
+                      fill={vectorBColor}
                       stroke="#0f172a"
                       strokeWidth="2.5"
                       className="transition-transform group-hover:scale-125"

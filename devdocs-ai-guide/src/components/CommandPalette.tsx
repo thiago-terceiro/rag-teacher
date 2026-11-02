@@ -104,6 +104,11 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
     }
   }, [isOpen]);
 
+  // Reset selection index whenever query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
   // Filter items matching query with relevance ranking
   const filteredResults = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -277,7 +282,12 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                           <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                             {isSection ? (
                               <>
-                                <span className="px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[10px] font-medium">
+                                <span className={cn(
+                                  "px-1.5 py-0.2 rounded text-[10px] font-medium border",
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+                                )}>
                                   Section
                                 </span>
                                 <span className="truncate max-w-[200px] sm:max-w-xs">{item.parentTitle}</span>
@@ -346,7 +356,12 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         {item.isDeep && (
-                          <span className="text-[10px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.2 rounded border border-cyan-500/20 font-mono">
+                          <span className={cn(
+                            "text-[10px] px-1.5 py-0.2 rounded font-mono border",
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+                          )}>
                             #jump
                           </span>
                         )}

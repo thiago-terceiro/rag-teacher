@@ -32,3 +32,8 @@ Thumbs.db
 
 # Local review working ledger
 .review/
+
+# Test Results & Reports
+test-results/
+playwright-report/
+blob-report/

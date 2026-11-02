@@ -442,6 +442,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 animate-in fade-in duration-200" />
         <Dialog.Content
+          data-surface="dark"
           aria-describedby={undefined}
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] sm:w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-border/90 rounded-2xl shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar text-slate-100"
         >
@@ -539,7 +540,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
                       type="button"
                       onClick={() => terminateWorker('Execution aborted by user (Worker killed).')}
                       aria-label="Terminate Python execution"
-                      className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      className="px-3 py-1 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
                       <Square className="w-3 h-3 fill-current" aria-hidden="true" />
                       <span>Kill Worker</span>
@@ -550,7 +551,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
                       onClick={handleRunCode}
                       aria-busy={isBusy}
                       aria-label="Run Python code snippet in sandbox"
-                      className="px-3.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      className="px-3.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
                       <span>Run Python</span>
@@ -626,7 +627,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
                     )}
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16 text-center">
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-16 text-center">
                     <Play className="w-6 h-6 mb-2 opacity-40" />
                     <p>Click &quot;Run Python&quot; to evaluate the snippet inside the isolated Web Worker.</p>
                   </div>

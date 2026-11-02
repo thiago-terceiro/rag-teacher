@@ -69,10 +69,10 @@ const CodeBlock = React.memo(({ language: languageProp, value: valueProp }: Code
     <div className={`print-code-block relative my-5 rounded-lg overflow-hidden border bg-[#1e1e1e] group transition-all duration-300 w-full max-w-full min-w-0 ${
       copied ? 'border-emerald-500/70 shadow-[0_0_22px_rgba(16,185,129,0.22)]' : 'border-border/80 shadow-md hover:border-primary/30'
     }`}>
-      <div className="flex items-center justify-between px-4 py-1.5 bg-[#181818] border-b border-border/50 text-xs text-muted-foreground select-none">
+      <div className="flex items-center justify-between px-4 py-1.5 bg-[#181818] border-b border-white/10 text-xs text-slate-400 select-none">
         <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-primary/60 group-hover:bg-primary group-hover:shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-200" />
-          <span className="font-mono font-medium tracking-wider text-xs text-primary/90">{displayLang}</span>
+          <span className="w-2 h-2 rounded-full bg-blue-500 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-200" />
+          <span className="font-mono font-medium tracking-wider text-xs text-blue-400">{displayLang}</span>
         </div>
         <div className="no-print flex items-center space-x-1.5">
           {isPython && (
@@ -91,7 +91,7 @@ const CodeBlock = React.memo(({ language: languageProp, value: valueProp }: Code
             type="button"
             onClick={handleCopy}
             aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
-            className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer text-xs active:scale-90"
+            className="group/btn flex items-center space-x-1.5 px-2.5 py-1 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all duration-150 cursor-pointer text-xs active:scale-90"
           >
             {copied ? (
               <>
