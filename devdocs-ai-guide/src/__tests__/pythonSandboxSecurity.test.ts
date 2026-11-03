@@ -51,7 +51,7 @@ describe('Python Sandbox Security & AST Analysis Regression', () => {
     });
 
     // Allowed modules
-    const allowed = ['math', 'numpy', 'collections', 'itertools', 'heapq', 're', 'json', 'random'];
+    const allowed = ['math', 'numpy', 'collections', 'itertools', 'heapq', 're', 'json', 'random', 'pathlib'];
     allowed.forEach(mod => {
       expect(workerContent).toContain(`'${mod}'`);
     });

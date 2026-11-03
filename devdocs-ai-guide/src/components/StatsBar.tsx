@@ -93,11 +93,15 @@ const StatsBar = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Brand / Context Title on Mobile (<1000px) */}
-        <div className="min-[1000px]:hidden flex items-center space-x-1.5 sm:space-x-2 text-xs font-semibold text-foreground min-w-0 truncate">
+        {/* Brand / Context Title on Mobile (<1000px) - Clickable link to home/lessons */}
+        <Link
+          to="/"
+          aria-label={t('nav.interactiveLearning', 'Interactive Learning')}
+          className="min-[1000px]:hidden flex items-center space-x-1.5 sm:space-x-2 text-xs font-semibold text-foreground hover:text-primary transition-colors min-w-0 truncate cursor-pointer active:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"
+        >
           <BookOpen className="w-4 h-4 text-primary shrink-0" />
-          <span className="truncate">{t('nav.masterclass', 'Interactive Masterclass')}</span>
-        </div>
+          <span className="truncate">{t('nav.interactiveLearning', 'Interactive Learning')}</span>
+        </Link>
 
         {/* Navigation Links (Desktop viewports >= 1000px) */}
         <nav aria-label="Main Navigation" className="hidden min-[1000px]:flex items-center space-x-1 xl:space-x-1.5 2xl:space-x-2 min-w-0">

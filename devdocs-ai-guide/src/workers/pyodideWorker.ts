@@ -100,7 +100,8 @@ def _create_sandbox_executor():
         'torch', 'qdrant_client', 'sentence_transformers', 'fastapi',
         'uvicorn', 'dspy', 'langgraph', 'langchain', 'langchain_core',
         'psycopg', 'psycopg2', 'asyncpg', 'playwright', 'bs4',
-        'httpx', 'aiohttp', 'openai', 'anthropic', 'ragas', 'redis', 'boto3'
+        'httpx', 'aiohttp', 'openai', 'anthropic', 'ragas', 'redis', 'boto3',
+        'pydantic', 'pydantic_settings'
     }
 
     # Strict allowlist of safe mathematical, data-structure, and RAG algorithm modules
@@ -109,7 +110,7 @@ def _create_sandbox_executor():
         'numpy', 'collections', 'collections.abc', 'itertools', 'functools',
         'heapq', 'bisect', 'array', 'typing', 'dataclasses', 'enum', 'abc',
         'copy', 're', 'string', 'textwrap', 'difflib', 'json', 'datetime',
-        'time', 'hashlib', 'hmac', 'base64'
+        'time', 'hashlib', 'hmac', 'base64', 'pathlib', 'posixpath'
     }
 
     _FORBIDDEN_ATTRS = {

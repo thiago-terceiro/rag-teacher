@@ -444,7 +444,7 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
         <Dialog.Content
           data-surface="dark"
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] sm:w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#0a0e17] border border-border/90 rounded-2xl shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-in zoom-in-95 duration-200 custom-scrollbar text-slate-100"
+          className="fixed inset-y-0 right-0 w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl h-full max-h-screen overflow-y-auto bg-[#0a0e17] border-l border-border/90 shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-drawer-right custom-scrollbar text-slate-100 flex flex-col justify-between"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-border/70">

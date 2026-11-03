@@ -5,15 +5,13 @@ import {
   RotateCcw,
   ChevronLeft,
   ChevronRight,
-  Workflow,
+  ChevronDown,
+  Check,
   ShieldCheck,
   Terminal,
   Sparkles,
   Info,
   CheckCircle2,
-  FileCode2,
-  Radio,
-  Zap,
 } from 'lucide-react';
 import { ARCHITECTURE_FLOWS, type ArchitectureFlow, type ArchitectureFlowStep } from '../data/architectureFlowsData';
 import { useI18n } from '../hooks/useI18n';
@@ -25,10 +23,38 @@ export default function ArchitectureExplorer(): React.JSX.Element {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1); // 1x = 2600ms, 1.5x = 1800ms, 2x = 1200ms
-  const [hasSimulatedClick, setHasSimulatedClick] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const liveRegionRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const stepsScrollRef = useRef<HTMLDivElement>(null);
+  const stepButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Smoothly auto-scroll active step tab into center view
+  useEffect(() => {
+    const activeBtn = stepButtonRefs.current[currentStepIndex];
+    if (activeBtn) {
+      activeBtn.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [currentStepIndex]);
+
+  // Click outside to dismiss custom bespoke dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isDropdownOpen]);
 
   // Active Flow object
   const activeFlow = useMemo<ArchitectureFlow>(() => {
@@ -45,7 +71,6 @@ export default function ArchitectureExplorer(): React.JSX.Element {
     setSelectedFlowId(flowId);
     setCurrentStepIndex(0);
     setIsPlaying(false);
-    setHasSimulatedClick(false);
   }, []);
 
   // Step navigation
@@ -66,7 +91,6 @@ export default function ArchitectureExplorer(): React.JSX.Element {
   const handleReset = useCallback(() => {
     setCurrentStepIndex(0);
     setIsPlaying(false);
-    setHasSimulatedClick(false);
   }, []);
 
   const handleTogglePlay = useCallback(() => {
@@ -77,12 +101,6 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       return !prev;
     });
   }, [currentStepIndex, activeFlow.steps.length]);
-
-  const handleSimulateClick = useCallback(() => {
-    setHasSimulatedClick(true);
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
-  }, []);
 
   // Auto-play timer
   useEffect(() => {
@@ -161,256 +179,266 @@ export default function ArchitectureExplorer(): React.JSX.Element {
         {`${t('arch.step', 'Step')} ${currentStep.stepNumber} ${t('arch.of', 'of')} ${currentStep.totalSteps}: ${t(currentStep.titleKey, currentStep.titleDefault)}`}
       </div>
 
-      {/* 1. Page Header & Flow Selector */}
+      {/* 1. Page Header & Bespoke Flow Selector */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-card border border-border rounded-2xl shadow-xs">
-        <div className="space-y-1.5">
-          <div className="flex items-center space-x-2.5">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary border border-primary/20">
-              <Workflow className="w-5 h-5" aria-hidden="true" />
-            </div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
-              {t('arch.pageTitle', 'Architecture & Code Flow Explorer')}
-            </h1>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-semibold">
-              Live Simulator
-            </span>
-          </div>
+        <div className="space-y-1">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+            {t('arch.pageTitle', 'Architecture & Code Flow Explorer')}
+          </h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            {t('arch.pageSubtitle', 'Simulate application interactions to trace function calls, thread boundaries, and data payloads side-by-side.')}
+            {t('arch.pageSubtitle', 'Trace function calls, thread boundaries, and data payloads side-by-side.')}
           </p>
         </div>
 
-        {/* Flow Switcher Dropdown */}
-        <div className="flex items-center space-x-3 shrink-0">
+        {/* Bespoke Flow Switcher Dropdown (matching text width) */}
+        <div ref={dropdownRef} className="relative inline-block shrink-0">
           <label htmlFor="flow-selector" className="text-xs font-medium text-muted-foreground sr-only">
             {t('arch.selectFlow', 'Select Flow')}
           </label>
-          <div className="relative">
-            <select
-              id="flow-selector"
-              value={selectedFlowId}
-              onChange={e => handleSelectFlow(e.target.value)}
-              className="appearance-none bg-secondary/80 hover:bg-secondary text-foreground text-xs font-semibold pl-3 pr-8 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-colors shadow-xs"
-            >
-              {ARCHITECTURE_FLOWS.map(flow => (
-                <option key={flow.id} value={flow.id} className="bg-popover text-foreground">
-                  {t(flow.titleKey, flow.titleDefault)}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
-              ▼
-            </div>
-          </div>
-        </div>
-      </header>
+          {/* Accessible hidden select for screen-readers & automated tests */}
+          <select
+            id="flow-selector"
+            aria-label="Select Flow"
+            value={selectedFlowId}
+            onChange={e => handleSelectFlow(e.target.value)}
+            className="sr-only"
+            tabIndex={-1}
+          >
+            {ARCHITECTURE_FLOWS.map(flow => (
+              <option key={flow.id} value={flow.id}>
+                {t(flow.titleKey, flow.titleDefault)}
+              </option>
+            ))}
+          </select>
 
-      {/* 2. Flow Summary Banner & Interactive Trigger Simulator */}
-      <section aria-labelledby="flow-trigger-heading" className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left 2 Cols: Flow Conceptual Overview & Mini-Map */}
-        <div className="lg:col-span-2 p-5 bg-card border border-border rounded-2xl flex flex-col justify-between space-y-4">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
-                {t(activeFlow.categoryKey, activeFlow.categoryDefault)}
-              </span>
-              <h2 id="flow-trigger-heading" className="text-base font-bold text-foreground">
-                {t(activeFlow.titleKey, activeFlow.titleDefault)}
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t(activeFlow.summaryKey, activeFlow.summaryDefault)}
-            </p>
-          </div>
+          {/* Bespoke Trigger Button */}
+          <button
+            type="button"
+            role="combobox"
+            aria-expanded={isDropdownOpen}
+            aria-haspopup="listbox"
+            aria-label="Change active flow"
+            onClick={() => setIsDropdownOpen(prev => !prev)}
+            className="w-auto max-w-full inline-flex items-center justify-between space-x-2 bg-secondary/80 hover:bg-secondary text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-colors shadow-xs"
+          >
+            <span className="truncate max-w-[220px] sm:max-w-[320px] md:max-w-none">
+              {t(activeFlow.titleKey, activeFlow.titleDefault)}
+            </span>
+            <ChevronDown
+              className={cn(
+                'w-4 h-4 text-muted-foreground transition-transform duration-200 shrink-0',
+                isDropdownOpen && 'rotate-180 text-foreground'
+              )}
+              aria-hidden="true"
+            />
+          </button>
 
-          {/* Interactive Pipeline Stages Mini-Map */}
-          <div className="space-y-2 pt-2 border-t border-border/60">
-            <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-              <span>{t('arch.pipelineProgress', 'Pipeline Progress')}</span>
-              <span className="font-mono text-primary">
-                {currentStep.stageName}
-              </span>
-            </div>
+          {/* Custom Floating Popover Menu */}
+          {isDropdownOpen && (
             <div
-              tabIndex={0}
-              role="tablist"
-              aria-label="Pipeline Stages"
-              className="flex sm:grid sm:grid-cols-5 gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+              role="listbox"
+              aria-label="Architecture flow choices"
+              className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-card border border-border shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
             >
-              {activeFlow.steps.map((s, idx) => {
-                const isActive = idx === currentStepIndex;
-                const isPassed = idx < currentStepIndex;
-                const cleanStageName = s.stageName.includes('. ') ? s.stageName.split('. ')[1] : s.stageName;
+              {ARCHITECTURE_FLOWS.map(flow => {
+                const isSelected = flow.id === selectedFlowId;
                 return (
                   <button
-                    key={s.stepId}
+                    key={flow.id}
                     type="button"
-                    role="tab"
-                    aria-selected={isActive}
+                    role="option"
+                    aria-selected={isSelected}
                     onClick={() => {
-                      setCurrentStepIndex(idx);
-                      setIsPlaying(false);
+                      handleSelectFlow(flow.id);
+                      setIsDropdownOpen(false);
                     }}
                     className={cn(
-                      'flex items-center justify-center p-2 rounded-lg text-xs font-mono transition-all cursor-pointer border shrink-0 sm:shrink min-w-[130px] sm:min-w-0',
-                      isActive
-                        ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold ring-2 ring-primary/30'
-                        : isPassed
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                        : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary'
+                      'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer',
+                      isSelected
+                        ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                     )}
                   >
-                    <div className="flex items-center space-x-1.5 truncate">
-                      {isPassed && (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" aria-hidden="true" />
-                      )}
-                      <span className={cn('text-[10px] font-semibold', isActive ? 'text-primary-foreground' : 'text-muted-foreground')}>
-                        #{idx + 1}
-                      </span>
-                      <span className="truncate">{cleanStageName}</span>
-                    </div>
+                    <span className="truncate">{t(flow.titleKey, flow.titleDefault)}</span>
+                    {isSelected && <Check className="w-3.5 h-3.5 shrink-0 ml-2" aria-hidden="true" />}
                   </button>
                 );
               })}
             </div>
-          </div>
-        </div>
-
-        {/* Right 1 Col: Simulated Action Launcher */}
-        <div className="p-5 bg-gradient-to-br from-card to-secondary/30 border border-border rounded-2xl flex flex-col justify-between space-y-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground flex items-center space-x-1.5">
-                <Radio className="w-3.5 h-3.5 text-primary animate-pulse" aria-hidden="true" />
-                <span>{t('arch.simulatedUI', 'Simulated UI Interaction')}</span>
-              </span>
-              <span className="text-[10px] font-mono text-muted-foreground">
-                {activeFlow.mockUI.componentName}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {activeFlow.mockUI.description}
-            </p>
-          </div>
-
-          {activeFlow.mockUI.sampleInput && (
-            <div
-              tabIndex={0}
-              role="region"
-              aria-label="Sample UI input code"
-              className="p-2.5 bg-black/40 border border-border/80 rounded-xl font-mono text-[11px] text-emerald-300/90 overflow-x-auto whitespace-pre custom-scrollbar max-h-20"
-            >
-              {activeFlow.mockUI.sampleInput}
-            </div>
           )}
+        </div>
+      </header>
 
-          <button
-            type="button"
-            onClick={handleSimulateClick}
-            className={cn(
-              'w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-md',
-              hasSimulatedClick && isPlaying
-                ? 'bg-amber-500 hover:bg-amber-600 text-black animate-pulse'
-                : 'bg-emerald-500 hover:bg-emerald-600 text-black shadow-emerald-500/20'
-            )}
-          >
-            <Zap className="w-4 h-4 fill-current" aria-hidden="true" />
-            <span>{t(activeFlow.triggerButtonLabel, activeFlow.triggerButtonLabel)}</span>
-          </button>
+      {/* 2. Flow Summary Banner */}
+      <section aria-labelledby="flow-trigger-heading" className="p-5 bg-card border border-border rounded-2xl shadow-xs">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
+              {t(activeFlow.categoryKey, activeFlow.categoryDefault)}
+            </span>
+            <h2 id="flow-trigger-heading" className="text-base font-bold text-foreground">
+              {t(activeFlow.titleKey, activeFlow.titleDefault)}
+            </h2>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t(activeFlow.summaryKey, activeFlow.summaryDefault)}
+          </p>
         </div>
       </section>
 
-      {/* 3. Player Stepper Controls Bar */}
-      <section aria-label="Playback Controls" className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-card border border-border rounded-2xl shadow-xs">
-        <div className="flex items-center space-x-2">
-          {/* Reset */}
-          <button
-            type="button"
-            onClick={handleReset}
-            title="Reset to beginning [R]"
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border"
-          >
-            <RotateCcw className="w-4 h-4" aria-hidden="true" />
-            <span className="sr-only">{t('arch.reset', 'Reset')}</span>
-          </button>
-
-          {/* Previous Step */}
-          <button
-            type="button"
-            onClick={handlePrevStep}
-            disabled={currentStepIndex === 0}
-            title="Previous step [←]"
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-            <span className="sr-only">{t('arch.prevStep', 'Previous Step')}</span>
-          </button>
-
-          {/* Play / Pause Toggle */}
-          <button
-            type="button"
-            onClick={handleTogglePlay}
-            title="Play / Pause simulation [Space]"
-            className="flex items-center space-x-1.5 px-3 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                <span>{t('arch.pause', 'Pause')}</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                <span>{t('arch.play', 'Auto Play')}</span>
-              </>
-            )}
-          </button>
-
-          {/* Next Step */}
-          <button
-            type="button"
-            onClick={handleNextStep}
-            disabled={currentStepIndex === activeFlow.steps.length - 1}
-            title="Next step [→]"
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="w-4 h-4" aria-hidden="true" />
-            <span className="sr-only">{t('arch.nextStep', 'Next Step')}</span>
-          </button>
-
-          {/* Speed Toggle */}
-          <div className="flex items-center space-x-1 ml-2 pl-2 border-l border-border">
-            {[1, 1.5, 2].map(speed => (
-              <button
-                key={speed}
-                type="button"
-                onClick={() => setPlaybackSpeed(speed)}
-                className={cn(
-                  'text-[10px] font-mono px-2 py-1 rounded-md transition-colors cursor-pointer',
-                  playbackSpeed === speed
-                    ? 'bg-secondary text-primary font-bold border border-border'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Step Badge & Current Action */}
-        <div className="flex items-center space-x-3">
-          <span className="text-xs text-muted-foreground hidden md:inline">
-            {t('arch.keyboardShortcuts', 'Keyboard: [Space] Play/Pause, [←/→] Steps, [R] Reset')}
-          </span>
-          <div className="flex items-center space-x-1.5 bg-secondary px-3 py-1.5 rounded-xl border border-border text-xs font-mono">
-            <span className="text-primary font-bold">
-              {t('arch.step', 'Step')} {currentStep.stepNumber} / {currentStep.totalSteps}
+      {/* 3. Sticky Combined Pipeline Stages & Playback Controls Card */}
+      <section
+        aria-label="Pipeline Stages & Playback Controls"
+        className="sticky top-0 z-20 bg-card/95 backdrop-blur-md border border-border rounded-2xl p-4 shadow-md space-y-3.5 transition-all"
+      >
+        {/* Step Tabs Horizontal Scroll with Smooth Auto-Scroll */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+            <span className="font-semibold uppercase tracking-wider text-[10px] text-primary">
+              {t('arch.pipelineProgress', 'Pipeline Progress')}
+            </span>
+            <span className="font-mono text-primary font-semibold truncate max-w-[200px] sm:max-w-none">
+              {currentStep.stageName}
             </span>
           </div>
+          <div
+            ref={stepsScrollRef}
+            tabIndex={0}
+            role="tablist"
+            aria-label="Pipeline Stages"
+            className="flex gap-2 overflow-x-auto scroll-smooth pb-1 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+          >
+            {activeFlow.steps.map((s, idx) => {
+              const isActive = idx === currentStepIndex;
+              const isPassed = idx < currentStepIndex;
+              const cleanStageName = s.stageName.includes('. ') ? s.stageName.split('. ')[1] : s.stageName;
+              return (
+                <button
+                  key={s.stepId}
+                  ref={el => { stepButtonRefs.current[idx] = el; }}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => {
+                    setCurrentStepIndex(idx);
+                    setIsPlaying(false);
+                  }}
+                  className={cn(
+                    'flex items-center justify-center py-2 px-3 rounded-lg text-xs font-mono transition-all duration-200 cursor-pointer border shrink-0 min-w-[130px] sm:min-w-[150px]',
+                    isActive
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold ring-2 ring-primary/40 scale-[1.02]'
+                      : isPassed
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                      : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary hover:text-foreground'
+                  )}
+                >
+                  <div className="flex items-center space-x-1.5 truncate">
+                    {isPassed && (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                    )}
+                    <span className={cn('text-[10px] font-semibold', isActive ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                      #{idx + 1}
+                    </span>
+                    <span className="truncate">{cleanStageName}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Playback Controls Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/70">
+          <div className="flex items-center space-x-2">
+            {/* Reset */}
+            <button
+              type="button"
+              onClick={handleReset}
+              title="Reset to beginning [R]"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border"
+            >
+              <RotateCcw className="w-4 h-4" aria-hidden="true" />
+              <span className="sr-only">{t('arch.reset', 'Reset')}</span>
+            </button>
+
+            {/* Previous Step */}
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              disabled={currentStepIndex === 0}
+              title="Previous step [←]"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+              <span className="sr-only">{t('arch.prevStep', 'Previous Step')}</span>
+            </button>
+
+            {/* Play / Pause / Simulate Toggle */}
+            <button
+              type="button"
+              onClick={handleTogglePlay}
+              aria-label={isPlaying ? t('arch.pause', 'Pause') : 'Simulate / Auto Play'}
+              title="Simulate / Auto Play [Space]"
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
+            >
+              {isPlaying ? (
+                <>
+                  <Pause className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                  <span>{t('arch.pause', 'Pause')}</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                  <span>Simulate / Auto Play</span>
+                </>
+              )}
+            </button>
+
+            {/* Next Step */}
+            <button
+              type="button"
+              onClick={handleNextStep}
+              disabled={currentStepIndex === activeFlow.steps.length - 1}
+              title="Next step [→]"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              <span className="sr-only">{t('arch.nextStep', 'Next Step')}</span>
+            </button>
+
+            {/* Speed Toggle */}
+            <div className="flex items-center space-x-1 ml-2 pl-2 border-l border-border">
+              {[1, 1.5, 2].map(speed => (
+                <button
+                  key={speed}
+                  type="button"
+                  onClick={() => setPlaybackSpeed(speed)}
+                  className={cn(
+                    'text-[10px] font-mono px-2 py-1 rounded-md transition-colors cursor-pointer',
+                    playbackSpeed === speed
+                      ? 'bg-secondary text-primary font-bold border border-border'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Step Indicator */}
+          <div className="flex items-center space-x-3">
+            <span className="text-xs text-muted-foreground hidden md:inline">
+              {t('arch.keyboardShortcuts', 'Keyboard: [Space] Play/Pause, [←/→] Steps, [R] Reset')}
+            </span>
+            <div className="flex items-center space-x-1.5 bg-secondary px-3 py-1.5 rounded-xl border border-border text-xs font-mono">
+              <span className="text-primary font-bold">
+                {t('arch.step', 'Step')} {currentStep.stepNumber} / {currentStep.totalSteps}
+              </span>
+            </div>
+          </div>
         </div>
       </section>
-
       {/* 4. Current Step Narrative Banner */}
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start space-x-3 shadow-xs">
         <div className="p-1.5 bg-primary/20 rounded-lg text-primary shrink-0 mt-0.5">
@@ -438,7 +466,6 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           {/* File Header */}
           <div className="flex items-center justify-between p-3.5 bg-secondary/60 border-b border-border">
             <div className="flex items-center space-x-2">
-              <FileCode2 className="w-4 h-4 text-primary" aria-hidden="true" />
               <span className="text-xs font-bold text-foreground font-mono">
                 {currentStep.sourceFileSnippet.fileName}
               </span>
@@ -508,7 +535,6 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             {/* File Header */}
             <div className="flex items-center justify-between p-3.5 bg-secondary/60 border-b border-border">
               <div className="flex items-center space-x-2">
-                <FileCode2 className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                 <span className="text-xs font-bold text-foreground font-mono">
                   {currentStep.targetFileSnippet.fileName}
                 </span>

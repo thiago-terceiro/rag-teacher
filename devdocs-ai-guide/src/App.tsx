@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { Search, WifiOff } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import StatsBar from './components/StatsBar';
@@ -24,6 +24,8 @@ function AppContent(): React.JSX.Element {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isReadingSettingsOpen, setIsReadingSettingsOpen] = useState<boolean>(false);
+  const location = useLocation();
+  const isArchitecture = location.pathname === '/architecture';
   const { t } = useI18n();
   const { isOnline } = useNetworkStatus();
   const {
@@ -80,7 +82,7 @@ function AppContent(): React.JSX.Element {
   }, []);
 
   return (
-    <Router>
+    <>
       {/* Accessibility: Skip to Main Content Link */}
       <a
         href="#main-scroll-container"
@@ -123,28 +125,30 @@ function AppContent(): React.JSX.Element {
           onOpenVectorSandbox={openVectorSandbox}
           onOpenPythonSandbox={handleOpenPythonSandbox}
         />
-        {/* Search topics below top navbar, outside top navbar */}
-        <div className="no-print border-b border-border/70 bg-card/40 backdrop-blur-xs px-4 sm:px-8 py-2.5 flex items-center justify-between gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={handleOpenSearch}
-            className="w-full max-w-xl flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <div className="flex items-center space-x-2.5">
-              <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
-              <span className="font-medium">{t('nav.search', 'Search 28 topics, formulas, code, theorems...')}</span>
-            </div>
-            <kbd aria-hidden="true" className="hidden sm:inline-block text-[10px] bg-background/90 px-2 py-0.5 rounded-md border border-border/80 font-mono text-muted-foreground group-hover:border-primary/40 font-semibold shadow-xs">
-              ⌘K
-            </kbd>
-          </button>
-          {!isOnline && (
-            <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium shrink-0">
-              <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" aria-hidden="true" />
-              <span className="text-[11px] font-semibold">{t('nav.offlineMode', 'Offline Mode')}</span>
-            </div>
-          )}
-        </div>
+        {/* Search topics below top navbar, outside top navbar (hidden on /architecture) */}
+        {!isArchitecture && (
+          <div className="no-print border-b border-border/70 bg-card/40 backdrop-blur-xs px-4 sm:px-8 py-2.5 flex items-center justify-between gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={handleOpenSearch}
+              className="w-full max-w-xl flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <div className="flex items-center space-x-2.5">
+                <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
+                <span className="font-medium">{t('nav.search', 'Search 28 topics, formulas, code, theorems...')}</span>
+              </div>
+              <kbd aria-hidden="true" className="hidden sm:inline-block text-[10px] bg-background/90 px-2 py-0.5 rounded-md border border-border/80 font-mono text-muted-foreground group-hover:border-primary/40 font-semibold shadow-xs">
+                ⌘K
+              </kbd>
+            </button>
+            {!isOnline && (
+              <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium shrink-0">
+                <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" aria-hidden="true" />
+                <span className="text-[11px] font-semibold">{t('nav.offlineMode', 'Offline Mode')}</span>
+              </div>
+            )}
+          </div>
+        )}
         <div
           id="main-scroll-container"
           tabIndex={-1}
@@ -202,7 +206,7 @@ function AppContent(): React.JSX.Element {
         </div>
         <ScrollToTopButton />
       </main>
-    </Router>
+    </>
   );
 }
 
@@ -213,7 +217,9 @@ function App(): React.JSX.Element {
         <ReadingSettingsProvider>
           <StepsProvider>
             <SandboxProvider>
-              <AppContent />
+              <Router>
+                <AppContent />
+              </Router>
             </SandboxProvider>
           </StepsProvider>
         </ReadingSettingsProvider>

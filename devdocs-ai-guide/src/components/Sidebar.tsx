@@ -11,6 +11,7 @@ import {
   Terminal,
   Award,
   Workflow,
+  BookOpen,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -170,6 +171,30 @@ const Sidebar = ({
         {/* Quick Hub Links (Hidden on viewports >= 1000px, available in top navbar) */}
         <div className="p-2.5 border-b border-border/70 space-y-1 min-[1000px]:hidden">
           <Link
+            to="/"
+            onClick={() => setIsMobileOpen?.(false)}
+            className={cn(
+              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group cursor-pointer',
+              (location.pathname === '/' || location.pathname.startsWith('/steps'))
+                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+            )}
+          >
+            <div className="flex items-center space-x-2.5">
+              <BookOpen className={cn('w-4 h-4', (location.pathname === '/' || location.pathname.startsWith('/steps')) ? 'text-primary-foreground' : 'text-primary')} />
+              <span>{t('nav.interactiveLearning', 'Interactive Learning')}</span>
+            </div>
+            <span aria-hidden="true" className={cn(
+              'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+              (location.pathname === '/' || location.pathname.startsWith('/steps'))
+                ? 'bg-primary-foreground/20 text-primary-foreground'
+                : 'bg-primary/10 text-primary'
+            )}>
+              28
+            </span>
+          </Link>
+
+          <Link
             to="/interview-questions"
             onClick={() => setIsMobileOpen?.(false)}
             className={cn(
@@ -291,7 +316,7 @@ const Sidebar = ({
                           onClick={() => setIsMobileOpen?.(false)}
                           aria-current={isActive ? 'page' : undefined}
                           className={cn(
-                            'flex items-center space-x-2.5 py-1.5 px-2 rounded-md text-xs transition-all relative',
+                            'flex items-center space-x-2.5 py-1.5 px-2 rounded-lg text-xs transition-all relative',
                             isActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                               : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'

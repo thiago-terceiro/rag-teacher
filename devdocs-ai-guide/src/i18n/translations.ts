@@ -25,7 +25,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Navigation & Header
     'nav.skipToContent': 'Skip to main content',
-    'nav.masterclass': 'Interactive Masterclass',
+    'nav.masterclass': 'Interactive Learning',
+    'nav.interactiveLearning': 'Interactive Learning',
     'nav.modules': '28 Production Modules',
     'nav.search': 'Search topics...',
     'nav.searchShort': 'Search',
@@ -218,7 +219,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Navigation & Header
     'nav.skipToContent': 'Pular para o conteúdo principal',
-    'nav.masterclass': 'Masterclass Interativo',
+    'nav.masterclass': 'Aprendizado Interativo',
+    'nav.interactiveLearning': 'Aprendizado Interativo',
     'nav.modules': '28 Módulos de Produção',
     'nav.search': 'Pesquisar tópicos...',
     'nav.searchShort': 'Buscar',
@@ -411,7 +413,8 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
 
     // Navigation & Header
     'nav.skipToContent': 'Saltar al contenido principal',
-    'nav.masterclass': 'Clase Magistral Interactiva',
+    'nav.masterclass': 'Aprendizaje Interactivo',
+    'nav.interactiveLearning': 'Aprendizaje Interactivo',
     'nav.modules': '28 Módulos de Producción',
     'nav.search': 'Buscar temas...',
     'nav.searchShort': 'Buscar',
