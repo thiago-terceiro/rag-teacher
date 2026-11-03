@@ -14,7 +14,6 @@ import {
 import { interviewQuestions } from '../data/interviewQuestionsData';
 import MarkdownRenderer from './MarkdownRenderer';
 import useDebounce from '../hooks/useDebounce';
-import { useReadingSettings } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 import type { InterviewQuestion } from '../types';
 
@@ -58,8 +57,6 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
   onToggleMastery,
   onDraftChange,
 }: InterviewQuestionCardProps): React.JSX.Element {
-  const { settings } = useReadingSettings();
-  const isLightTheme = settings.theme === 'daylight-paper';
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [draft, setDraft] = useState<string>(initialDraft || '');
   const debouncedDraft = useDebounce<string>(draft, 400);
@@ -239,7 +236,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             <span>Production Architecture Answer & Tradeoffs</span>
           </div>
 
-          <div className={cn("prose max-w-none text-sm", !isLightTheme && "prose-invert")}>
+          <div className="prose dark:prose-invert max-w-none text-sm">
             <MarkdownRenderer markdown={q.answer} />
           </div>
         </div>

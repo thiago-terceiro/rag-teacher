@@ -118,7 +118,12 @@ export const ReadingSettingsProvider = ({ children }: { children: React.ReactNod
   }, []);
 
   const updateSetting = useCallback(<K extends keyof ReadingSettings>(key: K, value: ReadingSettings[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => {
+      if (prev[key] === value) return prev;
+      const next = { ...prev, [key]: value };
+      applyThemeAndReadingStyles(next);
+      return next;
+    });
   }, []);
 
   const resetSettings = useCallback(() => {

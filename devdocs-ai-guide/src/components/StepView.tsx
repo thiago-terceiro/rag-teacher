@@ -66,7 +66,6 @@ const StepView = ({
   const status: StepStatus = currentStepFromPhases?.status || 'not_started';
   const { headings } = useTableOfContents(step.content);
   const [activeId, setActiveId] = useActiveHeading(headings);
-  const isLightTheme = settings.theme === 'daylight-paper';
 
   // On step change or hash change: honor #section deep link with smooth scroll and pulse highlight
   useEffect(() => {
@@ -322,7 +321,7 @@ const StepView = ({
             <button
               type="button"
               onClick={handleOpenVector}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
             >
               <span>Launch Sandbox</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -340,12 +339,7 @@ const StepView = ({
         </div>
 
         {/* Main Content */}
-        <div className={cn(
-          "prose max-w-none",
-          !isLightTheme && "prose-invert",
-          `reading-size-${settings.fontSize || 'normal'}`,
-          `reading-spacing-${settings.lineSpacing || 'relaxed'}`
-        )}>
+        <div className="prose dark:prose-invert max-w-none leading-relaxed">
           <MarkdownRenderer markdown={step.content} />
         </div>
 

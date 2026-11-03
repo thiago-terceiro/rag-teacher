@@ -131,6 +131,23 @@
   }
 }
 
+/* Velvety-smooth right-docked drawer slide-in animation with opacity 0 -> 1 */
+@keyframes drawer-slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-drawer-right {
+  animation: drawer-slide-in-right 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
 /* Snappy mobile slide-over sheet animation from the right edge with opacity 0 -> 1 */
 @keyframes sheet-enter-from-right {
   from {

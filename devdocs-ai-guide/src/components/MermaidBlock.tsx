@@ -20,6 +20,7 @@ import { cn } from '../lib/utils';
 // Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}` with LRU size cap
 const MAX_MERMAID_CACHE_SIZE = 60;
 const mermaidSvgCache = new Map<string, string>();
+let mermaidRenderQueue = Promise.resolve();
 
 function setMermaidCache(key: string, value: string) {
   if (mermaidSvgCache.size >= MAX_MERMAID_CACHE_SIZE) {
@@ -98,10 +99,31 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
   const [zoom, setZoom] = useState<number>(1);
   const [fitMode, setFitMode] = useState<'fit' | 'actual'>('fit');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isInView, setIsInView] = useState<boolean>(false);
+  const blockRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const triggerBtnRef = useRef<HTMLButtonElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Defer rendering until diagram enters or approaches viewport to prevent main thread lockup
+  useEffect(() => {
+    const el = blockRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsInView(true);
+        }
+      },
+      { rootMargin: '300px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Create a unique clean ID for mermaid rendering
   const reactId = useId().replace(/[:]/g, '_');
@@ -117,7 +139,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
   }, [svgContent]);
 
   useEffect(() => {
-    if (!cleanChart) return;
+    if (!cleanChart || !isInView) return;
 
     // If already in cache, skip rendering entirely
     if (mermaidSvgCache.has(cacheKey)) {
@@ -127,23 +149,27 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
 
     let isMounted = true;
     const renderDiagram = async () => {
-      try {
-        setHasError(false);
-        configureMermaidTheme(isLightTheme);
-        const { svg } = await mermaid.render(diagramId, cleanChart);
-        setMermaidCache(cacheKey, svg);
-        if (isMounted) {
-          setSvgContent(svg);
-        }
-      } catch (err) {
+      // Chain through sequential queue so concurrent diagrams don't collide or freeze the frame
+      mermaidRenderQueue = mermaidRenderQueue.then(async () => {
         if (!isMounted) return;
-        console.warn('Mermaid rendering error:', err);
-        const stagingElem = document.getElementById(`d${diagramId}`);
-        if (stagingElem) stagingElem.remove();
-        const tempElement = document.getElementById(diagramId);
-        if (tempElement) tempElement.remove();
-        setHasError(true);
-      }
+        try {
+          setHasError(false);
+          configureMermaidTheme(isLightTheme);
+          const { svg } = await mermaid.render(diagramId, cleanChart);
+          setMermaidCache(cacheKey, svg);
+          if (isMounted) {
+            setSvgContent(svg);
+          }
+        } catch (err) {
+          if (!isMounted) return;
+          console.warn('Mermaid rendering error:', err);
+          const stagingElem = document.getElementById(`d${diagramId}`);
+          if (stagingElem) stagingElem.remove();
+          const tempElement = document.getElementById(diagramId);
+          if (tempElement) tempElement.remove();
+          setHasError(true);
+        }
+      });
     };
 
     renderDiagram();
@@ -151,7 +177,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
     return () => {
       isMounted = false;
     };
-  }, [cleanChart, cacheKey, diagramId, isLightTheme]);
+  }, [cleanChart, cacheKey, diagramId, isLightTheme, isInView]);
 
   const handleCopy = async () => {
     try {
@@ -259,7 +285,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
 
   return (
     <>
-      <div className="print-diagram-block my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-all duration-300 group w-full max-w-full min-w-0">
+      <div ref={blockRef} className="print-diagram-block my-6 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md overflow-hidden shadow-lg hover:border-primary/40 transition-colors duration-150 group w-full max-w-full min-w-0">
         {/* Header toolbar */}
         <div className="flex flex-wrap items-center justify-between px-3 sm:px-4 py-2 bg-secondary/50 border-b border-border/60 text-xs text-muted-foreground gap-2 select-none">
           <div className="flex items-center space-x-2">

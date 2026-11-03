@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Printer, Globe } from 'lucide-react';
-import { useReadingSettings } from '../hooks/useReadingSettings';
+import { Type, X, RotateCcw, Check, Moon, Sun, Sparkles, Globe } from 'lucide-react';
+import { useReadingSettings, applyThemeAndReadingStyles } from '../hooks/useReadingSettings';
 import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 import type {
@@ -61,20 +61,22 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
   const { lang, setLang, supportedLanguages, t } = useI18n();
   const activeTheme = settings.theme || 'deep-blue';
 
-  const handlePrintPdf = () => {
-    setIsOpen(false);
-    setTimeout(() => {
-      window.print();
-    }, 180);
+  const handleThemeSelect = (themeKey: ThemeMode) => {
+    // 1. Immediately apply class changes to documentElement & body in 0ms (instant synchronous repaint)
+    applyThemeAndReadingStyles({ ...settings, theme: themeKey });
+    // 2. React 19 startTransition to keep the UI interactive and avoid locking the main thread
+    React.startTransition(() => {
+      updateSetting('theme', themeKey);
+    });
   };
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-150" />
+        <Dialog.Overlay className="no-print fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="no-print max-sm:fixed max-sm:inset-y-0 max-sm:right-0 max-sm:left-auto max-sm:top-0 max-sm:bottom-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-[92vw] max-sm:max-w-md max-sm:h-full max-sm:max-h-screen max-sm:rounded-l-2xl max-sm:rounded-r-none max-sm:border-r-0 max-sm:border-y-0 max-sm:shadow-2xl max-sm:animate-sheet-right sm:fixed sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl sm:animate-in sm:zoom-in-95 sm:fade-in-0 sm:duration-150 overflow-y-auto bg-card/95 border border-border z-50 p-5 sm:p-6 focus:outline-none custom-scrollbar"
+          className="no-print fixed inset-y-0 right-0 w-full sm:max-w-md h-full max-h-screen bg-card border-l border-border shadow-2xl z-50 p-5 sm:p-6 flex flex-col justify-between overflow-y-auto custom-scrollbar focus:outline-none animate-drawer-right"
         >
           <div className="flex items-center justify-between pb-4 border-b border-border/80">
             <div className="flex items-center space-x-2">
@@ -142,7 +144,7 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
                       type="button"
                       role="radio"
                       aria-checked={isSelected}
-                      onClick={() => updateSetting('theme', item.key)}
+                      onClick={() => handleThemeSelect(item.key)}
                       className={cn(
                         'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                         isSelected
@@ -284,29 +286,19 @@ export function ReadingSettingsModal({ isOpen, setIsOpen }: ReadingSettingsModal
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border/80 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={resetSettings}
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Defaults</span>
-              </button>
-              <button
-                type="button"
-                onClick={handlePrintPdf}
-                className="text-xs text-primary hover:text-primary/80 flex items-center space-x-1.5 transition-colors cursor-pointer font-medium"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Save Chapter as PDF</span>
-              </button>
-            </div>
+          <div className="pt-4 border-t border-border/80 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={resetSettings}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1.5 transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Defaults</span>
+            </button>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition-colors cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition-colors cursor-pointer shadow-xs active:scale-95"
             >
               Done
             </button>
