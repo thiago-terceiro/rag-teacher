@@ -180,7 +180,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       </div>
 
       {/* 1. Page Header & Bespoke Flow Selector */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-card border border-border rounded-2xl shadow-xs">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 bg-card border border-border rounded-2xl shadow-xs">
         <div className="space-y-1">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
             {t('arch.pageTitle', 'Architecture & Code Flow Explorer')}
@@ -190,8 +190,8 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           </p>
         </div>
 
-        {/* Bespoke Flow Switcher Dropdown (matching text width) */}
-        <div ref={dropdownRef} className="relative inline-block shrink-0">
+        {/* Bespoke Flow Switcher Dropdown (matching text width with subtle transparency) */}
+        <div ref={dropdownRef} className="relative inline-block w-full sm:w-auto shrink-0">
           <label htmlFor="flow-selector" className="text-xs font-medium text-muted-foreground sr-only">
             {t('arch.selectFlow', 'Select Flow')}
           </label>
@@ -219,9 +219,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             aria-haspopup="listbox"
             aria-label="Change active flow"
             onClick={() => setIsDropdownOpen(prev => !prev)}
-            className="w-auto max-w-full inline-flex items-center justify-between space-x-2 bg-secondary/80 hover:bg-secondary text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-colors shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-between space-x-2.5 bg-secondary/60 hover:bg-secondary/80 backdrop-blur-md text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border/80 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all shadow-xs"
           >
-            <span className="truncate max-w-[220px] sm:max-w-[320px] md:max-w-none">
+            <span className="truncate max-w-[240px] sm:max-w-[320px] md:max-w-none">
               {t(activeFlow.titleKey, activeFlow.titleDefault)}
             </span>
             <ChevronDown
@@ -233,12 +233,12 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             />
           </button>
 
-          {/* Custom Floating Popover Menu */}
+          {/* Custom Floating Popover Menu with Transparency and Responsive Alignment */}
           {isDropdownOpen && (
             <div
               role="listbox"
               aria-label="Architecture flow choices"
-              className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-card border border-border shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
+              className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-full sm:w-80 min-w-full max-w-[calc(100vw-2rem)] bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
             >
               {ARCHITECTURE_FLOWS.map(flow => {
                 const isSelected = flow.id === selectedFlowId;
@@ -256,7 +256,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                       'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer',
                       isSelected
                         ? 'bg-primary text-primary-foreground font-bold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/70'
                     )}
                   >
                     <span className="truncate">{t(flow.titleKey, flow.titleDefault)}</span>
@@ -270,17 +270,22 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       </header>
 
       {/* 2. Flow Summary Banner */}
-      <section aria-labelledby="flow-trigger-heading" className="p-5 bg-card border border-border rounded-2xl shadow-xs">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
+      <section aria-labelledby="flow-trigger-heading" className="p-5 sm:p-6 bg-card border border-border rounded-2xl shadow-xs">
+        <div className="space-y-2">
+          {/* Top Line: Header Title */}
+          <h2 id="flow-trigger-heading" className="text-base sm:text-lg font-bold text-foreground">
+            {t(activeFlow.titleKey, activeFlow.titleDefault)}
+          </h2>
+
+          {/* Second Line: Box with Label */}
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold inline-block">
               {t(activeFlow.categoryKey, activeFlow.categoryDefault)}
             </span>
-            <h2 id="flow-trigger-heading" className="text-base font-bold text-foreground">
-              {t(activeFlow.titleKey, activeFlow.titleDefault)}
-            </h2>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+
+          {/* Description */}
+          <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
             {t(activeFlow.summaryKey, activeFlow.summaryDefault)}
           </p>
         </div>
