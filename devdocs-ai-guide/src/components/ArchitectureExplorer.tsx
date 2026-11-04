@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from 'react';
 import {
   Play,
   Pause,
@@ -17,6 +17,25 @@ import { ARCHITECTURE_FLOWS, type ArchitectureFlow, type ArchitectureFlowStep } 
 import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 
+interface ParsedThreadInfo {
+  threadName: string;
+  helperText: string | null;
+}
+
+function parseThreadLabel(label: string): ParsedThreadInfo {
+  const match = label.match(/^(.*?)\s*\[(.*?)\]$/);
+  if (match) {
+    return {
+      threadName: match[1].trim(),
+      helperText: match[2].trim(),
+    };
+  }
+  return {
+    threadName: label.trim(),
+    helperText: null,
+  };
+}
+
 export default function ArchitectureExplorer(): React.JSX.Element {
   const { t } = useI18n();
   const [selectedFlowId, setSelectedFlowId] = useState<string>(ARCHITECTURE_FLOWS[0].id);
@@ -30,6 +49,73 @@ export default function ArchitectureExplorer(): React.JSX.Element {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const stepsScrollRef = useRef<HTMLDivElement>(null);
   const stepButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const stickyRef = useRef<HTMLElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const fileContainerRef = useRef<HTMLElement>(null);
+  const prevStepIndexRef = useRef<number>(currentStepIndex);
+  const prevFlowIdRef = useRef<string>(selectedFlowId);
+  const lastFileTopRef = useRef<number | null>(null);
+  const wasDescHiddenRef = useRef<boolean>(false);
+
+  // Monitor scroll on main container to track sticky and file container geometry
+  useEffect(() => {
+    const container = document.getElementById('main-scroll-container');
+    if (!container) return;
+
+    const updateScrollMetrics = () => {
+      if (fileContainerRef.current && stickyRef.current && descriptionRef.current) {
+        lastFileTopRef.current = fileContainerRef.current.getBoundingClientRect().top;
+        const stickyBottom = stickyRef.current.getBoundingClientRect().bottom;
+        const descBottom = descriptionRef.current.getBoundingClientRect().bottom;
+        // The description card is hidden behind or scrolled past the sticky controls
+        wasDescHiddenRef.current = descBottom <= stickyBottom + 20;
+      }
+    };
+
+    container.addEventListener('scroll', updateScrollMetrics, { passive: true });
+    updateScrollMetrics();
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollMetrics);
+    };
+  }, []);
+
+  // Stabilize file container vertical position when switching steps while description is scrolled out of view
+  useLayoutEffect(() => {
+    // If flow switched entirely, re-baseline without layout compensation
+    if (prevFlowIdRef.current !== selectedFlowId) {
+      prevFlowIdRef.current = selectedFlowId;
+      prevStepIndexRef.current = currentStepIndex;
+      if (fileContainerRef.current && stickyRef.current && descriptionRef.current) {
+        lastFileTopRef.current = fileContainerRef.current.getBoundingClientRect().top;
+        const stickyBottom = stickyRef.current.getBoundingClientRect().bottom;
+        const descBottom = descriptionRef.current.getBoundingClientRect().bottom;
+        wasDescHiddenRef.current = descBottom <= stickyBottom + 20;
+      }
+      return;
+    }
+
+    // If step changed within the current flow and description is scrolled out of view:
+    if (prevStepIndexRef.current !== currentStepIndex) {
+      if (wasDescHiddenRef.current && lastFileTopRef.current !== null && fileContainerRef.current) {
+        const currentFileTop = fileContainerRef.current.getBoundingClientRect().top;
+        const diff = currentFileTop - lastFileTopRef.current;
+        if (Math.abs(diff) > 0.5) {
+          const scrollContainer = document.getElementById('main-scroll-container') || document.documentElement;
+          scrollContainer.scrollTop += diff;
+        }
+      }
+      prevStepIndexRef.current = currentStepIndex;
+    }
+
+    // Refresh baseline metrics after DOM paint/layout
+    if (fileContainerRef.current && stickyRef.current && descriptionRef.current) {
+      lastFileTopRef.current = fileContainerRef.current.getBoundingClientRect().top;
+      const stickyBottom = stickyRef.current.getBoundingClientRect().bottom;
+      const descBottom = descriptionRef.current.getBoundingClientRect().bottom;
+      wasDescHiddenRef.current = descBottom <= stickyBottom + 20;
+    }
+  }, [currentStepIndex, selectedFlowId]);
 
   // Smoothly auto-scroll active step tab into center view
   useEffect(() => {
@@ -65,6 +151,16 @@ export default function ArchitectureExplorer(): React.JSX.Element {
   const currentStep = useMemo<ArchitectureFlowStep>(() => {
     return activeFlow.steps[currentStepIndex] || activeFlow.steps[0];
   }, [activeFlow, currentStepIndex]);
+
+  // Parse structured thread and helper label
+  const parsedSourceThread = useMemo(
+    () => parseThreadLabel(currentStep.sourceFileSnippet.threadLabel),
+    [currentStep.sourceFileSnippet.threadLabel]
+  );
+  const parsedTargetThread = useMemo(
+    () => (currentStep.targetFileSnippet ? parseThreadLabel(currentStep.targetFileSnippet.threadLabel) : null),
+    [currentStep.targetFileSnippet]
+  );
 
   // Handle flow switch
   const handleSelectFlow = useCallback((flowId: string) => {
@@ -294,8 +390,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
 
       {/* 3. Sticky Combined Pipeline Stages & Playback Controls Card */}
       <section
+        ref={stickyRef}
         aria-label="Pipeline Stages & Playback Controls"
-        className="sticky -top-3.5 sm:-top-6 z-20 bg-card/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 shadow-md space-y-3 transition-all"
+        className="sticky -top-3.5 sm:-top-6 z-20 bg-card/95 backdrop-blur-md border border-border/80 dark:border-border rounded-2xl p-3.5 sm:p-4 shadow-md dark:shadow-black/50 space-y-3 transition-all"
       >
         {/* Step Tabs Horizontal Scroll with Smooth Auto-Scroll */}
         <div className="space-y-1.5">
@@ -449,7 +546,10 @@ export default function ArchitectureExplorer(): React.JSX.Element {
         </div>
       </section>
       {/* 4. Current Step Narrative Banner */}
-      <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start space-x-3 shadow-xs">
+      <div
+        ref={descriptionRef}
+        className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start space-x-3 shadow-xs min-h-[72px]"
+      >
         <div className="p-1.5 bg-primary/20 rounded-lg text-primary shrink-0 mt-0.5">
           <Sparkles className="w-4 h-4" aria-hidden="true" />
         </div>
@@ -469,23 +569,32 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       </div>
 
       {/* 5. Side-by-Side Dual Code Panes with Animated Bridge */}
-      <section aria-label="Participating Source Code Files" className="relative grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <section
+        ref={fileContainerRef}
+        aria-label="Participating Source Code Files"
+        className="relative grid grid-cols-1 lg:grid-cols-2 gap-5"
+      >
         {/* Caller / Source File */}
         <div className="flex flex-col bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
           {/* File Header */}
-          <div className="flex items-center justify-between p-3.5 bg-secondary/60 border-b border-border">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-foreground font-mono">
+          <div className="flex items-center justify-between p-3 sm:p-3.5 bg-secondary/60 border-b border-border min-h-[52px]">
+            <div className="flex items-center space-x-2 min-w-0 flex-1 truncate mr-2">
+              <span className="text-xs font-bold text-foreground font-mono truncate">
                 {currentStep.sourceFileSnippet.fileName}
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono hidden sm:inline">
+              <span className="text-[10px] text-muted-foreground font-mono hidden md:inline truncate">
                 ({currentStep.sourceFileSnippet.filePath})
               </span>
             </div>
-            <div className="flex items-center space-x-1.5">
-              <span className={cn('text-[10px] font-mono px-2 py-0.5 rounded-md border font-semibold', getThreadBadgeClasses(currentStep.sourceFileSnippet.threadType))}>
-                {currentStep.sourceFileSnippet.threadLabel}
+            <div className="flex flex-col items-end shrink-0 text-right min-w-[120px] sm:min-w-[140px]">
+              <span className={cn('text-[10px] font-mono px-2 py-0.5 rounded-md border font-semibold whitespace-nowrap', getThreadBadgeClasses(currentStep.sourceFileSnippet.threadType))}>
+                {parsedSourceThread.threadName}
               </span>
+              {parsedSourceThread.helperText && (
+                <span className="text-[9px] font-mono text-muted-foreground whitespace-nowrap mt-1 px-1.5 py-0.5 rounded bg-secondary/80 border border-border/70">
+                  [{parsedSourceThread.helperText}]
+                </span>
+              )}
             </div>
           </div>
 
@@ -542,19 +651,24 @@ export default function ArchitectureExplorer(): React.JSX.Element {
         {currentStep.targetFileSnippet ? (
           <div className="flex flex-col bg-card border border-border rounded-2xl overflow-hidden shadow-xs relative">
             {/* File Header */}
-            <div className="flex items-center justify-between p-3.5 bg-secondary/60 border-b border-border">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-foreground font-mono">
+            <div className="flex items-center justify-between p-3 sm:p-3.5 bg-secondary/60 border-b border-border min-h-[52px]">
+              <div className="flex items-center space-x-2 min-w-0 flex-1 truncate mr-2">
+                <span className="text-xs font-bold text-foreground font-mono truncate">
                   {currentStep.targetFileSnippet.fileName}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-mono hidden sm:inline">
+                <span className="text-[10px] text-muted-foreground font-mono hidden md:inline truncate">
                   ({currentStep.targetFileSnippet.filePath})
                 </span>
               </div>
-              <div className="flex items-center space-x-1.5">
-                <span className={cn('text-[10px] font-mono px-2 py-0.5 rounded-md border font-semibold', getThreadBadgeClasses(currentStep.targetFileSnippet.threadType))}>
-                  {currentStep.targetFileSnippet.threadLabel}
+              <div className="flex flex-col items-end shrink-0 text-right min-w-[120px] sm:min-w-[140px]">
+                <span className={cn('text-[10px] font-mono px-2 py-0.5 rounded-md border font-semibold whitespace-nowrap', getThreadBadgeClasses(currentStep.targetFileSnippet.threadType))}>
+                  {parsedTargetThread?.threadName}
                 </span>
+                {parsedTargetThread?.helperText && (
+                  <span className="text-[9px] font-mono text-muted-foreground whitespace-nowrap mt-1 px-1.5 py-0.5 rounded bg-secondary/80 border border-border/70">
+                    [{parsedTargetThread.helperText}]
+                  </span>
+                )}
               </div>
             </div>
 
