@@ -96,13 +96,13 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
     await expect(page.locator('h1')).toContainText('Architecture & Code Flow Explorer');
 
     // Verify initial stage is Step 1
-    await expect(page.getByText(/Step 1 \/ 5/i)).toBeVisible();
+    await expect(page.getByText('1 of 5', { exact: true })).toBeVisible();
     await expect(page.getByText('handleRunClick()')).toBeVisible();
 
-    // Click Simulate Action button
-    const simulateBtn = page.getByRole('button', { name: /simulate/i });
-    await expect(simulateBtn).toBeVisible();
-    await simulateBtn.click();
+    // Click Play button
+    const playBtn = page.getByRole('button', { name: /^play$/i });
+    await expect(playBtn).toBeVisible();
+    await playBtn.click();
 
     // Pause autoplay so we can inspect deterministically
     const pauseBtn = page.getByRole('button', { name: /pause/i });
@@ -113,7 +113,7 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
     // Step forward using button
     const nextBtn = page.getByRole('button', { name: /next step/i });
     await nextBtn.click();
-    await expect(page.getByText(/Step 2 \/ 5/i)).toBeVisible();
+    await expect(page.getByText('2 of 5', { exact: true })).toBeVisible();
 
     // Switch flow to RRF
     const flowSelector = page.getByLabel(/select flow/i);
@@ -121,7 +121,7 @@ test.describe('Curriculum Navigation & User Journeys (E2E)', () => {
 
     // Verify new flow loaded
     await expect(page.getByText('handleCalculateRRF()')).toBeVisible();
-    await expect(page.getByText(/Step 1 \/ 4/i)).toBeVisible();
+    await expect(page.getByText('1 of 4', { exact: true })).toBeVisible();
   });
 
   test('should render cleanly on mobile viewport without horizontal page overflow', async ({ page }) => {

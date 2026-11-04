@@ -213,13 +213,14 @@ export default function ArchitectureExplorer(): React.JSX.Element {
 
           {/* Bespoke Trigger Button */}
           <button
+            id="flow-selector"
             type="button"
             role="combobox"
             aria-expanded={isDropdownOpen}
             aria-haspopup="listbox"
             aria-label="Change active flow"
             onClick={() => setIsDropdownOpen(prev => !prev)}
-            className="w-full sm:w-auto inline-flex items-center justify-between space-x-2.5 bg-secondary/60 hover:bg-secondary/80 backdrop-blur-md text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border/80 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-between space-x-2.5 bg-secondary/50 hover:bg-secondary/70 backdrop-blur-md text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border/70 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all shadow-xs"
           >
             <span className="truncate max-w-[240px] sm:max-w-[320px] md:max-w-none">
               {t(activeFlow.titleKey, activeFlow.titleDefault)}
@@ -238,7 +239,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             <div
               role="listbox"
               aria-label="Architecture flow choices"
-              className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-full sm:w-80 min-w-full max-w-[calc(100vw-2rem)] bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
+              className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-full sm:w-80 min-w-full max-w-[calc(100vw-2rem)] bg-card/85 dark:bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
             >
               {ARCHITECTURE_FLOWS.map(flow => {
                 const isSelected = flow.id === selectedFlowId;
@@ -294,15 +295,15 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       {/* 3. Sticky Combined Pipeline Stages & Playback Controls Card */}
       <section
         aria-label="Pipeline Stages & Playback Controls"
-        className="sticky top-0 z-20 bg-card/95 backdrop-blur-md border border-border rounded-2xl p-4 shadow-md space-y-3.5 transition-all"
+        className="sticky -top-3.5 sm:-top-6 z-20 bg-card/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 shadow-md space-y-3 transition-all"
       >
         {/* Step Tabs Horizontal Scroll with Smooth Auto-Scroll */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-            <span className="font-semibold uppercase tracking-wider text-[10px] text-primary">
-              {t('arch.pipelineProgress', 'Pipeline Progress')}
+          <div className="flex items-center space-x-2 text-[11px] font-medium text-muted-foreground min-w-0 h-5">
+            <span className="font-semibold uppercase tracking-wider text-[10px] text-primary shrink-0">
+              {t('arch.pipelineProgress', 'Pipeline Progress')}:
             </span>
-            <span className="font-mono text-primary font-semibold truncate max-w-[200px] sm:max-w-none">
+            <span className="font-mono text-[11px] font-semibold text-foreground truncate min-w-0">
               {currentStep.stageName}
             </span>
           </div>
@@ -311,7 +312,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             tabIndex={0}
             role="tablist"
             aria-label="Pipeline Stages"
-            className="flex gap-2 overflow-x-auto scroll-smooth pb-1 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+            className="flex gap-2 overflow-x-auto scroll-smooth px-2 py-1 pb-1.5 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
           >
             {activeFlow.steps.map((s, idx) => {
               const isActive = idx === currentStepIndex;
@@ -352,17 +353,17 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           </div>
         </div>
 
-        {/* Playback Controls Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/70">
-          <div className="flex items-center space-x-2">
+        {/* Playback Controls Row - Squeezed on a single line */}
+        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-border/70 flex-nowrap overflow-x-auto custom-scrollbar">
+          <div className="flex items-center space-x-1.5 shrink-0">
             {/* Reset */}
             <button
               type="button"
               onClick={handleReset}
               title="Reset to beginning [R]"
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border"
+              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border"
             >
-              <RotateCcw className="w-4 h-4" aria-hidden="true" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.reset', 'Reset')}</span>
             </button>
 
@@ -372,19 +373,19 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               onClick={handlePrevStep}
               disabled={currentStepIndex === 0}
               title="Previous step [←]"
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.prevStep', 'Previous Step')}</span>
             </button>
 
-            {/* Play / Pause / Simulate Toggle */}
+            {/* Play Button */}
             <button
               type="button"
               onClick={handleTogglePlay}
-              aria-label={isPlaying ? t('arch.pause', 'Pause') : 'Simulate / Auto Play'}
-              title="Simulate / Auto Play [Space]"
-              className="flex items-center space-x-1.5 px-3.5 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
+              aria-label={isPlaying ? t('arch.pause', 'Pause') : t('arch.play', 'Play')}
+              title={isPlaying ? `${t('arch.pause', 'Pause')} [Space]` : `${t('arch.play', 'Play')} [Space]`}
+              className="flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer shrink-0"
             >
               {isPlaying ? (
                 <>
@@ -394,7 +395,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                  <span>Simulate / Auto Play</span>
+                  <span>{t('arch.play', 'Play')}</span>
                 </>
               )}
             </button>
@@ -405,21 +406,31 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               onClick={handleNextStep}
               disabled={currentStepIndex === activeFlow.steps.length - 1}
               title="Next step [→]"
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.nextStep', 'Next Step')}</span>
             </button>
 
+            {/* Step Indicator (e.g. "1 of 4") squeezed directly after next arrow */}
+            <div
+              aria-label={`Step ${currentStep.stepNumber} of ${currentStep.totalSteps}`}
+              className="flex items-center px-2 py-1 bg-secondary/60 rounded-lg border border-border/70 text-[11px] font-mono shrink-0 select-none"
+            >
+              <span className="text-primary font-bold">
+                {currentStep.stepNumber} {t('arch.of', 'of')} {currentStep.totalSteps}
+              </span>
+            </div>
+
             {/* Speed Toggle */}
-            <div className="flex items-center space-x-1 ml-2 pl-2 border-l border-border">
+            <div className="flex items-center space-x-0.5 sm:space-x-1 pl-1.5 border-l border-border/70 shrink-0">
               {[1, 1.5, 2].map(speed => (
                 <button
                   key={speed}
                   type="button"
                   onClick={() => setPlaybackSpeed(speed)}
                   className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-md transition-colors cursor-pointer',
+                    'text-[10px] font-mono px-1.5 py-0.5 rounded-md transition-colors cursor-pointer',
                     playbackSpeed === speed
                       ? 'bg-secondary text-primary font-bold border border-border'
                       : 'text-muted-foreground hover:text-foreground'
@@ -431,17 +442,10 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Step Indicator */}
-          <div className="flex items-center space-x-3">
-            <span className="text-xs text-muted-foreground hidden md:inline">
-              {t('arch.keyboardShortcuts', 'Keyboard: [Space] Play/Pause, [←/→] Steps, [R] Reset')}
-            </span>
-            <div className="flex items-center space-x-1.5 bg-secondary px-3 py-1.5 rounded-xl border border-border text-xs font-mono">
-              <span className="text-primary font-bold">
-                {t('arch.step', 'Step')} {currentStep.stepNumber} / {currentStep.totalSteps}
-              </span>
-            </div>
-          </div>
+          {/* Desktop Keyboard Shortcuts Info */}
+          <span className="text-[11px] text-muted-foreground hidden lg:inline shrink-0 ml-auto">
+            {t('arch.keyboardShortcuts', 'Keyboard: [Space] Play, [←/→] Steps, [R] Reset')}
+          </span>
         </div>
       </section>
       {/* 4. Current Step Narrative Banner */}
