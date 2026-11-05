@@ -9,7 +9,8 @@
     "build": "npm --prefix devdocs-ai-guide run build",
     "start": "npm --prefix devdocs-ai-guide run start",
     "test": "npm --prefix devdocs-ai-guide test",
-    "typecheck": "npm --prefix devdocs-ai-guide run typecheck"
+    "typecheck": "npm --prefix devdocs-ai-guide run typecheck",
+    "export:pdf": "npm --prefix devdocs-ai-guide run export:pdf"
   },
   "keywords": [
     "rag",

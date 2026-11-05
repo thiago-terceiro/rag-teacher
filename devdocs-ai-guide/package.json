@@ -11,7 +11,8 @@
     "test:a11y": "playwright test e2e/a11y.spec.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:pdf": "node scripts/export-pdf.mjs"
   },
   "keywords": [
     "rag",

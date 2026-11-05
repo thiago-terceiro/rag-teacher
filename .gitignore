@@ -37,3 +37,6 @@ Thumbs.db
 test-results/
 playwright-report/
 blob-report/
+
+# Generated Export Artifacts
+*.pdf

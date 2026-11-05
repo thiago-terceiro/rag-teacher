@@ -108,10 +108,18 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
 
   // Defer rendering until diagram enters or approaches viewport to prevent main thread lockup
   useEffect(() => {
+    const handleBeforePrint = () => setIsInView(true);
+    window.addEventListener('beforeprint', handleBeforePrint);
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('print').matches) {
+      setIsInView(true);
+    }
+
     const el = blockRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
       setIsInView(true);
-      return;
+      return () => {
+        window.removeEventListener('beforeprint', handleBeforePrint);
+      };
     }
     const observer = new IntersectionObserver(
       (entries) => {
@@ -122,7 +130,10 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
       { rootMargin: '300px' }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('beforeprint', handleBeforePrint);
+    };
   }, []);
 
   // Create a unique clean ID for mermaid rendering

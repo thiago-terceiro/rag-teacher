@@ -2688,14 +2688,34 @@ The mean-pooled representation $\\mathbf{u}_i \\in \\mathbb{R}^D$ is:
 $$\\mathbf{u}_i = \\frac{\\sum_{t=1}^L m_{i, t} \\cdot \\mathbf{h}_{i, t}}{\\max\\left(1, \\sum_{t=1}^L m_{i, t}\\right)}$$
 
 ### 3. L2 Normalization & Dot Product Equivalence
-Given vector $\\mathbf{u} \\in \\mathbb{R}^D$, its Euclidean ($L_2$) norm is:
-$$\\|\\mathbf{u}\\|_2 = \\sqrt{\\sum_{j=1}^D u_j^2}$$
-The normalized unit vector $\\hat{\\mathbf{u}}$ is:
-$$\\hat{\\mathbf{u}} = \\frac{\\mathbf{u}}{\\|\\mathbf{u}\\|_2} \\implies \\|\\hat{\\mathbf{u}}\\|_2 = 1.0$$
+Given vector $\mathbf{u} \in \mathbb{R}^D$, its Euclidean ($L_2$) norm or vector size (magnitude) is:
+$$\|\mathbf{u}\|_2 = \sqrt{\sum_{j=1}^D u_j^2}$$
+The normalized unit vector $\hat{\mathbf{u}}$ is:
+$$\hat{\mathbf{u}} = \frac{\mathbf{u}}{\|\mathbf{u}\|_2} \implies \|\hat{\mathbf{u}}\|_2 = 1.0$$
 
-**Mathematical Proof of Cosine Equivalence**:
-$$\\cos(\\mathbf{u}, \\mathbf{v}) = \\frac{\\mathbf{u} \\cdot \\mathbf{v}}{\\|\\mathbf{u}\\|_2 \\|\\mathbf{v}\\|_2} = \\left(\\frac{\\mathbf{u}}{\\|\\mathbf{u}\\|_2}\\right) \\cdot \\left(\\frac{\\mathbf{v}}{\\|\\mathbf{v}\\|_2}\\right) = \\hat{\\mathbf{u}} \\cdot \\hat{\\mathbf{v}} = \\sum_{j=1}^D \\hat{u}_j \\hat{v}_j$$
-By unit-normalizing vectors during ingestion, vector stores compute Cosine Similarity using pure **BLAS Level-1 Dot Products ($\\mathbf{x}^T \\mathbf{y}$)**, eliminating square roots and division operations at search time.
+#### Mathematical Formulas: Vector Size, Cosine Similarity, and Dot Product
+The fundamental mathematical relationship connecting vector size, cosine similarity, and dot product is:
+$$\mathbf{u} \cdot \mathbf{v} = \|\mathbf{u}\|_2 \|\mathbf{v}\|_2 \cos(\theta)$$
+Rearranging yields the **Cosine Similarity formula**:
+$$\cos(\theta) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \frac{\sum_{j=1}^D u_j v_j}{\sqrt{\sum_{j=1}^D u_j^2} \sqrt{\sum_{j=1}^D v_j^2}}$$
+
+#### The Intuition Behind Vector Size and Scale Invariance
+1. **Decoupling Vector Size from Semantic Meaning**:
+   In unnormalized dense embedding spaces, the vector size (norm $\|\mathbf{u}\|_2$) typically correlates with extraneous document attributes such as sequence verbosity, punctuation density, or token frequencies. However, the *semantic concept* (e.g. *"how to handle async errors in JavaScript"*) is captured strictly by the vector's **angular orientation** (direction) in the $D$-dimensional latent space.
+2. **Mathematical Scale Invariance**:
+   Cosine similarity is scale-invariant. For any positive scaling multipliers $\alpha > 0$ and $\beta > 0$:
+   $$\cos(\alpha \mathbf{u}, \beta \mathbf{v}) = \frac{(\alpha \mathbf{u}) \cdot (\beta \mathbf{v})}{\|\alpha \mathbf{u}\|_2 \|\beta \mathbf{v}\|_2} = \frac{\alpha \beta (\mathbf{u} \cdot \mathbf{v})}{\alpha \beta \|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \cos(\mathbf{u}, \mathbf{v})$$
+   Whether a concept is expressed in a concise 15-word heading or a comprehensive 250-word code description, their angular trajectory remains preserved.
+3. **The Raw Dot Product Trap**:
+   If a retrieval system relies on raw unnormalized dot products ($\mathbf{u} \cdot \mathbf{v}$), a very long document chunk with an inflated vector size $\|\mathbf{v}\|_2$ can produce a massive dot product score even if its angular alignment $\cos(\theta)$ is poor.
+4. **Unit Hypersphere Projection & High-Speed MIPS**:
+   Computing square roots and floating-point divisions for millions of candidates at query time is computationally prohibitive ($O(D)$ ops per candidate). By pre-normalizing all vectors during ingestion ($\|\hat{\mathbf{u}}\|_2 = 1.0, \|\hat{\mathbf{v}}\|_2 = 1.0$), the denominator becomes $1.0$:
+   $$\cos(\mathbf{u}, \mathbf{v}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}} = \sum_{j=1}^D \hat{u}_j \hat{v}_j$$
+   Cosine Similarity is transformed into pure **BLAS Level-1 Dot Products ($\mathbf{x}^T \mathbf{y}$)**, eliminating square roots and division operations at search time.
+5. **Euclidean Duality on the Unit Sphere**:
+   For unit-normalized vectors, Euclidean ($L_2$) distance and Cosine similarity are monotonically linked:
+   $$\|\hat{\mathbf{u}} - \hat{\mathbf{v}}\|_2 = \sqrt{\|\hat{\mathbf{u}}\|_2^2 + \|\hat{\mathbf{v}}\|_2^2 - 2(\hat{\mathbf{u}} \cdot \hat{\mathbf{v}})} = \sqrt{2 - 2 \cos(\mathbf{u}, \mathbf{v})}$$
+   Minimizing Euclidean distance is mathematically and strictly identical to maximizing Cosine Similarity.
 
 ### 4. Contrastive Training Objective: Multiple Negatives Ranking Loss (InfoNCE)
 Modern embedding models are trained using in-batch contrastive objectives. For a batch of $B$ query-document pairs $\\{(q_1, d_1^+), (q_2, d_2^+), \\dots, (q_B, d_B^+)\\}$:

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Compass, X } from 'lucide-react';
+import { Compass, X, BookOpen } from 'lucide-react';
 import { useReadingSettings } from '../hooks/useReadingSettings';
 import { calculateVectorMetrics } from '../lib/vectorMath';
 import { useI18n } from '../hooks/useI18n';
@@ -344,8 +344,8 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                 </svg>
               </div>
 
-              {/* Normalization Mode Toggle */}
-              <div className="flex items-center space-x-3 mt-4 text-xs">
+              {/* Normalization Mode Toggle & Live Magnitudes */}
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-xs">
                 <button
                   type="button"
                   onClick={() => setIsNormalized(prev => !prev)}
@@ -354,6 +354,25 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                   <span className={`w-2 h-2 rounded-full ${isNormalized ? 'bg-primary' : 'bg-muted-foreground'}`} />
                   <span>{isNormalized ? t('vector.unitVectors', 'Unit Vectors ||v||=1') : t('vector.arbitraryMag', 'Arbitrary Length')}</span>
                 </button>
+
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/80"
+                    title={t('vector.magnitudeA', 'Vector A Size ||a||')}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: vectorAColor }} />
+                    <span className="text-muted-foreground font-medium">||a||:</span>
+                    <span className="font-mono font-bold text-foreground">{effectiveMagA.toFixed(2)}</span>
+                  </div>
+                  <div
+                    className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/80"
+                    title={t('vector.magnitudeB', 'Vector B Size ||b||')}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: vectorBColor }} />
+                    <span className="text-muted-foreground font-medium">||b||:</span>
+                    <span className="font-mono font-bold text-foreground">{effectiveMagB.toFixed(2)}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -392,6 +411,113 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
               </div>
             </div>
           </div>
+
+          {/* Detailed Mathematical Formulas & Intuition Section */}
+          <section aria-labelledby="vector-math-explanation-heading" className="border-t border-border/80 pt-6 mt-6 space-y-6">
+            <div className="flex items-center space-x-2.5">
+              <BookOpen className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
+              <div>
+                <h3 id="vector-math-explanation-heading" className="text-sm font-bold text-foreground tracking-tight">
+                  {t('vector.explanationTitle', 'Mathematical Formulas & Intuition: Vector Size in Cosine Similarity')}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t('vector.explanationSubtitle', 'Why vector length (magnitude) is decoupled from cosine similarity, and why vector databases normalize embeddings to the unit sphere.')}
+                </p>
+              </div>
+            </div>
+
+            {/* Formula Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Formula 1: Vector Size (L2 Norm) */}
+              <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/80 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">{t('vector.formulaNormTitle', 'Vector Size (L2 Norm / Magnitude)')}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">Length</span>
+                </div>
+                <div className="p-2 rounded-lg bg-background/80 border border-border/70 font-mono text-xs text-primary font-semibold overflow-x-auto">
+                  {'||v||₂ = √(v₁² + v₂² + ... + v_D²)'}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('vector.formulaNormDesc', 'Measures the geometric length of the vector from the origin. In D dimensions, computed as the square root of the sum of squared components.')}
+                </p>
+              </div>
+
+              {/* Formula 2: Cosine Similarity */}
+              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">{t('vector.formulaCosTitle', 'Cosine Similarity (Orientation Only)')}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">Scale-Invariant</span>
+                </div>
+                <div className="p-2 rounded-lg bg-background/80 border border-border/70 font-mono text-xs text-primary font-semibold overflow-x-auto">
+                  {'cos(θ) = (a · b) / (||a||₂ · ||b||₂)'}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('vector.formulaCosDesc', 'Calculates the cosine of the angle θ between vectors. Dividing by the product of vector sizes ||a||·||b|| cancels magnitude, isolating pure direction.')}
+                </p>
+              </div>
+
+              {/* Formula 3: Dot Product */}
+              <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">{t('vector.formulaDotTitle', 'Dot Product (Size × Direction)')}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">Size-Dependent</span>
+                </div>
+                <div className="p-2 rounded-lg bg-background/80 border border-border/70 font-mono text-xs text-purple-400 font-semibold overflow-x-auto">
+                  {'a · b = ||a||₂ · ||b||₂ · cos(θ)'}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('vector.formulaDotDesc', 'Multiplies vector sizes by cos(θ). Unnormalized vectors with large magnitudes inflate the score regardless of directional alignment.')}
+                </p>
+              </div>
+
+              {/* Formula 4: Euclidean (L2) Distance */}
+              <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">{t('vector.formulaL2Title', 'Euclidean Distance (L2 Metric)')}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Metric</span>
+                </div>
+                <div className="p-2 rounded-lg bg-background/80 border border-border/70 font-mono text-xs text-amber-400 font-semibold overflow-x-auto">
+                  {'||a - b||₂ = √(2 - 2·cos(θ))  [||a||=||b||=1]'}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t('vector.formulaL2Desc', 'Measures straight-line chord distance between vector endpoints. On the unit sphere (||a||=||b||=1), it simplifies to √(2 - 2·cos(θ)).')}
+                </p>
+              </div>
+            </div>
+
+            {/* Intuition Deep Dive */}
+            <div className="p-4 rounded-xl bg-secondary/30 border border-border/80 space-y-3.5">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {t('vector.intuitionTitle', 'Intuition Behind Vector Size & Normalization in RAG')}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-lg bg-card/60 border border-border/60 space-y-1.5">
+                  <div className="font-semibold text-foreground">
+                    {t('vector.intuitionScaleInvTitle', '1. Scale Invariance & Document Length')}
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('vector.intuitionScaleInvDesc', 'In text embeddings, a 20-word passage and a 200-word passage with the same topic point in the same direction. Cosine similarity evaluates topical alignment without penalizing or rewarding document length.')}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/60 border border-border/60 space-y-1.5">
+                  <div className="font-semibold text-foreground">
+                    {t('vector.intuitionUnitSphereTitle', '2. Why Vector DBs Normalize Embeddings (||v|| = 1)')}
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('vector.intuitionUnitSphereDesc', 'Calculating square roots and divisions for millions of vectors at search time is computationally expensive. Normalizing embeddings at ingestion forces ||a|| = ||b|| = 1, so Cosine Similarity becomes a pure BLAS dot product (a · b) executing at hardware speed.')}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-card/60 border border-border/60 space-y-1.5">
+                  <div className="font-semibold text-foreground">
+                    {t('vector.intuitionDualityTitle', '3. Geometric Duality: Euclidean vs. Cosine')}
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('vector.intuitionDualityDesc', 'When vectors are constrained to the unit hypersphere, minimizing Euclidean distance is strictly equivalent to maximizing Cosine Similarity. Nearest-neighbor graph search (HNSW) yields identical top-K ranking.')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
