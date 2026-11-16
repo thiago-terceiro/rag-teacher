@@ -3,6 +3,26 @@ import type { ReadingSettings, ReadingSettingsContextType, ThemeMode } from '../
 
 const ReadingSettingsContext = createContext<ReadingSettingsContextType | null>(null);
 
+export interface ThemeContextType {
+  theme: ThemeMode;
+  isLight: boolean;
+  setTheme: (theme: ThemeMode) => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | null>(null);
+
+export const useTheme = (): ThemeContextType => {
+  const context = use(ThemeContext);
+  if (!context) {
+    return {
+      theme: 'deep-blue',
+      isLight: false,
+      setTheme: () => {},
+    };
+  }
+  return context;
+};
+
 const STORAGE_KEY = 'rag_reading_settings_v1';
 
 const VALID_THEMES: ThemeMode[] = ['deep-blue', 'oled-midnight', 'daylight-paper'];
@@ -23,50 +43,72 @@ const THEME_META_COLORS: Record<ThemeMode, string> = {
   'daylight-paper': '#faf8f5',
 };
 
+export function disableTransitionsTemporarily(): () => void {
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function' || !document.head) {
+    return () => {};
+  }
+  try {
+    const css = document.createElement('style');
+    css.textContent = '*,*::before,*::after{transition:none!important}';
+    document.head.appendChild(css);
+    if (document.body) void document.body.offsetHeight;
+    return () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          css.remove();
+        });
+      });
+    };
+  } catch {
+    return () => {};
+  }
+}
+
+const ALL_READING_CLASSES = [
+  'theme-deep-blue', 'theme-oled-midnight', 'theme-daylight-paper', 'dark', 'light',
+  'reading-size-normal', 'reading-size-comfortable', 'reading-size-large',
+  'reading-spacing-relaxed', 'reading-spacing-spacious',
+  'reading-width-normal', 'reading-width-wide'
+];
+
 export function applyThemeAndReadingStyles(settings: ReadingSettings) {
   if (typeof document === 'undefined') return;
+  const restoreTransitions = disableTransitionsTemporarily();
   const root = document.documentElement;
   const body = document.body;
 
   const activeTheme: ThemeMode = VALID_THEMES.includes(settings.theme) ? settings.theme : 'deep-blue';
   const isLight = activeTheme === 'daylight-paper';
-
-  // 1. Instant Theme Classes
-  const themeClasses = ['theme-deep-blue', 'theme-oled-midnight', 'theme-daylight-paper', 'dark', 'light'];
-  root.classList.remove(...themeClasses);
-  body.classList.remove(...themeClasses);
-  root.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
-  body.classList.add(`theme-${activeTheme}`, isLight ? 'light' : 'dark');
-
-  // 2. Instant Font Size Classes
   const fontSize = VALID_FONT_SIZES.has(settings.fontSize) ? settings.fontSize : 'normal';
-  const sizeClasses = ['reading-size-normal', 'reading-size-comfortable', 'reading-size-large'];
-  root.classList.remove(...sizeClasses);
-  body.classList.remove(...sizeClasses);
-  root.classList.add(`reading-size-${fontSize}`);
-  body.classList.add(`reading-size-${fontSize}`);
-
-  // 3. Instant Line Spacing Classes
   const lineSpacing = VALID_SPACINGS.has(settings.lineSpacing) ? settings.lineSpacing : 'relaxed';
-  const spacingClasses = ['reading-spacing-relaxed', 'reading-spacing-spacious'];
-  root.classList.remove(...spacingClasses);
-  body.classList.remove(...spacingClasses);
-  root.classList.add(`reading-spacing-${lineSpacing}`);
-  body.classList.add(`reading-spacing-${lineSpacing}`);
-
-  // 4. Instant Content Width Classes
   const contentWidth = VALID_WIDTHS.has(settings.contentWidth) ? settings.contentWidth : 'normal';
-  const widthClasses = ['reading-width-normal', 'reading-width-wide'];
-  root.classList.remove(...widthClasses);
-  body.classList.remove(...widthClasses);
-  root.classList.add(`reading-width-${contentWidth}`);
-  body.classList.add(`reading-width-${contentWidth}`);
 
-  // 5. Meta Theme Color
+  root.classList.remove(...ALL_READING_CLASSES);
+  if (body?.classList) body.classList.remove(...ALL_READING_CLASSES);
+
+  root.classList.add(
+    `theme-${activeTheme}`,
+    isLight ? 'light' : 'dark',
+    `reading-size-${fontSize}`,
+    `reading-spacing-${lineSpacing}`,
+    `reading-width-${contentWidth}`
+  );
+  if (body?.classList) {
+    body.classList.add(
+      `theme-${activeTheme}`,
+      isLight ? 'light' : 'dark',
+      `reading-size-${fontSize}`,
+      `reading-spacing-${lineSpacing}`,
+      `reading-width-${contentWidth}`
+    );
+  }
+
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
     metaTheme.setAttribute('content', THEME_META_COLORS[activeTheme] || '#090d16');
   }
+
+  restoreTransitions();
 }
 
 function loadStoredSettings(): ReadingSettings {
@@ -122,6 +164,11 @@ export const ReadingSettingsProvider = ({ children }: { children: React.ReactNod
       if (prev[key] === value) return prev;
       const next = { ...prev, [key]: value };
       applyThemeAndReadingStyles(next);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.warn('Failed to save reading settings', e);
+      }
       return next;
     });
   }, []);
@@ -139,11 +186,24 @@ export const ReadingSettingsProvider = ({ children }: { children: React.ReactNod
     resetSettings,
   }), [settings, updateSetting, resetSettings]);
 
+  const isLight = settings.theme === 'daylight-paper';
+  const setTheme = useCallback((newTheme: ThemeMode) => {
+    updateSetting('theme', newTheme);
+  }, [updateSetting]);
+
+  const themeValue = useMemo<ThemeContextType>(() => ({
+    theme: settings.theme,
+    isLight,
+    setTheme,
+  }), [settings.theme, isLight, setTheme]);
+
   // React 19 standard `<Context value={...}>` (no .Provider required)
   return (
-    <ReadingSettingsContext value={value}>
-      {children}
-    </ReadingSettingsContext>
+    <ThemeContext value={themeValue}>
+      <ReadingSettingsContext value={value}>
+        {children}
+      </ReadingSettingsContext>
+    </ThemeContext>
   );
 };
 

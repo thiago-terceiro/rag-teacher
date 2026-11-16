@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ARCHITECTURE_FLOWS, type ArchitectureFlow, type ArchitectureFlowStep } from '../data/architectureFlowsData';
 import { useI18n } from '../hooks/useI18n';
+import { useTheme } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
 interface ParsedThreadInfo {
@@ -38,6 +39,8 @@ function parseThreadLabel(label: string): ParsedThreadInfo {
 
 export default function ArchitectureExplorer(): React.JSX.Element {
   const { t } = useI18n();
+  const { theme, isLight } = useTheme();
+  const isOled = theme === 'oled-midnight';
   const [selectedFlowId, setSelectedFlowId] = useState<string>(ARCHITECTURE_FLOWS[0].id);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -247,14 +250,14 @@ export default function ArchitectureExplorer(): React.JSX.Element {
   const getThreadBadgeClasses = (type: string) => {
     switch (type) {
       case 'worker':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+        return 'bg-emerald-50 text-emerald-950 border-emerald-700/40 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-500/40';
       case 'math':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+        return 'bg-amber-50 text-amber-950 border-amber-700/40 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-500/40';
       case 'storage':
-        return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
+        return 'bg-purple-50 text-purple-950 border-purple-700/40 dark:bg-purple-950/70 dark:text-purple-200 dark:border-purple-500/40';
       case 'main':
       default:
-        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+        return 'bg-indigo-50 text-indigo-950 border-indigo-700/40 dark:bg-indigo-950/70 dark:text-indigo-200 dark:border-indigo-500/40';
     }
   };
 
@@ -309,14 +312,14 @@ export default function ArchitectureExplorer(): React.JSX.Element {
 
           {/* Bespoke Trigger Button */}
           <button
-            id="flow-selector"
+            id="flow-selector-trigger"
             type="button"
             role="combobox"
             aria-expanded={isDropdownOpen}
             aria-haspopup="listbox"
-            aria-label="Change active flow"
+            aria-label={`${t(activeFlow.titleKey, activeFlow.titleDefault)} — Change active flow`}
             onClick={() => setIsDropdownOpen(prev => !prev)}
-            className="w-full sm:w-auto inline-flex items-center justify-between space-x-2.5 bg-secondary/50 hover:bg-secondary/70 backdrop-blur-md text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border/70 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all shadow-xs"
+            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-between space-x-2.5 bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-colors shadow-xs"
           >
             <span className="truncate max-w-[240px] sm:max-w-[320px] md:max-w-none">
               {t(activeFlow.titleKey, activeFlow.titleDefault)}
@@ -330,12 +333,12 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             />
           </button>
 
-          {/* Custom Floating Popover Menu with Transparency and Responsive Alignment */}
+          {/* Custom Floating Popover Menu */}
           {isDropdownOpen && (
             <div
               role="listbox"
               aria-label="Architecture flow choices"
-              className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-full sm:w-80 min-w-full max-w-[calc(100vw-2rem)] bg-card/85 dark:bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl rounded-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
+              className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-full sm:w-80 min-w-full max-w-[calc(100vw-2rem)] bg-card border border-border shadow-2xl rounded-xl p-1.5 z-40"
             >
               {ARCHITECTURE_FLOWS.map(flow => {
                 const isSelected = flow.id === selectedFlowId;
@@ -350,10 +353,10 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                       setIsDropdownOpen(false);
                     }}
                     className={cn(
-                      'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer',
+                      'w-full min-h-[44px] flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer',
                       isSelected
                         ? 'bg-primary text-primary-foreground font-bold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/70'
+                        : 'text-foreground hover:bg-secondary'
                     )}
                   >
                     <span className="truncate">{t(flow.titleKey, flow.titleDefault)}</span>
@@ -376,7 +379,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
 
           {/* Second Line: Box with Label */}
           <div>
-            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold inline-block">
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/30 font-bold inline-block">
               {t(activeFlow.categoryKey, activeFlow.categoryDefault)}
             </span>
           </div>
@@ -392,9 +395,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
       <section
         ref={stickyRef}
         aria-label="Pipeline Stages & Playback Controls"
-        className="sticky -top-3.5 sm:-top-6 z-20 bg-card/95 backdrop-blur-md border border-border/80 dark:border-border rounded-2xl p-3.5 sm:p-4 shadow-md dark:shadow-black/50 space-y-3 transition-all"
+        className="sticky -top-3.5 sm:-top-6 z-20 bg-card border border-border rounded-2xl p-3.5 sm:p-4 shadow-md dark:shadow-black/50 space-y-3"
       >
-        {/* Step Tabs Horizontal Scroll with Smooth Auto-Scroll */}
+        {/* Step Stage Selectors Horizontal Scroll */}
         <div className="space-y-1.5">
           <div className="flex items-center space-x-2 text-[11px] font-medium text-muted-foreground min-w-0 h-5">
             <span className="font-semibold uppercase tracking-wider text-[10px] text-primary shrink-0">
@@ -407,9 +410,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           <div
             ref={stepsScrollRef}
             tabIndex={0}
-            role="tablist"
+            role="group"
             aria-label="Pipeline Stages"
-            className="flex gap-2 overflow-x-auto scroll-smooth px-2 py-1 pb-1.5 custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+            className="flex gap-2 overflow-x-auto scroll-smooth px-2 py-1 pb-1.5 custom-scrollbar focus:outline-hidden focus:ring-2 focus:ring-primary/40"
           >
             {activeFlow.steps.map((s, idx) => {
               const isActive = idx === currentStepIndex;
@@ -420,26 +423,25 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                   key={s.stepId}
                   ref={el => { stepButtonRefs.current[idx] = el; }}
                   type="button"
-                  role="tab"
-                  aria-selected={isActive}
+                  aria-pressed={isActive}
                   onClick={() => {
                     setCurrentStepIndex(idx);
                     setIsPlaying(false);
                   }}
                   className={cn(
-                    'flex items-center justify-center py-2 px-3 rounded-lg text-xs font-mono transition-all duration-200 cursor-pointer border shrink-0 min-w-[130px] sm:min-w-[150px]',
+                    'flex items-center justify-center min-h-[44px] py-2 px-3 rounded-lg text-xs font-mono cursor-pointer border shrink-0 min-w-[130px] sm:min-w-[150px]',
                     isActive
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold ring-2 ring-primary/40 scale-[1.02]'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold ring-2 ring-primary/40'
                       : isPassed
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                      : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary hover:text-foreground'
+                      ? 'bg-emerald-50 text-emerald-950 border-emerald-700/40 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-500/40 dark:hover:bg-emerald-900/70 font-semibold'
+                      : 'bg-secondary text-foreground border-border hover:bg-secondary/80'
                   )}
                 >
                   <div className="flex items-center space-x-1.5 truncate">
                     {isPassed && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300 shrink-0" aria-hidden="true" />
                     )}
-                    <span className={cn('text-[10px] font-semibold', isActive ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    <span className={cn('text-xs font-semibold', isActive ? 'text-primary-foreground' : isPassed ? 'text-emerald-800 dark:text-emerald-200' : 'text-foreground')}>
                       #{idx + 1}
                     </span>
                     <span className="truncate">{cleanStageName}</span>
@@ -450,7 +452,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           </div>
         </div>
 
-        {/* Playback Controls Row - Squeezed on a single line */}
+        {/* Playback Controls Row */}
         <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-border/70 flex-nowrap overflow-x-auto custom-scrollbar">
           <div className="flex items-center space-x-1.5 shrink-0">
             {/* Reset */}
@@ -458,9 +460,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               type="button"
               onClick={handleReset}
               title="Reset to beginning [R]"
-              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-border/60"
             >
-              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <RotateCcw className="w-4 h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.reset', 'Reset')}</span>
             </button>
 
@@ -470,9 +472,9 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               onClick={handlePrevStep}
               disabled={currentStepIndex === 0}
               title="Previous step [←]"
-              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-border/60 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.prevStep', 'Previous Step')}</span>
             </button>
 
@@ -482,7 +484,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               onClick={handleTogglePlay}
               aria-label={isPlaying ? t('arch.pause', 'Pause') : t('arch.play', 'Play')}
               title={isPlaying ? `${t('arch.pause', 'Pause')} [Space]` : `${t('arch.play', 'Play')} [Space]`}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer shrink-0"
+              className="min-h-[44px] flex items-center space-x-1.5 px-4 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-xl shadow-xs hover:opacity-90 transition-opacity cursor-pointer shrink-0"
             >
               {isPlaying ? (
                 <>
@@ -503,16 +505,16 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               onClick={handleNextStep}
               disabled={currentStepIndex === activeFlow.steps.length - 1}
               title="Next step [→]"
-              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border disabled:opacity-30 disabled:cursor-not-allowed"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer border border-border/60 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
               <span className="sr-only">{t('arch.nextStep', 'Next Step')}</span>
             </button>
 
-            {/* Step Indicator (e.g. "1 of 4") squeezed directly after next arrow */}
+            {/* Step Indicator */}
             <div
               aria-label={`Step ${currentStep.stepNumber} of ${currentStep.totalSteps}`}
-              className="flex items-center px-2 py-1 bg-secondary/60 rounded-lg border border-border/70 text-[11px] font-mono shrink-0 select-none"
+              className="flex items-center min-h-[44px] px-2.5 py-1 bg-secondary rounded-lg border border-border text-[11px] font-mono shrink-0 select-none"
             >
               <span className="text-primary font-bold">
                 {currentStep.stepNumber} {t('arch.of', 'of')} {currentStep.totalSteps}
@@ -520,17 +522,17 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             </div>
 
             {/* Speed Toggle */}
-            <div className="flex items-center space-x-0.5 sm:space-x-1 pl-1.5 border-l border-border/70 shrink-0">
+            <div className="flex items-center space-x-1 pl-1.5 border-l border-border/70 shrink-0">
               {[1, 1.5, 2].map(speed => (
                 <button
                   key={speed}
                   type="button"
                   onClick={() => setPlaybackSpeed(speed)}
                   className={cn(
-                    'text-[10px] font-mono px-1.5 py-0.5 rounded-md transition-colors cursor-pointer',
+                    'min-w-[44px] min-h-[44px] flex items-center justify-center text-xs font-mono px-2 rounded-lg transition-colors cursor-pointer',
                     playbackSpeed === speed
                       ? 'bg-secondary text-primary font-bold border border-border'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground border border-transparent'
                   )}
                 >
                   {speed}x
@@ -604,7 +606,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
                 {t('arch.callerFile', 'Caller Function')}:
               </span>
-              <code className="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+              <code className="text-xs font-mono font-bold text-indigo-950 bg-indigo-50 border-indigo-700/40 dark:text-indigo-200 dark:bg-indigo-950/70 dark:border-indigo-500/40 px-2 py-0.5 rounded border">
                 {currentStep.sourceFileSnippet.activeFunction}
               </code>
             </div>
@@ -617,10 +619,13 @@ export default function ArchitectureExplorer(): React.JSX.Element {
           <div
             tabIndex={0}
             role="region"
-            aria-label={`${currentStep.sourceFileSnippet.fileName} code preview`}
-            className="p-4 bg-black/60 font-mono text-xs overflow-x-auto custom-scrollbar flex-1"
+            aria-label={`Source file ${currentStep.sourceFileSnippet.fileName} code preview`}
+            className={cn(
+              'p-4 font-mono text-xs overflow-x-auto custom-scrollbar flex-1',
+              isLight ? 'bg-slate-50 text-slate-900' : isOled ? 'bg-black text-slate-100' : 'bg-[#090d16] text-slate-100'
+            )}
           >
-            <pre className="text-slate-200 leading-relaxed">
+            <pre className="leading-relaxed">
               {currentStep.sourceFileSnippet.code.split('\n').map((line, idx) => {
                 const lineNum = idx + 1;
                 const [start, end] = currentStep.sourceFileSnippet.activeLines;
@@ -630,13 +635,17 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                   <div
                     key={idx}
                     className={cn(
-                      'flex items-center px-2 py-0.5 rounded transition-all duration-300',
+                      'flex items-center px-2 py-0.5 rounded',
                       isHighlight
-                        ? 'bg-indigo-950/60 border-l-2 border-indigo-400 text-indigo-100 font-semibold shadow-[0_0_15px_rgba(99,102,241,0.2)]'
-                        : 'opacity-40 text-slate-400'
+                        ? isLight
+                          ? 'bg-indigo-100 border-l-4 border-indigo-800 text-indigo-950 font-semibold'
+                          : 'bg-indigo-950/80 border-l-4 border-indigo-400 text-indigo-100 font-semibold'
+                        : isLight
+                        ? 'text-slate-800'
+                        : 'text-slate-200'
                     )}
                   >
-                    <span className="w-8 shrink-0 text-slate-600 select-none text-[10px]">
+                    <span className={cn('w-8 shrink-0 select-none text-[10px] font-medium', isLight ? 'text-slate-900' : 'text-slate-200')}>
                       {lineNum}
                     </span>
                     <span className="whitespace-pre">{line}</span>
@@ -678,7 +687,7 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
                   {t('arch.calleeFile', 'Callee Handler')}:
                 </span>
-                <code className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                <code className="text-xs font-mono font-bold text-emerald-950 bg-emerald-50 border-emerald-700/40 dark:text-emerald-200 dark:bg-emerald-950/70 dark:border-emerald-500/40 px-2 py-0.5 rounded border">
                   {currentStep.targetFileSnippet.activeFunction}
                 </code>
               </div>
@@ -691,10 +700,13 @@ export default function ArchitectureExplorer(): React.JSX.Element {
             <div
               tabIndex={0}
               role="region"
-              aria-label={`${currentStep.targetFileSnippet.fileName} code preview`}
-              className="p-4 bg-black/60 font-mono text-xs overflow-x-auto custom-scrollbar flex-1"
+              aria-label={`Target file ${currentStep.targetFileSnippet.fileName} code preview`}
+              className={cn(
+                'p-4 font-mono text-xs overflow-x-auto custom-scrollbar flex-1',
+                isLight ? 'bg-slate-50 text-slate-900' : isOled ? 'bg-black text-slate-100' : 'bg-[#090d16] text-slate-100'
+              )}
             >
-              <pre className="text-slate-200 leading-relaxed">
+              <pre className="leading-relaxed">
                 {currentStep.targetFileSnippet.code.split('\n').map((line, idx) => {
                   const lineNum = idx + 1;
                   const [start, end] = currentStep.targetFileSnippet?.activeLines || [0, 0];
@@ -704,13 +716,17 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                     <div
                       key={idx}
                       className={cn(
-                        'flex items-center px-2 py-0.5 rounded transition-all duration-300',
+                        'flex items-center px-2 py-0.5 rounded',
                         isHighlight
-                          ? 'bg-emerald-950/60 border-l-2 border-emerald-400 text-emerald-100 font-semibold shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                          : 'opacity-40 text-slate-400'
+                          ? isLight
+                            ? 'bg-emerald-100 border-l-4 border-emerald-800 text-emerald-950 font-semibold'
+                            : 'bg-emerald-950/80 border-l-4 border-emerald-400 text-emerald-100 font-semibold'
+                          : isLight
+                          ? 'text-slate-800'
+                          : 'text-slate-200'
                       )}
                     >
-                      <span className="w-8 shrink-0 text-slate-600 select-none text-[10px]">
+                      <span className={cn('w-8 shrink-0 select-none text-[10px] font-medium', isLight ? 'text-slate-900' : 'text-slate-200')}>
                         {lineNum}
                       </span>
                       <span className="whitespace-pre">{line}</span>
@@ -778,7 +794,10 @@ export default function ArchitectureExplorer(): React.JSX.Element {
                 tabIndex={0}
                 role="region"
                 aria-label="Serialized message payload JSON"
-                className="p-3.5 bg-black/60 border border-border rounded-xl font-mono text-xs text-emerald-300 overflow-x-auto custom-scrollbar max-h-48"
+                className={cn(
+                  'p-3.5 border border-border rounded-xl font-mono text-xs overflow-x-auto custom-scrollbar max-h-48',
+                  isLight ? 'bg-slate-50 text-emerald-900' : isOled ? 'bg-black text-emerald-300' : 'bg-[#090d16] text-emerald-300'
+                )}
               >
                 <pre>{typeof currentStep.payloadInspector.payload === 'string'
                   ? currentStep.payloadInspector.payload

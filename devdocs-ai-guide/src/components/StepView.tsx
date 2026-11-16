@@ -12,10 +12,9 @@ import {
   Download,
   Terminal,
 } from 'lucide-react';
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSteps } from '../hooks/useSteps';
-import { useReadingSettings } from '../hooks/useReadingSettings';
 import { useSandboxActions } from '../context/SandboxContext';
 import { useI18n } from '../hooks/useI18n';
 import { interviewTeasersMap, type InterviewTeaser } from '../data/interviewTeasersData';
@@ -27,9 +26,10 @@ import { useTableOfContents, useActiveHeading } from '../hooks/useTableOfContent
 import { scrollToHeading } from '../lib/headings';
 import { cn } from '../lib/utils';
 import { getNextStep, getPrevStep, allSteps, getStepByKey, getStepIndex } from '../data/guideData';
-import ChunkingCalculator from './ChunkingCalculator';
-import RRFSimulator from './RRFSimulator';
 import type { StepStatus, Step, Phase } from '../types';
+
+const ChunkingCalculator = lazy(() => import('./ChunkingCalculator'));
+const RRFSimulator = lazy(() => import('./RRFSimulator'));
 
 export interface StepViewProps {
   onOpenVectorSandbox?: () => void;
@@ -43,7 +43,6 @@ const StepView = ({
   const { stepKey: routeStepKey } = useParams<{ stepKey?: string }>();
   const navigate = useNavigate();
   const { updateStepProgress, phases, exportStudyGuide } = useSteps();
-  const { settings } = useReadingSettings();
   const { openPythonSandbox, openVectorSandbox } = useSandboxActions();
   const { t } = useI18n();
 
@@ -146,8 +145,8 @@ const StepView = ({
     .replace('{total}', String(allSteps.length));
 
   return (
-    <div key={stepKey} className={cn("reading-container-outer mx-auto flex justify-center items-start gap-6 xl:gap-8 w-full max-w-full min-w-0 overflow-x-hidden", settings.contentWidth === 'wide' ? 'max-w-[90rem]' : 'max-w-7xl')}>
-      <article className={cn("reading-container-inner relative w-full max-w-full min-w-0 pb-16", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')}>
+    <div key={stepKey} className="reading-container-outer mx-auto flex justify-center items-start gap-6 xl:gap-8 w-full max-w-full min-w-0 overflow-x-hidden">
+      <article className="reading-container-inner relative w-full max-w-full min-w-0 pb-16">
         {/* React 19 Native Document Metadata Hoisting */}
         <title>{`${step.title} — RAG Teacher`}</title>
         <meta
@@ -166,7 +165,7 @@ const StepView = ({
         </div>
 
         {/* Ambient Aura Background Glow */}
-        <div className={cn("no-print absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full transform-gpu will-change-transform", settings.contentWidth === 'wide' ? 'max-w-5xl' : 'max-w-4xl')} />
+        <div className="reading-glow-bg no-print absolute -top-10 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-primary/15 via-indigo-500/5 to-transparent blur-3xl -z-10 pointer-events-none rounded-full transform-gpu will-change-transform" />
 
         {/* Chapter Header Card with Breathing Room & Actions */}
         <header className="no-print p-6 sm:p-8 mb-8 rounded-2xl bg-card/85 backdrop-blur-md border border-border/80 shadow-sm relative overflow-hidden space-y-4">
@@ -198,7 +197,7 @@ const StepView = ({
                 type="button"
                 onClick={() => window.print()}
                 title="Export this module as a clean PDF chapter"
-                className="flex items-center space-x-1.5 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-xl border border-border/70 hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="flex items-center space-x-1.5 min-h-[44px] text-foreground bg-secondary hover:bg-secondary/80 px-3.5 py-2 rounded-xl border border-border hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Printer className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                 <span>{t('stepView.savePdf', 'Save as PDF')}</span>
@@ -208,9 +207,9 @@ const StepView = ({
                 type="button"
                 onClick={exportStudyGuide}
                 title="Export complete study notes and curriculum progress as Markdown"
-                className="flex items-center space-x-1.5 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-xl border border-border/70 hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="flex items-center space-x-1.5 min-h-[44px] text-foreground bg-secondary hover:bg-secondary/80 px-3.5 py-2 rounded-xl border border-border hover:border-primary/40 text-xs font-medium transition-all cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Download className="w-3.5 h-3.5 text-indigo-400" aria-hidden="true" />
+                <Download className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                 <span>{t('stepView.exportNotes', 'Export guide notes')}</span>
               </button>
             </div>
@@ -237,7 +236,7 @@ const StepView = ({
               aria-checked={status === 'not_started'}
               onClick={() => handleStatusChange('not_started')}
               className={cn(
-                'px-3 py-2 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[40px] sm:min-h-0',
+                'px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[44px]',
                 status === 'not_started'
                   ? 'bg-secondary text-foreground ring-1 ring-border font-semibold shadow-xs'
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -253,13 +252,13 @@ const StepView = ({
               aria-checked={status === 'in_progress'}
               onClick={() => handleStatusChange('in_progress')}
               className={cn(
-                'px-3 py-2 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[40px] sm:min-h-0',
+                'px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[44px]',
                 status === 'in_progress'
-                  ? 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/40 font-semibold shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+                  ? 'bg-amber-50 text-amber-950 ring-1 ring-amber-700/50 dark:bg-amber-950/70 dark:text-amber-200 dark:ring-amber-400/50 font-semibold'
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
+              <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-400 animate-pulse" aria-hidden="true" />
               <span>{t('stepView.inProgress', 'In Progress')}</span>
             </button>
 
@@ -269,13 +268,13 @@ const StepView = ({
               aria-checked={status === 'completed'}
               onClick={() => handleStatusChange('completed')}
               className={cn(
-                'px-3 py-2 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[40px] sm:min-h-0',
+                'px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 min-h-[44px]',
                 status === 'completed'
-                  ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/40 font-semibold shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                  ? 'bg-emerald-50 text-emerald-950 ring-1 ring-emerald-700/50 dark:bg-emerald-950/70 dark:text-emerald-200 dark:ring-emerald-400/50 font-semibold'
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" aria-hidden="true" />
               <span>{t('stepView.completed', 'Completed')}</span>
             </button>
 
@@ -283,8 +282,8 @@ const StepView = ({
               type="button"
               onClick={handleOpenPython}
               title="Launch In-Browser Pyodide Python Sandbox"
-              aria-label="Launch Python Lab Sandbox"
-              className="px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all flex items-center justify-center space-x-1.5 cursor-pointer min-h-[40px] sm:min-h-0"
+              aria-label="Python Lab — Launch Python Lab Sandbox"
+              className="px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-700/40 dark:bg-emerald-950/70 dark:hover:bg-emerald-900/70 dark:text-emerald-200 dark:border-emerald-500/40 transition-all flex items-center justify-center space-x-1.5 cursor-pointer min-h-[44px]"
             >
               <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Python Lab</span>
@@ -295,14 +294,18 @@ const StepView = ({
         {/* Interactive Chunking Simulator for Steps 4, 5, 6 */}
         {(stepKey === 'chunking-fixed-size' || stepKey === 'chunking-semantic' || stepKey === 'chunking-hierarchical') && (
           <div className="no-print">
-            <ChunkingCalculator />
+            <Suspense fallback={null}>
+              <ChunkingCalculator />
+            </Suspense>
           </div>
         )}
 
         {/* Interactive Reciprocal Rank Fusion (RRF) Simulator for Step 19 */}
         {stepKey === 'agent-tool-doc-search' && (
           <div className="no-print">
-            <RRFSimulator />
+            <Suspense fallback={null}>
+              <RRFSimulator />
+            </Suspense>
           </div>
         )}
 
@@ -321,10 +324,10 @@ const StepView = ({
             <button
               type="button"
               onClick={handleOpenVector}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
+              className="min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl bg-indigo-800 hover:bg-indigo-900 active:bg-indigo-950 text-white dark:bg-indigo-300 dark:hover:bg-indigo-200 dark:text-slate-950 font-semibold text-xs transition-colors shrink-0 flex items-center space-x-1.5 shadow-md cursor-pointer ml-auto"
             >
               <span>Launch Sandbox</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -373,21 +376,21 @@ const StepView = ({
               </span>
             </div>
 
-            <p className="text-sm text-foreground/90 font-medium mb-4 leading-relaxed break-words [overflow-wrap:anywhere]">
+            <p className="text-sm text-foreground font-medium mb-4 leading-relaxed break-words [overflow-wrap:anywhere]">
               {stepInterview.question}
             </p>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
                 <span>Benchmark architecture solution with failure modes & latency budgets</span>
               </div>
               <Link
                 to="/interview-questions"
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-semibold transition-colors cursor-pointer min-h-[40px] sm:min-h-0"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-semibold transition-colors cursor-pointer min-h-[44px]"
               >
                 <span>Practice in Interview Questions</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
             </div>
           </section>
@@ -399,14 +402,13 @@ const StepView = ({
             <Link
               to={`/steps/${prevStep.step_key}`}
               rel="prev"
-              aria-label={`Previous step: ${prevStep.title}`}
-              className="w-full sm:w-auto flex items-center space-x-3 px-4 py-3 rounded-xl border border-border/80 bg-card/70 hover:bg-secondary/90 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] text-foreground transition-all duration-200 active:scale-[0.99] group cursor-pointer"
+              className="w-full sm:w-auto min-h-[44px] flex items-center space-x-3 px-4 py-3 rounded-xl border border-border bg-card hover:bg-secondary hover:border-primary/50 text-foreground transition-all duration-200 active:scale-[0.99] group cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1.5 transition-transform duration-200" aria-hidden="true" />
               <div className="text-left">
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                   <span>{t('stepView.previous', 'Previous')}</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-secondary/80 rounded border border-border/60 text-[10px] text-muted-foreground font-mono">←</kbd>
+                  <kbd aria-hidden="true" className="hidden sm:inline-block px-1.5 py-0.2 bg-secondary rounded border border-border text-[10px] text-foreground font-mono">←</kbd>
                 </div>
                 <div className="text-sm font-medium line-clamp-1">{prevStep.title}</div>
               </div>
@@ -417,20 +419,19 @@ const StepView = ({
             <Link
               to={`/steps/${nextStep.step_key}`}
               rel="next"
-              aria-label={`Next step: ${nextStep.title}`}
-              className="w-full sm:w-auto flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
+              className="w-full sm:w-auto min-h-[44px] flex items-center justify-between sm:justify-start space-x-3 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-200 active:scale-[0.99] shadow-md group ml-auto cursor-pointer"
             >
               <div className="text-right">
-                <div className="flex items-center justify-end space-x-1.5 text-xs text-primary-foreground/80 uppercase tracking-wider font-medium">
+                <div className="flex items-center justify-end space-x-1.5 text-xs text-primary-foreground uppercase tracking-wider font-medium">
                   <span>{t('stepView.next', 'Next')}</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-primary-foreground/20 rounded border border-primary-foreground/30 text-[10px] text-primary-foreground font-mono">→</kbd>
+                  <kbd aria-hidden="true" className="hidden sm:inline-block px-1.5 py-0.2 bg-primary-foreground/15 rounded border border-primary-foreground/30 text-[10px] text-primary-foreground font-mono">→</kbd>
                 </div>
                 <div className="text-sm font-bold line-clamp-1">{nextStep.title}</div>
               </div>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" aria-hidden="true" />
             </Link>
           ) : (
-            <div className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-center border border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.2)] animate-in zoom-in-95 duration-300">
+            <div className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-50 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-200 font-bold text-center border border-emerald-700/40 dark:border-emerald-500/40 animate-in zoom-in-95 duration-300">
               🎉 Curriculum Completed! You are now a Production RAG Master!
             </div>
           )}

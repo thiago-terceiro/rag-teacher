@@ -87,6 +87,22 @@ describe('React State Architecture & Performance Invariants', () => {
       expect(vectorContent).toContain("addEventListener('pointercancel'");
       expect(vectorContent).toContain("removeEventListener('pointercancel'");
     });
+
+    it('PythonSandbox layout must occupy 100% of window and adapt to active theme', () => {
+      const sandboxContent = fs.readFileSync(resolveComponentPath('components/PythonSandbox.jsx'), 'utf8');
+      expect(sandboxContent).toContain('fixed inset-0 w-full w-screen h-full h-screen max-w-none');
+      expect(sandboxContent).not.toContain('data-surface="dark"');
+      expect(sandboxContent).toContain('bg-background text-foreground');
+      expect(sandboxContent).toContain('sandbox.templates');
+      expect(sandboxContent).toContain('sandbox.terminal');
+    });
+
+    it('index.html must statically initialize theme and reading classes to prevent FOUC', () => {
+      const indexHtmlPath = path.resolve(srcDir, '../index.html');
+      const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
+      expect(indexHtmlContent).toContain('rag_reading_settings_v1');
+      expect(indexHtmlContent).toContain('reading-size-');
+    });
   });
 
   describe('Theme and Reading Settings Synchronous DOM Invariants', () => {

@@ -2,6 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var raw = localStorage.getItem('rag_reading_settings_v1');
+          var s = raw ? JSON.parse(raw) : null;
+          var validThemes = ['deep-blue', 'oled-midnight', 'daylight-paper'];
+          var theme = (s && validThemes.indexOf(s.theme) !== -1) ? s.theme : 'deep-blue';
+          var fontSize = (s && ['normal', 'comfortable', 'large'].indexOf(s.fontSize) !== -1) ? s.fontSize : 'normal';
+          var lineSpacing = (s && ['relaxed', 'spacious'].indexOf(s.lineSpacing) !== -1) ? s.lineSpacing : 'relaxed';
+          var contentWidth = (s && ['normal', 'wide'].indexOf(s.contentWidth) !== -1) ? s.contentWidth : 'normal';
+          var isLight = theme === 'daylight-paper';
+          var root = document.documentElement;
+          root.classList.add('theme-' + theme, isLight ? 'light' : 'dark', 'reading-size-' + fontSize, 'reading-spacing-' + lineSpacing, 'reading-width-' + contentWidth);
+          var metaTheme = document.querySelector('meta[name="theme-color"]');
+          var colors = { 'deep-blue': '#090d16', 'oled-midnight': '#000000', 'daylight-paper': '#faf8f5' };
+          if (metaTheme) metaTheme.setAttribute('content', colors[theme] || '#090d16');
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <link rel="manifest" href="/manifest.json" />

@@ -93,6 +93,13 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'sandbox.output': 'Execution Output',
     'sandbox.ready': 'Pyodide WASM Runtime Ready',
     'sandbox.selectTemplate': 'Select RAG Algorithm Template',
+    'sandbox.templates': 'Algorithm Templates',
+    'sandbox.terminal': 'Terminal / Output',
+    'sandbox.clear': 'Clear Output',
+    'sandbox.kill': 'Kill Worker',
+    'sandbox.shortcutHint': 'Ctrl+Enter / ⌘+Enter to execute • Tab to indent',
+    'sandbox.emptyState': 'Click "Run Code" or press Ctrl+Enter to execute snippet in isolated Web Worker.',
+    'sandbox.isolationDefense': 'Dedicated Web Worker with neutralized network & storage APIs, AST safety checks, and 5s watchdog.',
 
     // RRF Simulator
     'rrf.title': 'Reciprocal Rank Fusion (RRF) Hybrid Search Simulator',
@@ -307,6 +314,13 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'sandbox.output': 'Saída de Execução',
     'sandbox.ready': 'Ambiente Pyodide WASM Pronto',
     'sandbox.selectTemplate': 'Selecionar Modelo de Algoritmo RAG',
+    'sandbox.templates': 'Modelos de Algoritmo',
+    'sandbox.terminal': 'Terminal / Saída',
+    'sandbox.clear': 'Limpar Terminal',
+    'sandbox.kill': 'Encerrar Worker',
+    'sandbox.shortcutHint': 'Ctrl+Enter / ⌘+Enter para executar • Tab para indentar',
+    'sandbox.emptyState': 'Clique em "Executar Código" ou pressione Ctrl+Enter para executar o snippet no Web Worker isolado.',
+    'sandbox.isolationDefense': 'Web Worker dedicado com rede e armazenamento neutralizados, checagens de AST e watchdog de 5s.',
 
     // RRF Simulator
     'rrf.title': 'Simulador de Busca Híbrida Reciprocal Rank Fusion (RRF)',
@@ -521,6 +535,13 @@ export const translations: Record<SupportedLocale, TranslationDictionary> & { pt
     'sandbox.output': 'Salida de Execución',
     'sandbox.ready': 'Ambiente Pyodide WASM Listo',
     'sandbox.selectTemplate': 'Seleccionar Plantilla de Algoritmo RAG',
+    'sandbox.templates': 'Plantillas de Algoritmo',
+    'sandbox.terminal': 'Terminal / Salida',
+    'sandbox.clear': 'Limpar Terminal',
+    'sandbox.kill': 'Detener Worker',
+    'sandbox.shortcutHint': 'Ctrl+Enter / ⌘+Enter para ejecutar • Tab para sangrar',
+    'sandbox.emptyState': 'Haga clic en "Ejecutar Código" o presione Ctrl+Enter para ejecutar el fragmento en el Web Worker aislado.',
+    'sandbox.isolationDefense': 'Web Worker dedicado con red y almacenamiento neutralizados, análisis AST y watchdog de 5s.',
 
     // RRF Simulator
     'rrf.title': 'Simulador de Búsqueda Híbrida Reciprocal Rank Fusion (RRF)',

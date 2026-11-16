@@ -24,6 +24,10 @@ function AppContent(): React.JSX.Element {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isReadingSettingsOpen, setIsReadingSettingsOpen] = useState<boolean>(false);
+  const [hasOpenedSearch, setHasOpenedSearch] = useState<boolean>(false);
+  const [hasOpenedSettings, setHasOpenedSettings] = useState<boolean>(false);
+  const [hasOpenedVector, setHasOpenedVector] = useState<boolean>(false);
+  const [hasOpenedPython, setHasOpenedPython] = useState<boolean>(false);
   const location = useLocation();
   const isArchitecture = location.pathname === '/architecture';
   const { t } = useI18n();
@@ -38,8 +42,12 @@ function AppContent(): React.JSX.Element {
     setIsVectorVisualizerOpen,
   } = useSandbox();
 
+  if (isVectorVisualizerOpen && !hasOpenedVector) setHasOpenedVector(true);
+  if (isPythonSandboxOpen && !hasOpenedPython) setHasOpenedPython(true);
+
   // Stable callback handlers so React.memo on Sidebar, StatsBar, and StepView is preserved
   const handleOpenPythonSandbox = useCallback(() => {
+    setHasOpenedPython(true);
     openPythonSandbox(null);
   }, [openPythonSandbox]);
 
@@ -48,10 +56,12 @@ function AppContent(): React.JSX.Element {
   }, []);
 
   const handleOpenSearch = useCallback(() => {
+    setHasOpenedSearch(true);
     setIsCommandPaletteOpen(true);
   }, []);
 
   const handleOpenReadingSettings = useCallback(() => {
+    setHasOpenedSettings(true);
     setIsReadingSettingsOpen(true);
   }, []);
 
@@ -60,6 +70,7 @@ function AppContent(): React.JSX.Element {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
+        setHasOpenedSearch(true);
         setIsCommandPaletteOpen(prev => !prev);
       }
       if (e.key === 'Escape' && isMobileSidebarOpen) {
@@ -86,22 +97,22 @@ function AppContent(): React.JSX.Element {
       {/* Accessibility: Skip to Main Content Link */}
       <a
         href="#main-scroll-container"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-white text-xs font-semibold"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:min-h-[44px] focus:inline-flex focus:items-center focus:px-4 focus:py-2.5 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-white text-xs font-semibold"
       >
         Skip to main content
       </a>
 
       <Suspense fallback={null}>
-        {isCommandPaletteOpen && (
+        {(isCommandPaletteOpen || hasOpenedSearch) && (
           <CommandPalette isOpen={isCommandPaletteOpen} setIsOpen={setIsCommandPaletteOpen} />
         )}
-        {isReadingSettingsOpen && (
+        {(isReadingSettingsOpen || hasOpenedSettings) && (
           <ReadingSettingsModal isOpen={isReadingSettingsOpen} setIsOpen={setIsReadingSettingsOpen} />
         )}
-        {isVectorVisualizerOpen && (
+        {(isVectorVisualizerOpen || hasOpenedVector) && (
           <VectorVisualizer isOpen={isVectorVisualizerOpen} setIsOpen={setIsVectorVisualizerOpen} />
         )}
-        {isPythonSandboxOpen && (
+        {(isPythonSandboxOpen || hasOpenedPython) && (
           <PythonSandbox
             isOpen={isPythonSandboxOpen}
             setIsOpen={setIsPythonSandboxOpen}
@@ -127,23 +138,23 @@ function AppContent(): React.JSX.Element {
         />
         {/* Search topics below top navbar, outside top navbar (hidden on /architecture) */}
         {!isArchitecture && (
-          <div className="no-print border-b border-border/70 bg-card/40 backdrop-blur-xs px-4 sm:px-8 py-2.5 flex items-center justify-between gap-3 shrink-0">
+          <div className="no-print border-b border-border bg-card px-4 sm:px-8 py-2 flex items-center justify-between gap-3 shrink-0">
             <button
               type="button"
               onClick={handleOpenSearch}
-              className="w-full max-w-xl flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full max-w-xl min-h-[44px] flex items-center justify-between px-3.5 py-2 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground transition-colors duration-150 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <div className="flex items-center space-x-2.5">
                 <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
-                <span className="font-medium">{t('nav.search', 'Search 28 topics, formulas, code, theorems...')}</span>
+                <span className="font-medium text-muted-foreground group-hover:text-foreground">{t('nav.search', 'Search 28 topics, formulas, code, theorems...')}</span>
               </div>
-              <kbd aria-hidden="true" className="hidden sm:inline-block text-[10px] bg-background/90 px-2 py-0.5 rounded-md border border-border/80 font-mono text-muted-foreground group-hover:border-primary/40 font-semibold shadow-xs">
+              <kbd aria-hidden="true" className="hidden sm:inline-block text-[10px] bg-card px-2 py-0.5 rounded-md border border-border font-mono text-foreground group-hover:border-primary/40 font-semibold shadow-xs">
                 ⌘K
               </kbd>
             </button>
             {!isOnline && (
-              <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium shrink-0">
-                <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" aria-hidden="true" />
+              <div className="flex items-center space-x-1.5 px-3 min-h-[44px] py-1 rounded-full bg-amber-100 border border-amber-700/40 text-amber-900 dark:bg-amber-950/60 dark:border-amber-400/40 dark:text-amber-200 text-xs font-medium shrink-0">
+                <WifiOff className="w-3.5 h-3.5 animate-pulse" aria-hidden="true" />
                 <span className="text-[11px] font-semibold">{t('nav.offlineMode', 'Offline Mode')}</span>
               </div>
             )}
@@ -175,7 +186,7 @@ function AppContent(): React.JSX.Element {
                 <WidgetErrorBoundary fallbackTitle="Interview questions failed to load">
                   <Suspense
                     fallback={
-                      <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
+                      <div className="py-20 text-center text-sm text-foreground font-medium">
                         Loading interview questions...
                       </div>
                     }
@@ -191,7 +202,7 @@ function AppContent(): React.JSX.Element {
                 <WidgetErrorBoundary fallbackTitle="Architecture flow explorer failed to load">
                   <Suspense
                     fallback={
-                      <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
+                      <div className="py-20 text-center text-sm text-foreground font-medium">
                         Loading architecture flow explorer...
                       </div>
                     }

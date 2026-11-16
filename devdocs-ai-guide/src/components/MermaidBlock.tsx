@@ -14,7 +14,7 @@ import {
   Shrink,
 } from 'lucide-react';
 import CodeBlock from './CodeBlock';
-import { useReadingSettings } from '../hooks/useReadingSettings';
+import { useTheme } from '../hooks/useReadingSettings';
 import { cn } from '../lib/utils';
 
 // Global in-memory cache for rendered diagram SVGs keyed by `${themeMode}:${cleanChart}` with LRU size cap
@@ -84,9 +84,8 @@ export interface MermaidBlockProps {
 }
 
 const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
-  const { settings } = useReadingSettings();
-  const isLightTheme = settings.theme === 'daylight-paper';
-  const isOledMidnight = settings.theme === 'oled-midnight';
+  const { theme, isLight: isLightTheme } = useTheme();
+  const isOledMidnight = theme === 'oled-midnight';
   const themeMode = isLightTheme ? 'light' : 'dark';
   const cleanChart = (chart || '').trim();
   const cacheKey = `${themeMode}:${cleanChart}`;
@@ -309,31 +308,31 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
           <div className="no-print flex items-center space-x-1 sm:space-x-1.5 flex-wrap">
             {/* Zoom Controls */}
             {!showSource && (
-              <div className="flex items-center bg-background/60 rounded-md border border-border/60 p-0.5 mr-1">
+              <div className="flex items-center bg-background rounded-md border border-border p-0.5 mr-1">
                 <button
                   type="button"
                   onClick={handleZoomOut}
                   aria-label="Zoom out diagram"
                   title="Zoom out"
-                  className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-secondary text-foreground transition-colors cursor-pointer"
                 >
                   <ZoomOut className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={handleZoomReset}
-                  aria-label={`Reset zoom (currently ${Math.round(zoom * 100)}%)`}
+                  aria-label={`${Math.round(zoom * 100)}% — Reset zoom`}
                   title="Reset zoom"
-                  className="px-1.5 py-0.5 text-[10px] font-mono font-medium hover:bg-secondary text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] px-2 flex items-center justify-center text-xs font-mono font-medium hover:bg-secondary text-foreground transition-colors cursor-pointer"
                 >
-                  {Math.round(zoom * 100)}%
+                  {`${Math.round(zoom * 100)}%`}
                 </button>
                 <button
                   type="button"
                   onClick={handleZoomIn}
                   aria-label="Zoom in diagram"
                   title="Zoom in"
-                  className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-secondary text-foreground transition-colors cursor-pointer"
                 >
                   <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
@@ -345,9 +344,9 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
               <button
                 type="button"
                 onClick={() => setFitMode(m => m === 'fit' ? 'actual' : 'fit')}
-                aria-label={fitMode === 'fit' ? 'View diagram at 100% natural resolution' : 'Fit diagram to container width'}
+                aria-label={fitMode === 'fit' ? '100% — View diagram at natural resolution' : 'Fit — Fit diagram to container width'}
                 title={fitMode === 'fit' ? 'Actual size' : 'Fit to width'}
-                className="hidden sm:flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                className="hidden sm:flex items-center justify-center space-x-1 min-w-[44px] min-h-[44px] px-2.5 rounded-md text-xs font-medium hover:bg-secondary text-foreground transition-all cursor-pointer"
               >
                 {fitMode === 'fit' ? (
                   <>
@@ -371,7 +370,7 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
                 onClick={() => setIsFullscreen(true)}
                 aria-label="Open diagram in full screen modal"
                 title="Fullscreen view"
-                className="p-1.5 rounded-md text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-xs font-medium hover:bg-secondary text-foreground transition-all cursor-pointer"
               >
                 <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
@@ -381,8 +380,8 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
             <button
               type="button"
               onClick={() => setShowSource(prev => !prev)}
-              aria-label={showSource ? 'View rendered diagram' : 'View diagram source code'}
-              className="flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+              aria-label={showSource ? 'Visual — View rendered diagram' : 'Source — View diagram source code'}
+              className="flex items-center justify-center space-x-1 min-w-[44px] min-h-[44px] px-2.5 rounded-md text-xs font-medium hover:bg-secondary text-foreground transition-all cursor-pointer"
             >
               {showSource ? (
                 <>
@@ -401,13 +400,13 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
             <button
               type="button"
               onClick={handleCopy}
-              aria-label={copied ? 'Mermaid source code copied to clipboard' : 'Copy mermaid source code'}
-              className="flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+              aria-label={copied ? 'Copied — Mermaid source code copied to clipboard' : 'Copy — Copy mermaid source code'}
+              className="flex items-center justify-center space-x-1 min-w-[44px] min-h-[44px] px-2.5 rounded-md text-xs font-medium hover:bg-secondary text-foreground transition-all cursor-pointer"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                  <span className="text-emerald-400 font-semibold" role="status" aria-live="polite">Copied</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" aria-hidden="true" />
+                  <span className="text-emerald-800 dark:text-emerald-300 font-semibold" role="status" aria-live="polite">Copied</span>
                 </>
               ) : (
                 <>
@@ -450,31 +449,31 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
             <div className="flex items-center space-x-2">
               <div className={cn(
                 "flex items-center rounded-lg border p-1",
-                isLightTheme ? "bg-card border-border" : "bg-card/40 border-white/10"
+                isLightTheme ? "bg-card border-border" : "bg-card border-white/20"
               )}>
                 <button
                   type="button"
                   onClick={handleZoomOut}
                   aria-label="Zoom out"
-                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-secondary text-foreground cursor-pointer"
                 >
-                  <ZoomOut className="w-4 h-4" />
+                  <ZoomOut className="w-4 h-4" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={handleZoomReset}
-                  aria-label="Reset zoom to 100%"
-                  className="px-2 py-0.5 text-xs font-mono font-semibold hover:bg-secondary text-primary cursor-pointer"
+                  aria-label={`${Math.round(zoom * 100)}% — Reset zoom to 100%`}
+                  className="min-w-[44px] min-h-[44px] px-2.5 flex items-center justify-center text-xs font-mono font-semibold hover:bg-secondary text-primary cursor-pointer"
                 >
-                  {Math.round(zoom * 100)}%
+                  {`${Math.round(zoom * 100)}%`}
                 </button>
                 <button
                   type="button"
                   onClick={handleZoomIn}
                   aria-label="Zoom in"
-                  className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-secondary text-foreground cursor-pointer"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <ZoomIn className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
 
@@ -485,15 +484,15 @@ const MermaidBlock = React.memo(({ chart }: MermaidBlockProps) => {
                   setIsFullscreen(false);
                   triggerBtnRef.current?.focus();
                 }}
-                aria-label="Exit fullscreen view"
+                aria-label="Close (Esc) — Exit fullscreen view"
                 className={cn(
-                  "flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer border",
+                  "flex items-center justify-center space-x-1.5 min-w-[44px] min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer border",
                   isLightTheme
-                    ? "bg-secondary hover:bg-secondary/80 text-foreground border-border/70"
-                    : "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                    ? "bg-secondary hover:bg-secondary/80 text-foreground border-border"
+                    : "bg-slate-800 hover:bg-slate-700 text-white border-white/25"
                 )}
               >
-                <Minimize2 className="w-4 h-4" />
+                <Minimize2 className="w-4 h-4" aria-hidden="true" />
                 <span>Close (Esc)</span>
               </button>
             </div>

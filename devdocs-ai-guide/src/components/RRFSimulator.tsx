@@ -46,12 +46,12 @@ function RRFSimulator(): React.JSX.Element {
             <GitMerge className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
               {t('rrf.title', 'Reciprocal Rank Fusion (RRF) Hybrid Search Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
                 {t('common.interactive', 'Interactive')}
               </span>
-            </h3>
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               {"Simulate multi-retriever rank merging using Cormack's algorithm: RRF(d) = \\sum \\frac{1}{k + r_m(d)}."}
             </p>
@@ -62,7 +62,7 @@ function RRFSimulator(): React.JSX.Element {
           type="button"
           onClick={resetDefaults}
           title={t('rrf.resetAria', 'Reset document ranks to default values')}
-          className="self-start sm:self-auto px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
+          className="self-start sm:self-auto min-h-[44px] min-w-[44px] px-3.5 py-2 text-xs rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border transition-colors cursor-pointer"
         >
           {t('rrf.reset', 'Reset Ranks')}
         </button>
@@ -92,7 +92,7 @@ function RRFSimulator(): React.JSX.Element {
           aria-valuemax={120}
           aria-valuenow={kConstant}
           aria-valuetext={`k equals ${kConstant}`}
-          className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-purple-500"
+          className="w-full min-h-[44px] py-3 cursor-pointer accent-purple-600 dark:accent-purple-400"
         />
         <div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-1" aria-hidden="true">
           <span>k=10 (Aggressive rank bias)</span>
@@ -135,7 +135,7 @@ function RRFSimulator(): React.JSX.Element {
                       {isWinner && (
                         <Trophy className="w-4 h-4 text-amber-400 shrink-0" aria-label="Top ranked winner" />
                       )}
-                      <span className={isWinner ? 'text-purple-300 font-extrabold text-sm' : 'text-foreground'}>
+                      <span className={isWinner ? 'text-purple-900 dark:text-purple-200 font-extrabold text-sm' : 'text-foreground'}>
                         #{doc.fusedRank}
                       </span>
                     </div>
@@ -153,23 +153,23 @@ function RRFSimulator(): React.JSX.Element {
 
                   {/* Vector Rank Stepper */}
                   <td className="py-3 px-3 text-center">
-                    <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
+                    <div className="inline-flex items-center justify-center gap-1 bg-secondary rounded-lg p-1 border border-border">
                       <button
                         type="button"
                         disabled={doc.vectorRank <= 1}
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank - 1)}
                         aria-label={`Promote vector rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="min-w-[44px] min-h-[44px] rounded flex items-center justify-center text-foreground font-bold hover:bg-background/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         -
                       </button>
-                      <span className="w-6 text-center font-bold text-blue-400">#{doc.vectorRank}</span>
+                      <span className="w-8 text-center font-bold text-blue-700 dark:text-blue-300">#{doc.vectorRank}</span>
                       <button
                         type="button"
                         disabled={doc.vectorRank >= 20}
                         onClick={() => updateDocRank(doc.id, 'vectorRank', doc.vectorRank + 1)}
                         aria-label={`Demote vector rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="min-w-[44px] min-h-[44px] rounded flex items-center justify-center text-foreground font-bold hover:bg-background/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         +
                       </button>
@@ -178,23 +178,23 @@ function RRFSimulator(): React.JSX.Element {
 
                   {/* BM25 Rank Stepper */}
                   <td className="py-3 px-3 text-center">
-                    <div className="inline-flex items-center justify-center gap-1.5 bg-secondary/60 rounded-lg p-1 border border-border/60">
+                    <div className="inline-flex items-center justify-center gap-1 bg-secondary rounded-lg p-1 border border-border">
                       <button
                         type="button"
                         disabled={doc.bm25Rank <= 1}
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank - 1)}
                         aria-label={`Promote BM25 rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="min-w-[44px] min-h-[44px] rounded flex items-center justify-center text-foreground font-bold hover:bg-background/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         -
                       </button>
-                      <span className="w-6 text-center font-bold text-emerald-400">#{doc.bm25Rank}</span>
+                      <span className="w-8 text-center font-bold text-emerald-800 dark:text-emerald-300">#{doc.bm25Rank}</span>
                       <button
                         type="button"
                         disabled={doc.bm25Rank >= 20}
                         onClick={() => updateDocRank(doc.id, 'bm25Rank', doc.bm25Rank + 1)}
                         aria-label={`Demote BM25 rank for ${doc.title}`}
-                        className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="min-w-[44px] min-h-[44px] rounded flex items-center justify-center text-foreground font-bold hover:bg-background/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         +
                       </button>

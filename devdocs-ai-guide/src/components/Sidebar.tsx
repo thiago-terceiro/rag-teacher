@@ -96,13 +96,13 @@ const Sidebar = ({
         />
       )}
 
-      <aside
+      <div
         id="curriculum-sidebar"
-        role={isMobileOpen ? 'dialog' : undefined}
+        role={isMobileOpen ? 'dialog' : 'complementary'}
         aria-modal={isMobileOpen ? 'true' : undefined}
         aria-label="Navigation drawer"
         className={cn(
-          'no-print w-80 bg-card/95 backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
+          'no-print w-80 bg-card backdrop-blur-md border-r border-border flex flex-col h-screen fixed lg:static top-0 left-0 z-50 transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
@@ -111,7 +111,7 @@ const Sidebar = ({
           <Link
             to="/"
             onClick={() => setIsMobileOpen?.(false)}
-            className="flex items-center space-x-2.5 text-foreground hover:opacity-90 transition-opacity"
+            className="flex items-center space-x-2.5 min-h-[44px] py-1 text-foreground hover:opacity-90 transition-opacity"
           >
             <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-primary" aria-hidden="true">
               <Layers className="w-4 h-4" />
@@ -127,7 +127,7 @@ const Sidebar = ({
             type="button"
             onClick={() => setIsMobileOpen?.(false)}
             aria-label={t('common.close', 'Close')}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground lg:hidden cursor-pointer"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground lg:hidden cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -135,22 +135,22 @@ const Sidebar = ({
 
         {/* Search Bar */}
         <div className="p-3 border-b border-border/70">
-          <div className="relative">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+          <div className="relative flex items-center">
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               placeholder={t('sidebar.searchPlaceholder', 'Search 28 RAG topics...')}
               aria-label="Search curriculum topics"
-              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
+              className="w-full min-h-[44px] pl-9 pr-12 py-2 bg-secondary/50 rounded-lg text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all tracking-[0.01em]"
             />
             {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search query"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs cursor-pointer"
+                className="absolute right-0 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -159,10 +159,10 @@ const Sidebar = ({
                 type="button"
                 onClick={onOpenSearch}
                 title="Open Spotlight Search (⌘K)"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-secondary/80 hover:bg-secondary px-1.5 py-0.5 rounded border border-border/80 font-mono text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="absolute right-0 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[10px] font-mono text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 <span className="sr-only">Search curriculum</span>
-                <span aria-hidden="true">⌘K</span>
+                <span aria-hidden="true" className="bg-secondary px-1.5 py-0.5 rounded border border-border">⌘K</span>
               </button>
             )}
           </div>
@@ -174,20 +174,20 @@ const Sidebar = ({
             to="/"
             onClick={() => setIsMobileOpen?.(false)}
             className={cn(
-              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group cursor-pointer',
+              'flex items-center justify-between px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all group cursor-pointer',
               (location.pathname === '/' || location.pathname.startsWith('/steps'))
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
             )}
           >
             <div className="flex items-center space-x-2.5">
-              <BookOpen className={cn('w-4 h-4', (location.pathname === '/' || location.pathname.startsWith('/steps')) ? 'text-primary-foreground' : 'text-primary')} />
+              <BookOpen className={cn('w-4 h-4', (location.pathname === '/' || location.pathname.startsWith('/steps')) ? 'text-primary-foreground' : 'text-primary')} aria-hidden="true" />
               <span>{t('nav.interactiveLearning', 'Interactive Learning')}</span>
             </div>
             <span aria-hidden="true" className={cn(
               'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
               (location.pathname === '/' || location.pathname.startsWith('/steps'))
-                ? 'bg-primary-foreground/20 text-primary-foreground'
+                ? 'border border-primary-foreground/60 text-primary-foreground'
                 : 'bg-primary/10 text-primary'
             )}>
               28
@@ -198,20 +198,20 @@ const Sidebar = ({
             to="/interview-questions"
             onClick={() => setIsMobileOpen?.(false)}
             className={cn(
-              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group',
+              'flex items-center justify-between px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all group',
               location.pathname === '/interview-questions'
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
             )}
           >
             <div className="flex items-center space-x-2.5">
-              <HelpCircle className={cn('w-4 h-4', location.pathname === '/interview-questions' ? 'text-primary-foreground' : 'text-primary')} />
+              <HelpCircle className={cn('w-4 h-4', location.pathname === '/interview-questions' ? 'text-primary-foreground' : 'text-primary')} aria-hidden="true" />
               <span>{t('nav.interview', 'Interview Questions')}</span>
             </div>
             <span aria-hidden="true" className={cn(
               'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
               location.pathname === '/interview-questions'
-                ? 'bg-primary-foreground/20 text-primary-foreground'
+                ? 'border border-primary-foreground/60 text-primary-foreground'
                 : 'bg-primary/10 text-primary'
             )}>
               28
@@ -222,21 +222,21 @@ const Sidebar = ({
             to="/architecture"
             onClick={() => setIsMobileOpen?.(false)}
             className={cn(
-              'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group',
+              'flex items-center justify-between px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all group',
               location.pathname === '/architecture'
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
             )}
           >
             <div className="flex items-center space-x-2.5">
-              <Workflow className={cn('w-4 h-4', location.pathname === '/architecture' ? 'text-primary-foreground' : 'text-amber-400')} />
+              <Workflow className={cn('w-4 h-4', location.pathname === '/architecture' ? 'text-primary-foreground' : 'text-amber-400')} aria-hidden="true" />
               <span>{t('nav.architecture', 'Architecture Flow')}</span>
             </div>
             <span aria-hidden="true" className={cn(
               'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold',
               location.pathname === '/architecture'
-                ? 'bg-primary-foreground/20 text-primary-foreground'
-                : 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
+                ? 'border border-primary-foreground/60 text-primary-foreground'
+                : 'bg-amber-50 border border-amber-700/40 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/40 dark:text-amber-200'
             )}>
               Live Map
             </span>
@@ -248,10 +248,10 @@ const Sidebar = ({
               setIsMobileOpen?.(false);
               handleOpenPython();
             }}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
+            className="w-full flex items-center justify-between px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
           >
             <div className="flex items-center space-x-2.5">
-              <Terminal className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <Terminal className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" aria-hidden="true" />
               <span>{t('nav.pythonLab', 'Python RAG Sandbox')}</span>
             </div>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono">
@@ -265,10 +265,10 @@ const Sidebar = ({
               setIsMobileOpen?.(false);
               handleOpenVector();
             }}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
+            className="w-full flex items-center justify-between px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer group"
           >
             <div className="flex items-center space-x-2.5">
-              <Compass className="w-4 h-4 text-indigo-400 group-hover:rotate-45 transition-transform" />
+              <Compass className="w-4 h-4 text-indigo-400 group-hover:rotate-45 transition-transform" aria-hidden="true" />
               <span>{t('nav.vectorSandbox', 'Vector Sandbox')}</span>
             </div>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-secondary border border-border text-muted-foreground font-mono">
@@ -285,7 +285,7 @@ const Sidebar = ({
 
             return (
               <Collapsible.Root key={phase.id} defaultOpen={isPhaseActive || !queryLower}>
-                <Collapsible.Trigger className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-secondary/40 text-left transition-colors group cursor-pointer">
+                <Collapsible.Trigger className="w-full min-h-[44px] flex items-center justify-between p-2.5 rounded-lg hover:bg-secondary/40 text-left transition-colors group cursor-pointer">
                   <div className="flex-1 pr-2">
                     <div className="text-xs font-semibold text-foreground tracking-[0.01em] group-hover:text-primary transition-colors">
                       {phase.title}
@@ -316,7 +316,7 @@ const Sidebar = ({
                           onClick={() => setIsMobileOpen?.(false)}
                           aria-current={isActive ? 'page' : undefined}
                           className={cn(
-                            'flex items-center space-x-2.5 py-1.5 px-2 rounded-lg text-xs transition-all relative',
+                            'flex items-center space-x-2.5 min-h-[44px] py-2 px-2.5 rounded-lg text-xs transition-all relative',
                             isActive
                               ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                               : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
@@ -327,7 +327,7 @@ const Sidebar = ({
                           ) : isInProgress ? (
                             <span aria-hidden="true" className={cn('w-2 h-2 rounded-full shrink-0 animate-pulse', isActive ? 'bg-primary-foreground' : 'bg-amber-400')} />
                           ) : (
-                            <Circle aria-hidden="true" className={cn('w-3 h-3 shrink-0 opacity-40', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
+                            <Circle aria-hidden="true" className={cn('w-3 h-3 shrink-0', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
                           )}
                           <span className="truncate">{step.title}</span>
                           <span className="sr-only"> ({statusLabel})</span>
@@ -348,7 +348,7 @@ const Sidebar = ({
         </nav>
 
         {/* Footer Summary */}
-        <div className="p-3 border-t border-border bg-card/60 text-xs text-muted-foreground space-y-2">
+        <div className="p-3 border-t border-border bg-card text-xs text-muted-foreground space-y-2">
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className="font-medium text-foreground">{t('sidebar.overallMastery', 'Overall Mastery')}</span>
@@ -377,7 +377,7 @@ const Sidebar = ({
 
           <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[11px]">
             <span className="flex items-center gap-1 text-muted-foreground">
-              <Award className="w-3.5 h-3.5 text-emerald-400" />
+              <Award className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
               <span>{t('sidebar.comprehensionScore', 'Comprehension Score')}</span>
             </span>
             <span className="font-mono font-bold text-emerald-400">
@@ -387,7 +387,7 @@ const Sidebar = ({
             </span>
           </div>
         </div>
-      </aside>
+      </div>
     </>
   );
 };

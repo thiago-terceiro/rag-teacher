@@ -15,14 +15,14 @@
     --popover: 222.2 47.4% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91% 68%;
+    --primary: 213 95% 80%;
     --primary-foreground: 222.2 47.4% 6%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 74%;
+    --muted-foreground: 215 25% 78%;
 
     --accent: 35.8 91.7% 50.6%;
     --accent-foreground: 210 40% 98%;
@@ -30,9 +30,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 217 30% 34%;
+    --input: 217 30% 36%;
+    --ring: 213 95% 80%;
 
     --radius: 0.5rem;
   }
@@ -48,14 +48,14 @@
     --popover: 0 0% 3%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 217.2 95% 64%;
+    --primary: 213 96% 74%;
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 9%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 0 0% 9%;
-    --muted-foreground: 0 0% 72%;
+    --muted-foreground: 0 0% 76%;
 
     --accent: 35.8 95% 55%;
     --accent-foreground: 0 0% 100%;
@@ -63,9 +63,9 @@
     --destructive: 0 72% 40%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 16%;
-    --input: 0 0% 14%;
-    --ring: 217.2 95% 64%;
+    --border: 0 0% 28%;
+    --input: 0 0% 30%;
+    --ring: 213 96% 74%;
   }
 
   /* Option 3 Preset 3: Daylight Paper (Clean, high-legibility light theme for bright daylight reading) */
@@ -79,24 +79,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
 
-    --primary: 221.2 83.2% 45%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 224 76% 33%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 214.3 31.8% 91.4%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 93%;
-    --muted-foreground: 215.4 20% 34%;
+    --muted-foreground: 215 32% 22%;
 
     --accent: 35.8 91.7% 45%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 74% 35%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 82%;
-    --input: 214.3 31.8% 82%;
-    --ring: 221.2 83.2% 48%;
+    --border: 215 22% 58%;
+    --input: 215 22% 52%;
+    --ring: 224 76% 33%;
   }
 }
 
@@ -131,10 +131,10 @@
   }
 }
 
-/* Velvety-smooth right-docked drawer slide-in animation with opacity 0 -> 1 */
+/* Instant-opacity right-docked drawer slide-in animation (preserves full AAA contrast on frame 0) */
 @keyframes drawer-slide-in-right {
   0% {
-    opacity: 0;
+    opacity: 1;
     transform: translate3d(100%, 0, 0);
   }
   100% {
@@ -144,14 +144,14 @@
 }
 
 .animate-drawer-right {
-  animation: drawer-slide-in-right 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  will-change: transform, opacity;
+  animation: drawer-slide-in-right 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform;
 }
 
-/* Snappy mobile slide-over sheet animation from the right edge with opacity 0 -> 1 */
+/* Snappy mobile slide-over sheet animation from the right edge */
 @keyframes sheet-enter-from-right {
   from {
-    opacity: 0;
+    opacity: 1;
     transform: translateX(100%);
   }
   to {
@@ -161,8 +161,8 @@
 }
 
 .animate-sheet-right {
-  animation: sheet-enter-from-right 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity;
+  animation: sheet-enter-from-right 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
 }
 
 /* Accessibility: Respect user's OS preference for reduced motion while protecting SVG diagram rendering */
@@ -220,104 +220,134 @@
   background-color: #000000 !important;
 }
 
+/* Deep Blue & OLED Midnight high-legibility overrides for semantic accent text (WCAG AAA >= 7:1) */
+.theme-deep-blue .text-blue-400,
+.theme-oled-midnight .text-blue-400 {
+  color: #93c5fd !important;
+}
+.theme-deep-blue .text-indigo-400,
+.theme-oled-midnight .text-indigo-400 {
+  color: #c7d2fe !important;
+}
+.theme-deep-blue .text-purple-400,
+.theme-oled-midnight .text-purple-400 {
+  color: #e9d5ff !important;
+}
+.theme-deep-blue .text-emerald-400,
+.theme-oled-midnight .text-emerald-400 {
+  color: #6ee7b7 !important;
+}
+.theme-deep-blue .text-rose-400,
+.theme-oled-midnight .text-rose-400 {
+  color: #fecdd3 !important;
+}
+.theme-deep-blue .text-cyan-400,
+.theme-oled-midnight .text-cyan-400 {
+  color: #a5f3fc !important;
+}
+.theme-deep-blue .text-amber-400,
+.theme-oled-midnight .text-amber-400 {
+  color: #fde68a !important;
+}
+
 /* Daylight Paper high-legibility overrides for semantic accent text (WCAG AAA >= 7:1) */
 .theme-daylight-paper .text-emerald-400,
-.theme-daylight-paper .text-emerald-300 {
-  color: #047857 !important;
+.theme-daylight-paper .text-emerald-300,
+.theme-daylight-paper .text-emerald-500,
+.theme-daylight-paper .text-emerald-600 {
+  color: #064e3b !important;
 }
 .theme-daylight-paper .text-amber-400,
-.theme-daylight-paper .text-amber-300 {
-  color: #92400e !important;
+.theme-daylight-paper .text-amber-300,
+.theme-daylight-paper .text-amber-500,
+.theme-daylight-paper .text-amber-600 {
+  color: #78350f !important;
 }
 .theme-daylight-paper .text-blue-400,
-.theme-daylight-paper .text-blue-300 {
-  color: #1d4ed8 !important;
+.theme-daylight-paper .text-blue-300,
+.theme-daylight-paper .text-blue-500,
+.theme-daylight-paper .text-blue-600 {
+  color: #1e3a8a !important;
 }
 .theme-daylight-paper .text-indigo-400,
-.theme-daylight-paper .text-indigo-300 {
-  color: #4338ca !important;
+.theme-daylight-paper .text-indigo-300,
+.theme-daylight-paper .text-indigo-500,
+.theme-daylight-paper .text-indigo-600 {
+  color: #312e81 !important;
 }
 .theme-daylight-paper .text-cyan-400,
-.theme-daylight-paper .text-cyan-300 {
+.theme-daylight-paper .text-cyan-300,
+.theme-daylight-paper .text-cyan-500,
+.theme-daylight-paper .text-cyan-600 {
   color: #164e63 !important;
 }
 .theme-daylight-paper .text-rose-400,
-.theme-daylight-paper .text-rose-300 {
-  color: #9f1239 !important;
+.theme-daylight-paper .text-rose-300,
+.theme-daylight-paper .text-rose-500,
+.theme-daylight-paper .text-rose-600 {
+  color: #881337 !important;
 }
 .theme-daylight-paper .text-purple-400,
-.theme-daylight-paper .text-purple-300 {
-  color: #6b21a8 !important;
+.theme-daylight-paper .text-purple-300,
+.theme-daylight-paper .text-purple-500,
+.theme-daylight-paper .text-purple-600 {
+  color: #581c87 !important;
 }
 .theme-daylight-paper .text-red-400,
-.theme-daylight-paper .text-red-300 {
-  color: #991b1b !important;
+.theme-daylight-paper .text-red-300,
+.theme-daylight-paper .text-red-500,
+.theme-daylight-paper .text-red-600 {
+  color: #7f1d1d !important;
 }
 
-/* Ensure dedicated dark surfaces (code blocks, terminal sandbox) preserve high-contrast light colors in daylight paper mode */
-.theme-daylight-paper .print-code-block .text-emerald-400,
-.theme-daylight-paper .print-code-block .text-emerald-300,
+/* Ensure dedicated dark surfaces preserve high-contrast light colors in daylight paper mode */
 .theme-daylight-paper .dark-terminal .text-emerald-400,
 .theme-daylight-paper .dark-terminal .text-emerald-300,
 .theme-daylight-paper [data-surface="dark"] .text-emerald-400,
 .theme-daylight-paper [data-surface="dark"] .text-emerald-300 {
-  color: #34d399 !important;
+  color: #6ee7b7 !important;
 }
-.theme-daylight-paper .print-code-block .text-amber-400,
-.theme-daylight-paper .print-code-block .text-amber-300,
 .theme-daylight-paper .dark-terminal .text-amber-400,
 .theme-daylight-paper .dark-terminal .text-amber-300,
 .theme-daylight-paper [data-surface="dark"] .text-amber-400,
 .theme-daylight-paper [data-surface="dark"] .text-amber-300 {
-  color: #fbbf24 !important;
+  color: #fde68a !important;
 }
-.theme-daylight-paper .print-code-block .text-blue-400,
-.theme-daylight-paper .print-code-block .text-blue-300,
 .theme-daylight-paper .dark-terminal .text-blue-400,
 .theme-daylight-paper .dark-terminal .text-blue-300,
 .theme-daylight-paper [data-surface="dark"] .text-blue-400,
 .theme-daylight-paper [data-surface="dark"] .text-blue-300 {
-  color: #60a5fa !important;
+  color: #93c5fd !important;
 }
-.theme-daylight-paper .print-code-block .text-indigo-400,
-.theme-daylight-paper .print-code-block .text-indigo-300,
 .theme-daylight-paper .dark-terminal .text-indigo-400,
 .theme-daylight-paper .dark-terminal .text-indigo-300,
 .theme-daylight-paper [data-surface="dark"] .text-indigo-400,
 .theme-daylight-paper [data-surface="dark"] .text-indigo-300 {
-  color: #818cf8 !important;
+  color: #c7d2fe !important;
 }
-.theme-daylight-paper .print-code-block .text-cyan-400,
-.theme-daylight-paper .print-code-block .text-cyan-300,
 .theme-daylight-paper .dark-terminal .text-cyan-400,
 .theme-daylight-paper .dark-terminal .text-cyan-300,
 .theme-daylight-paper [data-surface="dark"] .text-cyan-400,
 .theme-daylight-paper [data-surface="dark"] .text-cyan-300 {
-  color: #22d3ee !important;
+  color: #a5f3fc !important;
 }
-.theme-daylight-paper .print-code-block .text-purple-400,
-.theme-daylight-paper .print-code-block .text-purple-300,
 .theme-daylight-paper .dark-terminal .text-purple-400,
 .theme-daylight-paper .dark-terminal .text-purple-300,
 .theme-daylight-paper [data-surface="dark"] .text-purple-400,
 .theme-daylight-paper [data-surface="dark"] .text-purple-300 {
-  color: #c084fc !important;
+  color: #e9d5ff !important;
 }
-.theme-daylight-paper .print-code-block .text-rose-400,
-.theme-daylight-paper .print-code-block .text-rose-300,
 .theme-daylight-paper .dark-terminal .text-rose-400,
 .theme-daylight-paper .dark-terminal .text-rose-300,
 .theme-daylight-paper [data-surface="dark"] .text-rose-400,
 .theme-daylight-paper [data-surface="dark"] .text-rose-300 {
-  color: #fb7185 !important;
+  color: #fecdd3 !important;
 }
-.theme-daylight-paper .print-code-block .text-red-400,
-.theme-daylight-paper .print-code-block .text-red-300,
 .theme-daylight-paper .dark-terminal .text-red-400,
 .theme-daylight-paper .dark-terminal .text-red-300,
 .theme-daylight-paper [data-surface="dark"] .text-red-400,
 .theme-daylight-paper [data-surface="dark"] .text-red-300 {
-  color: #f87171 !important;
+  color: #fecaca !important;
 }
 
 /* Ensure main scroll container has hardware-accelerated compositor scrolling */
@@ -415,10 +445,22 @@ html.reading-spacing-spacious .markdown-content li,
 }
 
 /* Instant content width toggling */
+.reading-container-outer {
+  max-width: 80rem;
+}
 html.reading-width-wide .reading-container-outer {
   max-width: 90rem !important;
 }
+.reading-container-inner {
+  max-width: 56rem;
+}
 html.reading-width-wide .reading-container-inner {
+  max-width: 64rem !important;
+}
+.reading-glow-bg {
+  max-width: 56rem;
+}
+html.reading-width-wide .reading-glow-bg {
   max-width: 64rem !important;
 }
 

@@ -74,12 +74,12 @@ function ChunkingCalculator(): React.JSX.Element {
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground flex flex-wrap items-center gap-2">
               {t('chunking.title', 'Chunking Overlap & Token Storage Simulator')}
               <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30">
                 {t('common.interactive', 'Interactive')}
               </span>
-            </h3>
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t('chunking.subtitle', 'Simulate sliding-window token indexing, overlap boundary stride, and vector database memory overhead.')}
             </p>
@@ -93,7 +93,7 @@ function ChunkingCalculator(): React.JSX.Element {
               key={p.name}
               type="button"
               onClick={() => applyPreset(p)}
-              className="px-2.5 py-1 text-xs rounded-lg bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/60 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border transition-colors cursor-pointer"
             >
               {p.name}
             </button>
@@ -123,7 +123,7 @@ function ChunkingCalculator(): React.JSX.Element {
             aria-valuemax={10000}
             aria-valuenow={docLength}
             aria-valuetext={`${docLength} tokens`}
-            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+            className="w-full min-h-[44px] py-3 cursor-pointer accent-primary"
           />
         </div>
 
@@ -147,7 +147,7 @@ function ChunkingCalculator(): React.JSX.Element {
             aria-valuemax={2048}
             aria-valuenow={chunkSize}
             aria-valuetext={`${chunkSize} tokens`}
-            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full min-h-[44px] py-3 cursor-pointer accent-blue-600 dark:accent-blue-400"
           />
         </div>
 
@@ -171,7 +171,7 @@ function ChunkingCalculator(): React.JSX.Element {
             aria-valuemax={50}
             aria-valuenow={overlapPct}
             aria-valuetext={`${overlapPct} percent`}
-            className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-emerald-500"
+            className="w-full min-h-[44px] py-3 cursor-pointer accent-emerald-600 dark:accent-emerald-400"
           />
         </div>
       </div>

@@ -103,7 +103,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
     <div
       id={`q-${q.step_key}`}
       className={cn(
-        'rounded-2xl border transition-all duration-200 overflow-hidden bg-card/80 backdrop-blur-md',
+        'rounded-2xl border transition-all duration-200 overflow-hidden bg-card/80 backdrop-blur-md [content-visibility:auto] [contain-intrinsic-size:auto_420px]',
         isMastered
           ? 'border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.06)]'
           : 'border-border/80 hover:border-primary/40 hover:shadow-[0_0_25px_rgba(59,130,246,0.06)]'
@@ -128,15 +128,15 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             onClick={() => onToggleMastery(q.id)}
             aria-pressed={isMastered}
             className={cn(
-              'flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              'min-h-[44px] min-w-[44px] flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer',
               isMastered
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                ? 'bg-emerald-50 text-emerald-950 border border-emerald-700/40 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-500/40'
+                : 'bg-secondary text-foreground hover:bg-secondary/80 border border-border'
             )}
           >
             {isMastered ? (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" aria-hidden="true" />
                 <span>Mastered</span>
               </>
             ) : (
@@ -152,7 +152,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
         <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-[0.01em] mb-3">
           <Link
             to={`/steps/${q.step_key}`}
-            className="hover:text-primary transition-colors flex items-center gap-2 group"
+            className="min-h-[44px] py-1 hover:text-primary transition-colors flex items-center gap-2 group"
           >
             <span>{q.step_title}</span>
             <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" aria-hidden="true" />
@@ -160,7 +160,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
         </h2>
 
         {/* Verbatim Question Prompt */}
-        <div className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary border-y border-r border-primary/20 text-foreground/95 text-sm sm:text-[15px] leading-relaxed my-3 italic">
+        <div className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary border-y border-r border-primary/20 text-foreground text-sm sm:text-[15px] leading-relaxed my-3 italic">
           &quot;{q.question}&quot;
         </div>
 
@@ -187,7 +187,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDraft(e.target.value)}
             onBlur={() => flushDraft(draft)}
             placeholder="Outline your architectural components, sizing calculations, failure modes, and tradeoffs before revealing the architecture answer..."
-            className="w-full h-24 p-3 bg-secondary/30 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary transition-all font-mono"
+            className="w-full h-24 p-3 bg-secondary/40 rounded-xl border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono"
           />
         </div>
 
@@ -199,10 +199,10 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
             aria-expanded={isRevealed}
             aria-controls={`answer-${q.id}`}
             className={cn(
-              'px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer',
+              'min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer',
               isRevealed
-                ? 'bg-secondary text-foreground hover:bg-secondary/80'
-                : 'bg-primary text-primary-foreground hover:bg-primary/95 shadow-md shadow-primary/20'
+                ? 'bg-secondary text-foreground hover:bg-secondary/80 border border-border'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20'
             )}
           >
             {isRevealed ? (
@@ -220,7 +220,7 @@ const InterviewQuestionCard = React.memo(function InterviewQuestionCard({
 
           <Link
             to={`/steps/${q.step_key}`}
-            className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
+            className="min-h-[44px] px-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
           >
             <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Study Full Step Curriculum Module</span>
@@ -417,12 +417,11 @@ export function InterviewQuestions(): React.JSX.Element {
 
       {/* Search & Phase Filters - with elevated height and generous breathing room */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8 sm:mb-10">
-        {/* Phase Filter Tabs */}
+        {/* Phase Filter Toggle Group */}
         <div
-          tabIndex={0}
-          role="tablist"
+          role="group"
           aria-label="Filter interview scenarios by phase"
-          className="flex items-center overflow-x-auto p-1.5 bg-secondary/40 rounded-2xl border border-border/80 text-xs shadow-2xs custom-scrollbar focus:outline-hidden focus:ring-1 focus:ring-primary/30"
+          className="flex items-center overflow-x-auto p-1.5 bg-secondary/50 rounded-2xl border border-border text-xs shadow-2xs custom-scrollbar gap-1"
         >
           {[
             { key: 'all', label: `All (${totalQuestions})` },
@@ -433,14 +432,14 @@ export function InterviewQuestions(): React.JSX.Element {
           ].map(tab => (
             <button
               key={tab.key}
-              role="tab"
-              aria-selected={activePhase === tab.key}
+              type="button"
+              aria-pressed={activePhase === tab.key}
               onClick={() => setActivePhase(tab.key)}
               className={cn(
-                'px-3.5 py-2 rounded-xl font-medium whitespace-nowrap transition-all cursor-pointer',
+                'min-h-[44px] px-3.5 py-2 rounded-xl font-medium whitespace-nowrap transition-all cursor-pointer',
                 activePhase === tab.key
                   ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  : 'text-foreground hover:bg-secondary'
               )}
             >
               {tab.label}
@@ -450,14 +449,14 @@ export function InterviewQuestions(): React.JSX.Element {
 
         {/* Search Input */}
         <div className="relative min-w-[260px]">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             placeholder="Search questions, topics..."
             aria-label="Search interview questions by title, keyword, or track"
-            className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+            className="w-full min-h-[44px] pl-10 pr-3.5 py-2.5 bg-secondary/50 rounded-xl text-xs placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
           />
         </div>
       </div>

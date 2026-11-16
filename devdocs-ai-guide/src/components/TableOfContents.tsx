@@ -40,7 +40,7 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="toc-mobile-list"
-        className="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold text-foreground hover:bg-secondary/40 transition-colors cursor-pointer"
+        className="w-full min-h-[44px] px-4 py-3 flex items-center justify-between text-sm font-semibold text-foreground hover:bg-secondary/40 transition-colors cursor-pointer"
       >
         <span className="flex items-center gap-2">
           <ListTree className="w-4 h-4 text-primary" />
@@ -67,7 +67,7 @@ export const TableOfContentsMobile = React.memo(function TableOfContentsMobile({
               }}
               aria-current={activeId === h.id ? 'location' : undefined}
               className={cn(
-                'block py-1.5 px-3 rounded-md text-[13px] leading-snug transition-colors',
+                'flex items-center min-h-[44px] py-2 px-3 rounded-md text-[13px] leading-snug transition-colors',
                 h.level === 3 && 'pl-7 text-[12.5px]',
                 activeId === h.id
                   ? 'bg-primary/10 text-primary font-semibold'
@@ -116,7 +116,7 @@ export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop
               onClick={(e: React.MouseEvent<HTMLAnchorElement>) => jump(e, h.id, setActiveId)}
               aria-current={active ? 'location' : undefined}
               className={cn(
-                'relative -ml-px block border-l-2 py-1 leading-snug transition-colors duration-150',
+                'relative -ml-px flex items-center min-h-[44px] border-l-2 py-2 leading-snug transition-colors duration-150',
                 h.level === 3 ? 'pl-6 text-[12.5px]' : 'pl-3.5 text-[13px]',
                 active
                   ? 'border-primary text-primary font-medium'
@@ -132,7 +132,7 @@ export const TableOfContentsDesktop = React.memo(function TableOfContentsDesktop
       <button
         type="button"
         onClick={scrollTop}
-        className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer group"
+        className="mt-4 min-h-[44px] py-2 border-t border-border/60 flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer group"
       >
         <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
         Back to top

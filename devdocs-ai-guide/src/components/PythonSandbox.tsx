@@ -10,7 +10,12 @@ import {
   AlertTriangle,
   Clock,
   Cpu,
+  Trash2,
+  Code2,
+  FileCode,
+  CheckCircle2,
 } from 'lucide-react';
+import { useI18n } from '../hooks/useI18n';
 import { cn } from '../lib/utils';
 
 export interface PythonSandboxProps {
@@ -229,6 +234,7 @@ evaluate_query_ambiguity({"Array.slice": 0.94, "String.slice": 0.42, "Blob.slice
 ];
 
 export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxProps): React.JSX.Element {
+  const { t } = useI18n();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(PYTHON_TEMPLATES[0].id);
   const [code, setCode] = useState<string>(PYTHON_TEMPLATES[0].code);
   const [workerStatus, setWorkerStatus] = useState<'idle' | 'loading' | 'ready' | 'running' | 'error'>('idle');
@@ -435,214 +441,286 @@ export function PythonSandbox({ isOpen, setIsOpen, initialCode }: PythonSandboxP
     setOutput({ stdout: '', stderr: '', error: null, elapsedMs: null });
   };
 
+  const handleClearOutput = useCallback(() => {
+    setOutput({ stdout: '', stderr: '', error: null, elapsedMs: null });
+  }, []);
+
+  const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !isBusy) {
+      e.preventDefault();
+      handleRunCode();
+      return;
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const nextCode = code.substring(0, start) + '    ' + code.substring(end);
+      setCode(nextCode);
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+      });
+    }
+  };
+
   const isBusy = workerStatus === 'loading' || workerStatus === 'running';
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 animate-in fade-in duration-200" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50" />
         <Dialog.Content
-          data-surface="dark"
           aria-describedby={undefined}
-          className="fixed inset-y-0 right-0 w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl h-full max-h-screen overflow-y-auto bg-[#0a0e17] border-l border-border/90 shadow-2xl z-50 p-4 sm:p-6 focus:outline-none animate-drawer-right custom-scrollbar text-slate-100 flex flex-col justify-between"
+          className="fixed inset-0 w-full w-screen h-full h-screen max-w-none max-h-none m-0 p-0 rounded-none bg-background text-foreground z-50 flex flex-col overflow-hidden focus:outline-none"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-border/70">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                <Terminal className="w-5 h-5" />
+          {/* Top IDE Header Bar */}
+          <header className="min-h-[60px] shrink-0 px-4 sm:px-6 py-2 bg-card border-b border-border flex items-center justify-between gap-4 z-10">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/30 text-primary shrink-0">
+                <Terminal className="w-5 h-5" aria-hidden="true" />
               </div>
-              <div>
-                <Dialog.Title className="text-base sm:text-lg font-bold text-slate-100 flex flex-wrap items-center gap-2">
-                  Air-Gapped Python Sandbox (Pyodide WASM)
-                  <span className="text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    Client-Side
+              <div className="min-w-0">
+                <Dialog.Title className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2 truncate">
+                  <span>{t('sandbox.title', 'In-Browser Python RAG Sandbox')}</span>
+                  <span className="hidden sm:inline-block text-[10px] uppercase tracking-wider font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-700/40 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-400/40">
+                    {t('sandbox.badge', 'Pyodide WASM + NumPy')}
                   </span>
                 </Dialog.Title>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Execute RAG algorithms, dense vector math, and IR evaluation metrics securely inside an isolated Web Worker.
+                <p className="text-[11px] text-muted-foreground truncate hidden sm:block">
+                  {statusMessage}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Header Action Buttons */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 min-h-[44px] rounded-lg bg-secondary border border-border text-[11px] font-mono text-muted-foreground">
+                <Cpu className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                <span>{statusMessage}</span>
+              </div>
+
+              {isBusy ? (
+                <button
+                  type="button"
+                  onClick={() => terminateWorker('Execution aborted by user (Worker killed).')}
+                  aria-label={t('sandbox.kill', 'Kill Worker')}
+                  className="px-4 py-2 rounded-xl bg-rose-800 hover:bg-rose-900 text-white dark:bg-rose-300 dark:hover:bg-rose-200 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs min-h-[44px] min-w-[44px]"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                  <span>{t('sandbox.kill', 'Kill Worker')}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleRunCode}
+                  aria-busy={isBusy}
+                  aria-label={t('sandbox.run', 'Run Code')}
+                  className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white dark:bg-emerald-300 dark:hover:bg-emerald-200 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs min-h-[44px] min-w-[44px]"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                  <span>{t('sandbox.run', 'Run Code')}</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={handleResetCurrentTemplate}
-                title="Reset code to original template"
-                aria-label="Reset code to original template"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 text-xs transition-colors cursor-pointer"
+                title={t('sandbox.reset', 'Reset')}
+                aria-label={`${t('sandbox.reset', 'Reset')} — Restore original template code`}
+                className="p-2 rounded-xl text-foreground hover:bg-secondary border border-border text-xs transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-4 h-4" aria-hidden="true" />
               </button>
+
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close Python sandbox"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 text-xs transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-foreground hover:bg-secondary border border-border text-xs transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
-          </div>
+          </header>
 
-          {/* Preset Algorithm Switcher Toolbar */}
-          <div className="mt-4">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>Curriculum Algorithm Templates</span>
-              <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
-                <Cpu className="w-3 h-3" />
-                {statusMessage}
-              </span>
-            </div>
-            <div
-              role="tablist"
-              aria-label="Python code templates"
-              className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar"
+          {/* Main IDE Workspace */}
+          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+            {/* Left Side: Algorithm Templates Menu */}
+            <aside
+              aria-label={t('sandbox.templates', 'Algorithm Templates')}
+              className="w-full md:w-72 lg:w-80 shrink-0 border-b md:border-b-0 md:border-r border-border bg-card flex flex-col min-h-0 overflow-hidden max-h-56 md:max-h-none"
             >
-              {PYTHON_TEMPLATES.map((tpl) => {
-                const isSelected = selectedTemplateId === tpl.id;
-                return (
-                  <button
-                    key={tpl.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isSelected}
-                    onClick={() => handleSelectTemplate(tpl)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border cursor-pointer shrink-0',
-                      isSelected
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                        : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-border/60 hover:bg-slate-800'
-                    )}
-                  >
-                    {tpl.title}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+              <div className="px-4 min-h-[44px] py-2.5 border-b border-border flex items-center justify-between shrink-0 bg-secondary/50">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Code2 className="w-4 h-4 text-primary" aria-hidden="true" />
+                  {t('sandbox.templates', 'Algorithm Templates')}
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-foreground font-semibold border border-border">
+                  {PYTHON_TEMPLATES.length}
+                </span>
+              </div>
 
-          {/* Editor & Output Split Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
-            {/* Code Editor Pane */}
-            <div className="lg:col-span-7 flex flex-col rounded-xl border border-border/80 bg-[#0d1117] overflow-hidden">
-              <div className="flex items-center justify-between px-3.5 py-2 bg-[#161b22] border-b border-border/50 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span className="font-mono text-xs text-slate-300 font-semibold">
-                    sandbox_runner.py
-                  </span>
+              <nav
+                aria-label="Python code templates"
+                className="flex-1 overflow-y-auto p-2.5 space-y-1.5 custom-scrollbar"
+              >
+                {PYTHON_TEMPLATES.map((tpl) => {
+                  const isSelected = selectedTemplateId === tpl.id;
+                  return (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => handleSelectTemplate(tpl)}
+                      className={cn(
+                        'w-full min-h-[44px] text-left p-3 rounded-xl border transition-colors cursor-pointer flex flex-col gap-1',
+                        isSelected
+                          ? 'bg-primary/10 text-primary border-primary/50 ring-1 ring-primary/40 shadow-xs'
+                          : 'bg-card hover:bg-secondary/70 text-foreground border-border'
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-1 w-full">
+                        <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
+                          {tpl.category}
+                        </span>
+                        {isSelected && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                        )}
+                      </div>
+                      <span className="text-xs font-semibold leading-snug line-clamp-2">
+                        {tpl.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Security Isolation Summary at bottom of left menu */}
+              <div className="hidden md:flex flex-col gap-1.5 p-3.5 border-t border-border bg-secondary/40 text-[11px] text-muted-foreground shrink-0">
+                <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                  <span>Air-Gapped Sandbox</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <p className="text-[10.5px] leading-relaxed">
+                  {t('sandbox.isolationDefense', 'Dedicated Web Worker with neutralized network & storage APIs, AST safety checks, and 5s watchdog.')}
+                </p>
+              </div>
+            </aside>
+
+            {/* Right Side: Code Editor (top) + Terminal Output (below) */}
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-background">
+              {/* Upper Portion: Code Editor Pane */}
+              <section
+                className="flex-1 flex flex-col min-h-0 overflow-hidden bg-card"
+                aria-label="Code Editor"
+              >
+                {/* Editor Tab Bar */}
+                <div className="min-h-[44px] shrink-0 px-4 bg-secondary/50 border-b border-border flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <FileCode className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                    <span className="font-mono font-semibold text-foreground text-xs">sandbox_runner.py</span>
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
+                      Python 3.12
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 font-mono text-[11px]">
+                    <span className="hidden sm:inline text-muted-foreground">
+                      {t('sandbox.shortcutHint', 'Ctrl+Enter / ⌘+Enter to execute • Tab to indent')}
+                    </span>
+                    <span className="text-foreground font-semibold">
+                      {code.length.toLocaleString()} / 20,000 chars
+                    </span>
+                  </div>
+                </div>
+
+                {/* Textarea Editor */}
+                <div className="flex-1 relative overflow-hidden flex min-h-0">
+                  <textarea
+                    value={code}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCode(e.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                    spellCheck={false}
+                    aria-label="Python sandbox code editor"
+                    className="w-full h-full p-4 sm:p-5 bg-transparent text-foreground font-mono text-xs sm:text-[13px] leading-relaxed resize-none focus:outline-none custom-scrollbar selection:bg-primary/25"
+                  />
+                </div>
+              </section>
+
+              {/* Lower Portion: Terminal Output Console Below Code */}
+              <section
+                className="h-64 sm:h-72 lg:h-80 shrink-0 border-t border-border flex flex-col min-h-0 bg-secondary/40 dark:bg-black/60 overflow-hidden"
+                aria-label="Terminal Output"
+              >
+                {/* Terminal Header */}
+                <div className="min-h-[44px] shrink-0 px-4 bg-secondary/60 border-b border-border flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                    <span className="font-mono font-semibold text-foreground uppercase tracking-wider text-[11px]">
+                      {t('sandbox.terminal', 'Terminal / Output')}
+                    </span>
+                    {output.elapsedMs !== null && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-semibold">
+                        <Clock className="w-3 h-3" aria-hidden="true" />
+                        {output.elapsedMs} ms
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearOutput}
+                    aria-label={t('sandbox.clear', 'Clear Output')}
+                    className="flex items-center gap-1.5 px-3 min-h-[44px] min-w-[44px] rounded-md hover:bg-secondary text-foreground text-[11px] font-mono transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{t('sandbox.clear', 'Clear Output')}</span>
+                  </button>
+                </div>
+
+                {/* Terminal Console Output */}
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Terminal Output Console"
+                  aria-live="polite"
+                  className="flex-1 p-4 font-mono text-xs leading-relaxed overflow-y-auto custom-scrollbar select-text"
+                >
                   {isBusy ? (
-                    <button
-                      type="button"
-                      onClick={() => terminateWorker('Execution aborted by user (Worker killed).')}
-                      aria-label="Terminate Python execution"
-                      className="px-3 py-1 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                    >
-                      <Square className="w-3 h-3 fill-current" aria-hidden="true" />
-                      <span>Kill Worker</span>
-                    </button>
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-10 space-y-3">
+                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="text-xs font-mono">{statusMessage}</div>
+                    </div>
+                  ) : output.stdout || output.stderr || output.error ? (
+                    <div className="space-y-3">
+                      {output.stdout && (
+                        <pre className="text-foreground dark:text-emerald-300 whitespace-pre-wrap break-words font-mono text-xs">
+                          {output.stdout}
+                        </pre>
+                      )}
+                      {output.stderr && (
+                        <pre className="text-amber-900 dark:text-amber-200 bg-amber-500/15 border-l-2 border-amber-600 p-2.5 rounded-r whitespace-pre-wrap break-words font-mono text-xs">
+                          {output.stderr}
+                        </pre>
+                      )}
+                      {output.error && (
+                        <div className="p-3 rounded-xl bg-rose-100 border border-rose-700/40 text-rose-900 dark:bg-rose-950/60 dark:border-rose-400/50 dark:text-rose-200 flex items-start gap-2.5">
+                          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                          <pre className="whitespace-pre-wrap break-words font-mono text-xs">
+                            {output.error}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={handleRunCode}
-                      aria-busy={isBusy}
-                      aria-label="Run Python code snippet in sandbox"
-                      className="px-3.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                      <span>Run Python</span>
-                    </button>
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-10 text-center">
+                      <Play className="w-6 h-6 mb-2 text-primary" aria-hidden="true" />
+                      <p className="text-xs text-foreground">
+                        {t('sandbox.emptyState', 'Click "Run Code" or press Ctrl+Enter to execute snippet in isolated Web Worker.')}
+                      </p>
+                    </div>
                   )}
                 </div>
-              </div>
-
-              <textarea
-                value={code}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCode(e.target.value)}
-                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !isBusy) {
-                    e.preventDefault();
-                    handleRunCode();
-                  }
-                }}
-                spellCheck={false}
-                aria-label="Python sandbox code editor"
-                className="w-full h-80 sm:h-96 p-4 bg-[#0d1117] text-slate-100 font-mono text-xs sm:text-[13px] leading-relaxed focus:outline-none resize-none custom-scrollbar"
-              />
-
-              <div className="px-3.5 py-1.5 bg-[#161b22] border-t border-border/40 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                <span>Press Ctrl+Enter / ⌘+Enter to execute</span>
-                <span>{code.length.toLocaleString()} / 20,000 chars</span>
-              </div>
-            </div>
-
-            {/* Output Console Pane */}
-            <div className="lg:col-span-5 flex flex-col rounded-xl border border-border/80 bg-[#090d14] overflow-hidden">
-              <div className="flex items-center justify-between px-3.5 py-2 bg-[#121824] border-b border-border/50 text-xs">
-                <span className="font-mono font-semibold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Standard Output (stdout / stderr)
-                </span>
-                {output.elapsedMs !== null && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400">
-                    <Clock className="w-3 h-3" aria-hidden="true" />
-                    {output.elapsedMs} ms
-                  </span>
-                )}
-              </div>
-
-              <div
-                role="region"
-                aria-label="Standard Output Console"
-                aria-live="polite"
-                className="flex-1 p-4 font-mono text-xs leading-relaxed overflow-y-auto max-h-80 sm:max-h-96 custom-scrollbar"
-              >
-                {isBusy ? (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-16 space-y-3">
-                    <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                    <div className="text-xs text-center">{statusMessage}</div>
-                  </div>
-                ) : output.stdout || output.stderr || output.error ? (
-                  <div className="space-y-3">
-                    {output.stdout && (
-                      <pre className="text-slate-100 whitespace-pre-wrap break-words font-mono text-xs">
-                        {output.stdout}
-                      </pre>
-                    )}
-                    {output.stderr && (
-                      <pre className="text-amber-300 whitespace-pre-wrap break-words font-mono text-xs border-l-2 border-amber-500 pl-2.5">
-                        {output.stderr}
-                      </pre>
-                    )}
-                    {output.error && (
-                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                        <pre className="whitespace-pre-wrap break-words font-mono text-xs">
-                          {output.error}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-16 text-center">
-                    <Play className="w-6 h-6 mb-2 opacity-40" />
-                    <p>Click &quot;Run Python&quot; to evaluate the snippet inside the isolated Web Worker.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Security Architecture Note */}
-              <div className="p-3 bg-[#121824] border-t border-border/50 text-[11px] text-slate-400 flex items-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-slate-200">Defense-in-Depth Isolation:</strong> Runs in a dedicated Web Worker with disabled{' '}
-                  <code className="text-emerald-300">fetch</code>, <code className="text-emerald-300">WebSocket</code>,{' '}
-                  <code className="text-emerald-300">indexedDB</code>, and <code className="text-emerald-300">js</code> bridge, plus static AST inspection and a 5s watchdog kill switch.
-                </div>
-              </div>
+              </section>
             </div>
           </div>
         </Dialog.Content>

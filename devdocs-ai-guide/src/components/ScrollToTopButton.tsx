@@ -44,10 +44,12 @@ export function ScrollToTopButton(): React.JSX.Element {
     <button
       type="button"
       onClick={handleScrollToTop}
+      tabIndex={isVisible ? 0 : -1}
+      aria-hidden={!isVisible}
       aria-label={t('nav.scrollToTop', 'Scroll to top')}
       title={t('nav.scrollToTop', 'Scroll to top')}
       className={cn(
-        'no-print fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-30 w-11 h-11 rounded-full flex items-center justify-center bg-card/90 hover:bg-card text-foreground border border-border/90 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:border-primary/60 hover:shadow-primary/20 active:scale-95 group',
+        'no-print fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-30 min-w-[44px] min-h-[44px] w-[44px] h-[44px] rounded-full flex items-center justify-center bg-card/95 hover:bg-card text-foreground border border-border shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:border-primary/60 hover:shadow-primary/20 active:scale-95 group',
         isVisible
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-3 pointer-events-none'

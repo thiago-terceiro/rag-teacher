@@ -196,13 +196,13 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
         <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-in fade-in duration-200" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-[12%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-card/95 border border-border/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col focus:outline-none animate-in zoom-in-95 duration-200"
+          className="fixed top-[12%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col focus:outline-none animate-in zoom-in-95 duration-200"
         >
           <Dialog.Title className="sr-only">Command Palette: Search RAG Curriculum</Dialog.Title>
 
           {/* Search Header Input Bar */}
-          <div className="flex items-center px-4 py-3.5 border-b border-border/80 gap-3">
-            <Search className="w-5 h-5 text-primary shrink-0 animate-pulse" aria-hidden="true" />
+          <div className="flex items-center px-4 py-2.5 border-b border-border gap-3">
+            <Search className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
             <input
               ref={inputRef}
               type="text"
@@ -219,19 +219,19 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
               }}
               onKeyDown={handleInputKeyDown}
               placeholder="Search 28 modules, concepts, algorithms (e.g. HNSW, Ragas, DSPy, RRF)..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none tracking-[0.01em]"
+              className="flex-1 min-h-[44px] bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none tracking-[0.01em]"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear search input"
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-xs transition-colors cursor-pointer"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
-            <kbd aria-hidden="true" className="hidden sm:inline-block px-2 py-0.5 rounded bg-secondary/80 text-[10px] font-mono text-muted-foreground border border-border/60">
+            <kbd aria-hidden="true" className="hidden sm:inline-block px-2 py-0.5 rounded bg-secondary text-[10px] font-mono text-foreground border border-border">
               ESC
             </kbd>
           </div>
@@ -263,10 +263,10 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={cn(
-                        'w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-150 cursor-pointer group',
+                        'w-full min-h-[44px] flex items-center justify-between p-3 rounded-xl text-left transition-all duration-150 cursor-pointer group',
                         isSelected
-                          ? 'bg-primary/15 text-primary ring-1 ring-primary/30 shadow-xs'
-                          : 'text-foreground hover:bg-secondary/50'
+                          ? 'bg-primary/15 text-primary ring-1 ring-primary/40 shadow-xs'
+                          : 'text-foreground hover:bg-secondary'
                       )}
                     >
                       <div className="flex items-start gap-3 min-w-0">
@@ -314,7 +314,7 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
               ) : (
                 <div role="status" aria-live="polite" className="py-12 text-center text-sm text-muted-foreground">
                   <p>No topics found matching <span className="text-foreground font-semibold">&quot;{query}&quot;</span></p>
-                  <p className="text-xs mt-1 text-muted-foreground/80">
+                  <p className="text-xs mt-1 text-muted-foreground">
                     Try searching for <span className="text-primary">chunking</span>, <span className="text-primary">hnsw</span>, <span className="text-primary">reranking</span>, or <span className="text-primary">dspy</span>.
                   </p>
                 </div>
@@ -340,10 +340,10 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                       onClick={() => handleSelect(item)}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={cn(
-                        'w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer group',
+                        'w-full min-h-[44px] flex items-center justify-between p-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer group',
                         isSelected
-                          ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                          : 'text-foreground hover:bg-secondary/50'
+                          ? 'bg-primary/15 text-primary ring-1 ring-primary/40'
+                          : 'text-foreground hover:bg-secondary'
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -393,7 +393,7 @@ export function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProps): Reac
                 close
               </span>
             </div>
-            <span className="font-medium text-foreground/80">Deep-Link Enabled</span>
+            <span className="font-medium text-foreground">Deep-Link Enabled</span>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

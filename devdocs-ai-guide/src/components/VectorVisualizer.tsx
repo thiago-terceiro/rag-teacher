@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Compass, X, BookOpen } from 'lucide-react';
-import { useReadingSettings } from '../hooks/useReadingSettings';
+import { useTheme } from '../hooks/useReadingSettings';
 import { calculateVectorMetrics } from '../lib/vectorMath';
 import { useI18n } from '../hooks/useI18n';
 
@@ -18,9 +18,8 @@ function normalizeAngle(rad: number): number {
 }
 
 export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): React.JSX.Element {
-  const { settings } = useReadingSettings();
+  const { isLight: isLightTheme } = useTheme();
   const { t } = useI18n();
-  const isLightTheme = settings.theme === 'daylight-paper';
 
   // Vector A: angle in radians, magnitude
   const [angleA, setAngleA] = useState<number>(Math.PI / 6); // 30 deg
@@ -43,9 +42,9 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
   const arcStroke = isLightTheme ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.4)';
   const originFill = isLightTheme ? '#0f172a' : '#ffffff';
 
-  const vectorAColor = isLightTheme ? '#0284c7' : '#38bdf8';
-  const vectorBColor = isLightTheme ? '#047857' : '#34d399';
-  const l2Color = isLightTheme ? '#b45309' : '#f59e0b';
+  const vectorAColor = isLightTheme ? '#0369a1' : '#38bdf8';
+  const vectorBColor = isLightTheme ? '#065f46' : '#34d399';
+  const l2Color = isLightTheme ? '#92400e' : '#f59e0b';
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rectRef = useRef<DOMRect | null>(null);
@@ -155,9 +154,9 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
               type="button"
               onClick={() => setIsOpen(false)}
               aria-label={t('common.close', 'Close')}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-foreground hover:bg-secondary text-xs transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -276,7 +275,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     <circle
                       cx={svgAx}
                       cy={svgAy}
-                      r="18"
+                      r="22"
                       fill="transparent"
                       onPointerDown={(e: React.PointerEvent<SVGCircleElement>) => {
                         e.stopPropagation();
@@ -319,7 +318,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                     <circle
                       cx={svgBx}
                       cy={svgBy}
-                      r="18"
+                      r="22"
                       fill="transparent"
                       onPointerDown={(e: React.PointerEvent<SVGCircleElement>) => {
                         e.stopPropagation();
@@ -349,7 +348,7 @@ export function VectorVisualizer({ isOpen, setIsOpen }: VectorVisualizerProps): 
                 <button
                   type="button"
                   onClick={() => setIsNormalized(prev => !prev)}
-                  className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-secondary/80 hover:bg-secondary border border-border text-foreground transition-colors cursor-pointer"
+                  className="min-h-[44px] flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-foreground transition-colors cursor-pointer"
                 >
                   <span className={`w-2 h-2 rounded-full ${isNormalized ? 'bg-primary' : 'bg-muted-foreground'}`} />
                   <span>{isNormalized ? t('vector.unitVectors', 'Unit Vectors ||v||=1') : t('vector.arbitraryMag', 'Arbitrary Length')}</span>
